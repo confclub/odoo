@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+       <record id="view_employee_form_inherit_qbook" model="ir.ui.view">
+            <field name="name">view.employee.form.inherit.qbook</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+                
+                <xpath expr="//field[@name='address_id']" position="after">
+                    <field name="qbook_id"/>
+                    <field name="to_be_exported"/>           
+                </xpath>
+
+                <!-- <xpath expr="//page[1]" position="after">
+                    <page string="Qbooks Information" attrs="{'invisible':[('qbook_id','=',False)]}">
+                        <group col="2">
+                            <separator colspan="2" string="Additional Details"/>
+                            <field name="preferred_delivery_method" attrs="{'invisible':[('customer','=',False)]}"/>
+                            <field name="is_taxable" attrs="{'invisible':[('customer','=',False)]}"/>
+                            <field name="balance"/>
+                            <field name="balance_job" attrs="{'invisible':[('customer','=',False)]}"/>
+                            <field name="print_on_check_name"/>
+
+                            <field name="vendor1099" attrs="{'invisible':[('supplier','=',False)]}"/>
+                            <field name="acc_num" attrs="{'invisible':[('supplier','=',False)]}"/>
+                            
+                            
+                        </group>
+                    </page>
+                </xpath> -->
+
+            </field>
+        </record>
+
+        <record id="action_employee_qbooks" model="ir.actions.act_window">
+            <field name="name">Employee</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.employee</field>
+          
+            <field name="domain">[('qbook_id', '!=', False)]</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <!-- <field name="view_type">form</field> -->
+        </record>
+</data>     
+</odoo>
+
+

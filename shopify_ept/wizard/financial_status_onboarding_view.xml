@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="shopify_financial_status_onboarding_wizard_view" model="ir.ui.view">
+            <field name="name">shopify.financial.status.onboarding.wizard.form</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority">1000</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title mb-2 ml-2" attrs="{'invisible': [('shopify_instance_id', '!=', False)]}">
+                            <h1>
+                                No Instance Created Yet!
+                            </h1>
+                        </div>
+                        <div class="oe_title" attrs="{'invisible': [('shopify_instance_id', '=', False)]}">
+                            <h1 class="font-weight-bold">
+                                <field name="shopify_instance_id" readonly="1" options="{'no_open': True}"/>
+                            </h1>
+                        </div>
+                        <div class="row o_settings_container"
+                             attrs="{'invisible': [('shopify_instance_id', '=', False)]}">
+                            <div class="col-xs-12 col-md-6 o_setting_box">
+                                <div class="o_horizontal_separator font-weight-bold" style="font-size: 1.50rem; mb-0">
+                                    Stock Configuration
+                                </div>
+                                <div class="ml-2 pl-1">
+                                    <label for="shopify_stock_field"/>
+                                    <field name="shopify_stock_field"
+                                           domain="[('model_id.model','=','product.product'),('name','in',['free_qty','virtual_available'])]"
+                                           attrs="{'required':[('shopify_instance_id','!=',False)]}"/>
+                                    <a href="javascript:void(0)"
+                                       title="Select inventory field for shopify products"
+                                       class="ml-2 o_doc_link"/>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box">
+                                <div class="o_horizontal_separator font-weight-bold" style="font-size: 1.50rem; mb-0">
+                                    Import Order
+                                </div>
+                                <div>
+                                    <label for="last_date_order_import" string="Import Order From"/>
+                                    <field name="last_date_order_import"/>
+                                    <a href="javascript:void(0)"
+                                       title="Date and time, when the unshipped orders are imported last time."
+                                       class="ml-2 o_doc_link"/>
+                                </div>
+                            </div>
+                        </div>
+                        <hr attrs="{'invisible': [('shopify_instance_id', '=', False)]}"/>
+                        <div class="row mt6 o_settings_container"
+                             attrs="{'invisible': [('shopify_instance_id', '=', False)]}">
+                            <div class="col-xs-12 col-md-6 o_setting_box">
+                                <div class="o_horizontal_separator font-weight-bold" style="font-size: 1.50rem; mb-0">
+                                    Notify By Email
+                                </div>
+                                <div class="ml-2 pl-1">
+                                    <label for="shopify_notify_customer"/>
+                                    <field name="shopify_notify_customer" widget="boolean_toggle"/>
+                                    <a href="javascript:void(0)"
+                                       title="If checked, Then customers will update while change the order status."
+                                       class="ml-2 o_doc_link"/>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box">
+                                <div class="o_horizontal_separator font-weight-bold" style="font-size: 1.50rem; mb-0">
+                                    Payout Report Information
+                                </div>
+                                <div>
+                                    <label for="shopify_settlement_report_journal_id"/>
+                                    <field name="shopify_settlement_report_journal_id"
+                                           domain="[('type','in',['cash','bank'])]"
+                                           options="{'no_create':True,'no_open':True}"/>
+                                    <a href="javascript:void(0)"
+                                       title="Creates Bank Statement using this journal while process Payout Report"
+                                       class="ml-2 o_doc_link"/>
+                                </div>
+                            </div>
+                        </div>
+                        <hr attrs="{'invisible': [('shopify_instance_id', '=', False)]}"/>
+                        <div class="o_horizontal_separator font-weight-bold" style="font-size: 1.50rem; mb-0"
+                             attrs="{'invisible': [('shopify_instance_id', '=', False)]}">Webhook Configuration
+                        </div>
+                        <div class="row mt16 o_settings_container"
+                             attrs="{'invisible': [('shopify_instance_id', '=', False)]}">
+                            <div class="col-12 col-lg-12 o_setting_box">
+                                <div class="alert alert-warning" role="alert">
+                                    <h3 style="font-weight:bold;color:#7d5a29">
+                                        <u>Note :</u>
+                                    </h3>
+                                    <b>
+                                        <ul>
+                                            <li>Webhooks can be managed using below options.</li>
+                                            <li>
+                                                Enabling an option will either creates a new webhook
+                                                for
+                                                its all actions (such as 'create', 'update',
+                                                'delete'
+                                                etc.)
+                                                or
+                                                activates it, if already exists.
+                                            </li>
+                                            <li>Disabling an option will deactivates the webhooks.
+                                            </li>
+                                            <li>
+                                                Only instances having SSL connection (https://)
+                                                are
+                                                permitted.
+                                            </li>
+                                            <li>For detailed options,</li>
+                                            <ol>
+                                                <li>Go to Shopify >> Configuration >> Instances.
+                                                </li>
+                                                <li>Open an instance.</li>
+                                                <li>Select Webhooks tab.</li>
+                                            </ol>
+                                        </ul>
+
+                                    </b>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="ml-2 pl-1">
+                                    <label for="create_shopify_products_webhook" string="Manage Products via Webhooks"/>
+                                    <field name="create_shopify_products_webhook" widget="boolean_toggle"/>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div>
+                                    <label for="create_shopify_customers_webhook"
+                                           string="Manage Customers via Webhooks"/>
+                                    <field name="create_shopify_customers_webhook" widget="boolean_toggle"/>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="ml-2 pl-1">
+                                    <label for="create_shopify_orders_webhook" string="Manage Orders via Webhooks"/>
+                                    <field name="create_shopify_orders_webhook" class="ml-3" widget="boolean_toggle"/>
+                                </div>
+                            </div>
+
+                        </div>
+                        <notebook attrs="{'invisible': [('shopify_instance_id', '=', False)]}">
+                            <page string="Financial Status Configurations" name="financial_status_lines">
+                                <field name="shopify_financial_status_ids" editable="bottom"/>
+                            </page>
+                        </notebook>
+                        <footer>
+                            <button string="Save Configuration" type="object"
+                                    name="shopify_save_financial_status_configurations" class="oe_highlight"
+                                    attrs="{'invisible': [('shopify_instance_id', '=', False)]}"/>
+                            <button class="oe_highlight" special="cancel"
+                                    string="Cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+   	<record id="view_qbooks_account_form" model="ir.ui.view">
+            <field name="name">view.qbooks.form</field>
+            <field name="model">account.account</field>
+            <field name="inherit_id" ref="account.view_account_form"/>
+            <field name="arch" type="xml">
+            	<xpath expr="//field[@name='user_type_id']" position="after">
+                    <field name="qbooks_id" />
+                    <field name="to_be_exported" />
+	            </xpath>
+	        </field>
+	 </record>
+
+        
+	<record id="action_account_qbooks" model="ir.actions.act_window">
+		<!-- <field name="domain">['|',('qbooks_id', '!=', False),('product_to_be_exported', '=', True)]</field> -->
+        <!-- <field name = "context">{'default_product_to_be_exported' : True }</field> -->
+      <field name="name">Accounts</field>
+       <field name="type">ir.actions.act_window</field>
+       <field name="res_model">account.account</field>
+       <!-- <field name="view_type">form</field> -->
+       <field name="view_mode">tree,form</field>
+       <field name="domain">[('qbooks_id','!=',False)]</field>
+	</record>
+
+
+
+
+
+   <record id="view_qbooks_account_tax_form" model="ir.ui.view">
+            <field name="name">view.qbooks.tax.form</field>
+            <field name="model">account.tax</field>
+            <field name="inherit_id" ref="account.view_tax_form"/>
+            <field name="arch" type="xml">
+              <xpath expr="//field[@name='name']" position="after">
+                    <field name="qbook_id" />
+                    <field name="to_be_exported" />
+              </xpath>
+              <xpath expr="//field[@name='type_tax_use']" position="after">
+                    <field name="account_agency" options="{'no_create_edit': True}"/>
+              </xpath>
+              
+          </field>
+   </record>
+
+        
+  <record id="action_account_tax_qbooks" model="ir.actions.act_window">
+       <field name="name">Account Tax</field>
+       <field name="type">ir.actions.act_window</field>
+       <field name="res_model">account.tax</field>
+       <!-- <field name="view_type">form</field> -->
+       <field name="view_mode">tree,form</field>
+       <field name="domain">[('qbook_id','!=',False)]</field>
+  </record>
+
+
+
+</data>
+</odoo>

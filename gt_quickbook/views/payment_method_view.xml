@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+	<record id="view_payment_method_tree" model="ir.ui.view">
+		<field name="name">view.payment.method.qbooks.tree</field>
+		<field name="model">payment.method</field>
+		<field name="arch" type="xml">
+			<tree>
+				<field name="title"/>
+			</tree>
+		</field>
+	</record>
+	
+	<record id="view_payment_method_qbooks_form" model="ir.ui.view">
+		<field name="name">view.payment.method.qbook.form</field>
+		<field name="model">payment.method</field>
+		<field name="arch" type="xml">
+			<form>
+				<sheet>
+					<group>
+						<field name="title"/>
+						<field name="qbooks_id"/>
+						<field name="payment_type"/>
+						<field name="to_be_exported"/>
+					</group>
+				</sheet>
+			</form>
+		</field>
+	</record>
+
+    <record id="action_payment_method_qbooks" model="ir.actions.act_window">
+       <field name="name">Payment Methods</field>
+       <field name="type">ir.actions.act_window</field>
+       <field name="res_model">payment.method</field>
+       <!-- <field name="view_type">form</field> -->
+       <field name="view_mode">tree,form</field>
+       <field name="domain">[('qbooks_id','!=',False)]</field>
+   </record>
+</data>
+</odoo>

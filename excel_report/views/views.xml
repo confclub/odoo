@@ -1,0 +1,45 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="excel_report.list">
+      <field name="name">excel_report.list</field>
+      <field name="model">excel.report</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="xls_file" string="Excel File"/>
+        </tree>
+      </field>
+    </record>
+
+
+    <record model="ir.ui.view" id="excel_report.form">
+      <field name="name">excel_report.form</field>
+      <field name="model">excel.report</field>
+      <field name="arch" type="xml">
+        <form>
+          <header>
+            <button name = "import_xls" string = "Import" class="btn btn-primary" type = "object" />
+          </header>
+          <sheet>
+          <group>
+            <field name="xls_file" string="Excel File"/>
+            <field name="report_for" string="Report For"/>
+          </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+
+    <!-- actions opening views on models -->
+    <record model="ir.actions.act_window" id="excel_report_action_window">
+      <field name="name">excel_report window</field>
+      <field name="res_model">excel.report</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+
+
+    <menuitem name="Excel Report" id="excel_report.menu_root" action="excel_report_action_window"/>
+
+  </data>
+</odoo>

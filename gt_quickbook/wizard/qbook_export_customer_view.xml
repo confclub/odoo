@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>	
+		<record model="ir.ui.view" id="view_export_cust_wiz_form">
+			<field name="name">view.export.cust.wiz.form</field>
+			<field name="model">export.customer.wiz</field>
+			<field name="arch" type="xml">
+				<form>
+					<group>
+						<field name="shop_ids"/>
+					</group>					
+					<footer>
+						<button string='Export Customer' name="export_to_qbook" type="object" class="btn-primary"/>
+						<button string="Cancel" class="btn-default" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="action_export_cust_wiz">
+			<field name="name">Export Customer To Qbooks</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">export.customer.wiz</field>
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="view_export_cust_wiz_form" />
+			<field name="target">new</field>			
+		</record>
+
+
+
+
+
+		<record model="ir.ui.view" id="view_export_vend_wiz_form">
+			<field name="name">view.export.vendor.wiz.form</field>
+			<field name="model">export.vendor.wiz</field>
+			<field name="arch" type="xml">
+				<form>
+					<group>
+						<field name="shop_ids"/>
+					</group>					
+					<footer>
+						<button string='Export Customer' name="export_to_qbook" type="object" class="btn-primary"/>
+						<button string="Cancel" class="btn-default" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+		<record model="ir.actions.act_window" id="action_export_vend_wiz">
+			<field name="name">Export Vendor To Qbooks</field>
+			<field name="res_model">export.vendor.wiz</field>
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="view_export_vend_wiz_form" />
+			<field name="target">new</field>			
+		</record>
+
+
+</odoo>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <menuitem id="quickbook_setting" name="Quickbook"/>
+
+        <menuitem id="menu_instance_qbooks" action="dashboard_qbooks_instance_kanban" name="Dashboard" parent="quickbook_setting" sequence="0"/>
+
+		<menuitem name="Partners" id="menu_partner_qbooks" parent="quickbook_setting" sequence="1"/>
+            <menuitem id="menu_customer_qbooks" parent="menu_partner_qbooks" action="action_partner_qbooks" name="Customers" sequence="1"/>
+            <menuitem id="menu_vendor_qbooks" parent="menu_partner_qbooks" action="action_vendor_qbooks" name="Vendors" sequence="2"/>
+            <menuitem id="menu_employee_qbooks" parent="menu_partner_qbooks" action="action_employee_qbooks" name="Employees" sequence="3"/>
+            <menuitem name="Departments" action="action_department_qbooks" id="department_qbooks_menu" parent="menu_partner_qbooks" sequence="4"/>
+
+        <menuitem name="Products" id="menu_product_qbooks" parent="quickbook_setting" sequence="2"/>
+            <menuitem name="Product Categories" action="action_category_qbooks" id="product_Category_qbooks_menu" parent="menu_product_qbooks" sequence="1"/>
+            <menuitem name="Products" action="action_product_template_qbooks" id="product_qbooks_menu" parent="menu_product_qbooks" sequence="2"/>      
+            <menuitem id="bundle_product_menu" name="Bundle Product" action="gt_bundle_product.bundle_product_action_product" parent="menu_product_qbooks" sequence="3" />
+
+        <menuitem name="Sales" id="menu_sales_qbooks" parent="quickbook_setting" sequence="3"/>
+            <menuitem name="Sale Orders" action="action_orders_qbooks" id="orders_qbooks_menu" parent="menu_sales_qbooks" sequence="1"/>
+            <menuitem name="Customer Invoices" action="action_invoice_qbooks" id="invoice_qbooks_menu" parent="menu_sales_qbooks" sequence="2"/>
+            <menuitem name="Customer Payments" action="action_payment_cust_qbooks" id="invoice_payment_cust_qbooks_menu" parent="menu_sales_qbooks" sequence="3"/>
+
+        <menuitem name="Purchases" id="menu_purchase_qbooks" parent="quickbook_setting" sequence="4"/>
+            <menuitem name="Purchase Orders" action="action_purchase_orders_qbooks" id="purchase_orders_qbooks_menu" parent="menu_purchase_qbooks" sequence="1"/>
+            <menuitem name="Vendor Bills" action="action_bill_qbooks" id="invoice_bill_menu" parent="menu_purchase_qbooks" sequence="2"/>
+            <menuitem name="Vendor Payments" action="action_payment_vendor_qbooks" id="invoice_vendor_payment_menu" parent="menu_purchase_qbooks" sequence="3"/>  
+
+        <menuitem name="Account" id="menu_account_qbooks" parent="quickbook_setting" sequence="5"/>
+            <menuitem name="Payment Method" action="action_payment_method_qbooks" id="payment_method_qbooks_menu" parent="menu_account_qbooks" sequence="1"/>
+            <menuitem name="Payment Term" action="action_payment_term_qbooks" id="payment_term_qbooks_menu" parent="menu_account_qbooks" sequence="2"/>
+            <menuitem name="Chart of Account" action="action_account_qbooks" id="account_chart_qbooks_menu" parent="menu_account_qbooks" sequence="3"/>
+            <menuitem name="Taxes" action="action_account_tax_qbooks" id="account_tax_qbooks_menu" parent="menu_account_qbooks" sequence="4"/>   
+
+        <menuitem name="Configuration" id="menu_configuration" parent="quickbook_setting" sequence="6"/>
+            <menuitem id="menu_log_history_qbook" parent="menu_configuration" action="action_all_qbook_log" name="Qbook Log History" sequence="1"/>
+            <menuitem id="menu_quickbook_config" parent="menu_configuration" action="action_quickbook_integration" name="Quickbook Configuration" sequence="2"/>
+
+		
+
+	</data>
+</odoo>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+       <record id="view_partner_form_inherit_qbook" model="ir.ui.view">
+            <field name="name">view.partner.form.inherit.qbook</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+                
+                <xpath expr="//field[@name='category_id']" position="after">
+                    <field name="qbook_id"/>   
+                    <field name="to_be_exported"/>                  
+                </xpath>
+
+                <xpath expr="//page[1]" position="after">
+                    <page string="Qbooks Information" attrs="{'invisible':[('qbook_id','=',False)]}">
+                        <group col="2">
+                            <separator colspan="2" string="Additional Details"/>
+                            <field name="preferred_delivery_method" />
+                            <field name="is_taxable"/>
+                            <field name="balance"/>
+                            <field name="balance_job"/>
+                            <field name="print_on_check_name"/>
+
+                            <field name="vendor1099" />
+                            <field name="acc_num"/>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+
+
+
+
+
+
+
+        <record id="action_partner_qbooks" model="ir.actions.act_window">
+            <field name="name">Customers</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+           <!--  <field name="domain">['|',('to_be_exported', '=', True),('woocom_id', '!=', False),('customer','=',True)]</field> -->
+           <field name="domain">[('qbook_id', '!=', False)]</field>
+            <!-- <field name= "context">{'default_to_be_exported' : True,'default_customer' :True }</field> -->
+            <field name="view_mode">kanban,tree,form</field>
+            <!-- <field name="view_type">form</field> -->
+        </record>
+
+
+
+
+        <record id="action_vendor_qbooks" model="ir.actions.act_window">
+            <field name="name">Vendors</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+           <!--  <field name="domain">['|',('to_be_exported', '=', True),('woocom_id', '!=', False),('customer','=',True)]</field> -->
+           <field name="domain">[('qbook_id', '!=', False)]</field>
+           <field name="context">{'default_customer': 0,'default_supplier': 1}</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <!-- <field name="view_type">form</field> -->
+        </record>
+
+        
+
+
+</data>     
+</odoo>
+
+

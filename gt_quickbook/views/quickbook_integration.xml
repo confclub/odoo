@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="quickbook_integration_form_view" model="ir.ui.view">
+			<field name="name">quickbook.integration.form.view</field>
+			<field name="type">form</field>
+			<field name="model">quickbook.integration</field>
+			<field name="arch" type="xml">
+				<form string="Quickbook Instance">
+					<header>
+						<button name="check_connection" string="Authenticate" type="object" class="oe_highlight"/>
+						<button name="refresh_token" string="Refresh Token" type="object" class="oe_highlight"/>
+						<!-- <field name="state" widget="statusbar" statusbar_visible="draft,connected"/> -->
+					</header>
+
+					<sheet>
+						<div class="oe_title">
+	                        <h1>
+	                            <field name="config_name" select="1" required="True" colsapn="4"/>
+	                        </h1>
+	                    </div>
+					
+						<group>
+							<group>
+								<field name="client_id"/>
+								<field name="client_secret"/>
+								<!--<group>
+								<field name="authorize_url"/>
+								 <field name="access_token_url"/>
+								<field name="versions" /> 
+								</group> -->
+								<field name="access_token"/>
+								<label for="accerss_hours" string="Access Token Expires Today At"/>
+	                            <div class="o_address_format">
+	                            	<field name="token_access_expiry_date" class="o_address_zip"/> -
+									<field name="accerss_hours" class="o_address_zip"/> :
+									<field name="accerss_minute" class="o_address_zip"/> :
+									<field name="accerss_second" class="o_address_zip"/> (hh:mm:ss)
+									<span style="color:red;">  access token expires in every 60 minutes</span>
+								</div>
+								<field name="ref_token"/>
+								<label for="ref_token_hours" string="Refresh Token Expires At"/>
+	                            <div class="o_address_format">
+	                            	<field name="ref_token_expiry_date" class="o_address_zip"/> - 
+									<field name="ref_token_hours" class="o_address_zip"/> :
+									<field name="ref_token_minute" class="o_address_zip"/> :
+									<field name="ref_token_second" class="o_address_zip"/> (hh:mm:ss)
+									<!-- <span style="color:red;">  refresh token expires in 100 days</span> -->
+								</div>
+								<!-- <group>
+									<span style="color:red;">access token expires in every 60 minutes</span>
+								</group> -->
+							</group>
+							<group>
+								<!-- token_ref_expire_in  -->		
+								<!-- <field name="token_access_expire_in"/> -->
+								<!-- <field name="token_ref_expire_in" /> -->
+		                        <field name="company_id"/> 
+		                        <field name="warehouse_id"/> 
+		                        <field name="customer_journal_id"/> 
+		                        <field name="shipping_product"/> 
+		                        <field name="discount_product"/> 
+		                         <field name="auth_code"/>
+								<field name="redirect_url"/>
+								<field name="base_url" />
+			                 </group>
+			             </group>
+
+						<notebook>
+							<page string="Manage Accounts">
+								<span style="color:red"><b>NOTE :</b> 
+								First Install The Companies Chart Of Account Before Importing The Quickbook's Accounts/Chart Of Acounts</span>
+								<group col="12">
+									<button name="import_account" string="Import Account" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_tax" string="Import Tax" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_payment_method" string="Import Payment Method" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_payment_term" string="Import Payment Term" type="object" class="oe_highlight" colspan="2"/>
+								</group >	
+							</page>
+
+							<page string="Manage Customers And Vendors">
+								<group col="12">
+									<button name="import_departments" string="Import Department" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_customer" string="Import Customer" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_vendor" string="Import Vendor" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_employee" string="Import Employee" type="object" class="oe_highlight" colspan="2"/>
+								</group>
+							</page>
+
+							<page string="Manage Products">
+								<span style="color:red"><b>NOTE :</b> 
+								First Import The "Account" Before Importing/Exporting The Product</span>
+
+								<group col="12">
+									<button name="import_category" string="Import Product Category" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_product" string="Import Product" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_product_inventory" string="Import Product Inventory" type="object" class="oe_highlight" colspan="2"/>
+								</group>
+							</page>
+
+							<page string="Manage Orders And Invoices">
+								<group col="12">
+									<button name="import_order" string="Import Order" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_purchase_order" string="Import Purchase Order" type="object" class="oe_highlight" colspan="2"/>
+								</group>
+								<group col="12">
+									<button name="import_invoice" string="Import Customer Invoice" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_vendor_bill" string="Import Vendor Bill" type="object" class="oe_highlight" colspan="2"/>
+								</group>
+								<group col="12">
+									<button name="import_customer_payment" string="Import Customer Payment" type="object" class="oe_highlight" colspan="2"/>
+									<button name="import_vendor_payment" string="Import Vendor Bills Payment" type="object" class="oe_highlight" colspan="2"/>	
+								</group>
+							</page>
+
+						</notebook>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="view_quickbook_integration_info_tree">
+			<field name="name">quickbook.integration.tree</field>
+			<field name="model">quickbook.integration</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Quickbook Instance">
+					<field name="config_name"/>
+					<field name="client_id"/>
+				</tree>
+			</field>
+		</record>
+
+		
+
+		<!-- Quickbook Instance Form,Tree Menu Action  -->
+		<record model="ir.actions.act_window" id="action_quickbook_integration">
+			<field name="name">Quickbook Integration</field>
+			<field name="res_model">quickbook.integration</field>
+			<field name="type">ir.actions.act_window</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="view_quickbook_integration_info_tree"/>
+		</record>
+		
+	</data>
+</odoo>

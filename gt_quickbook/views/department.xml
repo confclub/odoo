@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+	<record id="view_qbooks_hr_department_form" model="ir.ui.view">
+        <field name="name">view.qbook.hr.department.form</field>
+        <field name="model">hr.department</field>
+        <field name="inherit_id" ref="hr.view_department_form"/>
+        <field name="arch" type="xml">
+        	<xpath expr="//field[@name='name']" position="after">
+                <field name="qbook_id"/>
+                <field name="to_be_exported"/>                
+            </xpath>
+        </field>
+	 </record>
+        
+	<record id="action_department_qbooks" model="ir.actions.act_window">
+        <field name="name">Departments</field>
+       <field name="type">ir.actions.act_window</field>
+       <field name="res_model">hr.department</field>
+       <!-- <field name="view_type">form</field> -->
+       <field name="view_mode">tree,form,kanban</field>
+       <field name="domain">[('qbook_id','!=',False)]</field>
+	</record>
+
+<!-- 	<record id="view_department_tree" model="ir.ui.view">
+		<field name="name">view.department.qbooks.tree</field>
+		<field name="model">department</field>
+		<field name="arch" type="xml">
+			<tree>
+				<field name="dept_name"/>
+				<field name="sub_department"/>
+			</tree>
+		</field>
+	</record>
+	
+	<record id="view_department_qbooks_form" model="ir.ui.view">
+		<field name="name">view.department.qbook.form</field>
+		<field name="model">department</field>
+		<field name="arch" type="xml">
+			<form>
+				<sheet>
+					<group>
+						<field name="dept_name"/>
+						<field name="qbooks_id"/>
+						<field name="sub_department"/>
+					</group>
+				</sheet>
+			</form>
+		</field>
+	</record> 
+
+	<record id="action_department_qbooks" model="ir.actions.act_window">
+       <field name="name">Departments</field>
+       <field name="type">ir.actions.act_window</field>
+       <field name="res_model">department</field>
+       <field name="view_type">form</field>
+       <field name="view_mode">tree,form</field>
+   </record> -->
+
+	
+
+  
+</data>
+</odoo>

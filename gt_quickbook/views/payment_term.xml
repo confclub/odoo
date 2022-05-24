@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+	<record id="view_qbooks_payment_term_form" model="ir.ui.view">
+        <field name="name">view.qbook.account.payment.term.form</field>
+        <field name="model">account.payment.term</field>
+        <field name="inherit_id" ref="account.view_payment_term_form"/>
+        <field name="arch" type="xml">
+        	<xpath expr="//field[@name='name']" position="after">
+                <field name="qbooks_id"/>
+                <field name="payment_term_type"/>
+                
+            </xpath>
+        </field>
+	 </record>
+
+        
+	<record id="action_payment_term_qbooks" model="ir.actions.act_window">
+        <field name="name">Payment Terms</field>
+       <field name="type">ir.actions.act_window</field>
+       <field name="res_model">account.payment.term</field>
+       <!-- <field name="view_type">form</field> -->
+       <field name="view_mode">tree,form,kanban</field>
+       <field name="domain">[('qbooks_id','!=',False)]</field>
+	</record>
+        
+
+	<!-- <record id="view_payment_term_tree" model="ir.ui.view">
+		<field name="name">view.payment.term.qbooks.tree</field>
+		<field name="model">payment.term</field>
+		<field name="arch" type="xml">
+			<tree>
+				<field name="term_name"/>
+			</tree>
+		</field>
+	</record>
+	
+	<record id="view_payment_term_qbooks_form" model="ir.ui.view">
+		<field name="name">view.payment.term.qbooks.form</field>
+		<field name="model">payment.term</field>
+		<field name="arch" type="xml">
+			<form>
+				<sheet>
+					<group>
+						<field name="term_name"/>
+						<field name="qbooks_id"/>
+						<field name="payment_term_type"/>
+					</group>
+				</sheet>
+			</form>
+		</field>
+	</record>
+
+    <record id="action_payment_term_qbooks" model="ir.actions.act_window">
+       <field name="name">Payment Terms</field>
+       <field name="type">ir.actions.act_window</field>
+       <field name="res_model">payment.term</field>
+       <field name="view_type">form</field>
+       <field name="view_mode">tree,form</field>
+   </record> -->
+</data>
+</odoo>

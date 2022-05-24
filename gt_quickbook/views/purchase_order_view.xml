@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+	<record id="view_purchase_order_form_qbooks" model="ir.ui.view">
+        <field name="name">view.purchase.order.form.qbooks</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name='qbook_id'/>
+                <field name='to_be_exported'/>
+            </xpath>                 
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="after">
+                <field name="line_customer"/>
+            </xpath>
+
+            <xpath expr="//field[@name='partner_ref']" position="after">
+                    <label for="addr_l1" string="Shipping Address"/>
+                    <div class="o_address_format">
+                        <field name="addr_l1" placeholder="Line..." class="o_address_street"/>
+                        <field name="addr_l2" placeholder="Line 2..." class="o_address_street"/>
+                        <field name="addr_l3" placeholder="Line 3" class="o_address_street"/>
+                        <field name="addr_l4" placeholder="Line 4..." class="o_address_street"/>
+                    </div>
+            </xpath>
+        </field>
+    </record>
+	
+
+    <record id="action_purchase_orders_qbooks" model="ir.actions.act_window">
+        <field name="name">Purchase Orders</field>
+        <field name="res_model">purchase.order</field>
+        <!-- <field name="view_type">form</field> -->
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+        <field name="domain">[('qbook_id', '!=', False)]</field>
+    	<!-- <field name="context">{"search_default_filter_to_sell":1,'default_to_be_exported': True}</field> -->
+    </record>
+        
+</data>   
+</odoo>

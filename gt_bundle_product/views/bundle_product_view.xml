@@ -1,0 +1,44 @@
+<odoo>
+	<data>
+		<record model="ir.ui.view" id="product_product_inherit_form">
+			<field name="name">product_product_inherit</field>
+			<field name="model">product.product</field>
+			<field name="inherit_id" ref="product.product_normal_form_view"/>
+			<field name="arch" type="xml">
+
+				<xpath expr="//field[@name='sale_ok']" position="before">
+					<field name="bundle_product"/>
+					<label for="bundle_product"/>
+					<br></br>
+				</xpath>
+
+				<xpath expr="//form/sheet/notebook" position="inside">
+					<page string="Bundle Product" attrs="{'invisible': [('bundle_product', '=', False)]}">
+						<field name="bundle_product_ids" nolabel="1" colspan="1">
+							<tree string="Bundle" editable="bottom">
+								<field name="name"/>
+								<field name="quantity"/>
+								<field name="unit_id" invisible="1"/>
+
+							</tree>
+						</field>
+					</page>
+				</xpath>
+
+			</field>
+		</record>
+
+		<record id="bundle_product_action_product" model="ir.actions.act_window">
+			<field name="name">Bundle Product</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">product.product</field>
+			<field name="view_mode">kanban,tree,form</field>
+<!-- 			<field name="view_type">form</field>
+ -->			<field name="domain">[('bundle_product', '=', True)]</field>
+		</record>
+
+		<menuitem id="bundle_product_menu" name="Bundle Product"
+			action="bundle_product_action_product" parent="stock.menu_stock_inventory_control"
+			sequence="3"/>
+	</data>
+</odoo>

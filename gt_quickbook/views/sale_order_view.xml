@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+		 <record id="view_sale_order_form_qbooks" model="ir.ui.view">
+            <field name="name">view.sale.order.form.qbooks</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name='qbook_id'/>
+                     <field name='to_be_exported'/>
+                </xpath>
+
+                <xpath expr="//field[@name='payment_term_id']" position="after">
+                    <field name='payment_method'/>
+                </xpath>
+
+               
+               
+            </field>
+        </record>
+		
+
+
+  <!--       <record id="action_quotation_qbooks" model="ir.actions.act_window">
+            <field name="name">Quotations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="sale.view_quotation_tree"/>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+             <field name="domain">['|',('qbook_id', '!=', False),('to_be_exported', '=', True)]</field> 
+             
+            <field name="context">{"search_default_filter_to_sell":1,'default_to_be_exported': True}</field> 
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create a Quotation, the first step of a new sale.
+                </p><p>
+                Your next actions should flow efficiently: confirm the Quotation
+                to a Sale Order, then create the Invoice and collect the Payment.
+            </p><p>
+                Note that once a Quotation becomes a Sale Order, it will be moved
+                from the Quotations list to the Sales Order list.
+            </p>
+            </field>
+        </record> -->
+
+        <record id="action_orders_qbooks" model="ir.actions.act_window">
+            <field name="name">Sales Orders</field>
+            <field name="res_model">sale.order</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field name="domain">[('qbook_id', '!=', False)]</field>
+        	<!-- <field name="context">{"search_default_filter_to_sell":1,'default_to_be_exported': True}</field> -->
+        </record>
+        
+</data>   
+</odoo>

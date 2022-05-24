@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!-- <data> -->
+	<record id="view_import_qbooks_connector_wizard_form_view" model="ir.ui.view">
+		<field name="name">view.import.qbooks.connector.wizard.form.view</field>
+		<field name="model">quickbooks.connector.wizard</field>
+		<field name="type">form</field>
+		<field name="arch" type="xml">
+			<form string="Import">
+
+				<group name="shops" string="Shops">
+					<field name="shop_ids" widget="many2many_tags" options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+
+				</group>
+				<group name="operations">
+					<group name="import" string="Import" invisible="not context.get('from_import', False)">
+						<group>
+							<field name="import_account"/>
+							<field name="import_tax"/>
+
+							<field name="import_payment_metod"/>
+							<field name="import_payment_term"/>
+							<field name="import_department"/>
+
+							<field name="import_customer"/>
+							<field name="import_vendor"/>
+							<field name="import_employee"/>
+							
+							<field name="import_product_category"/>
+							<field name="import_product"/>
+							<field name="import_product_inventory"/>
+
+							<field name="import_order"/>
+							<field name="import_invoice"/>
+							<field name="import_vendor_bill"/>
+
+							<field name="import_purchase_order"/>
+							<field name="import_customer_payment"/>
+							<field name="import_vendor_payment"/>
+						</group>
+					</group>
+
+					<group name="export" string="Export" invisible="not context.get('from_export', False)">
+						<group>
+							<field name="export_account"/>
+							<field name="export_tax"/>
+							<field name="export_payment_method"/>
+							<field name="export_department"/>
+							<field name="export_customers"/>
+							<field name="export_vendor"/>
+							<field name="export_employee"/>
+							<field name="export_category"/>
+							<field name="export_products"/>
+							<field name="export_order"/>
+							<field name="export_purchase_order"/>
+							<field name="export_customer_invoice"/>
+						</group>
+					</group>
+				</group>
+
+				<footer>
+					<button string="Run" name="import_qbooks" type="object" class="btn-primary"/>
+					<button string="Cancel" class="btn-default" special="cancel"/>
+				</footer>
+			</form>
+		</field>
+	</record>
+
+	<record id="action_qbooks_operation" model="ir.actions.act_window">
+		<field name="name">Qbooks Operation</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_model">quickbooks.connector.wizard</field>
+		<!-- <field name="view_type">form</field> -->
+		<field name="view_mode">form</field>
+		<field name="view_id" ref="view_import_qbooks_connector_wizard_form_view"/>
+		<field name="target">new</field>
+	</record>
+	<!-- </data> -->
+</odoo>

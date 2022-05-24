@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <record id="contract_wizrad_id" model="ir.ui.view">
+        <field name="name">contract_wizard</field>
+        <field name="model">cap.contract.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="reason" string="Reason" required="1"/>
+                </group>
+                <footer>
+                    <button string="Submit" class="btn btn-primary" type="object" name="Reason_contract_cancel"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+
+        </field>
+    </record>
+
+    <record id="contract_cancel_form" model="ir.actions.act_window">
+        <field name="name">Contract Cancel Reason</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">cap.contract.wizard</field>
+        <field name="view_id" ref="contract_wizrad_id"/>
+        <field name="view_mode">form</field>
+        <field name="context">{'default_contract_id': active_id}</field>
+
+        <field name="target">new</field>
+
+
+    </record>
+
+</odoo>

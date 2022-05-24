@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+	<record id="view_qbooks_category_form" model="ir.ui.view">
+        <field name="name">view.qbook.product.category.form</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+        	<xpath expr="//field[@name='parent_id']" position="after">
+                <field name="qbook_id"/>
+                <field name="to_be_exported"/>    
+            </xpath>
+        </field>
+	 </record>
+        
+	<record id="action_category_qbooks" model="ir.actions.act_window">
+        <field name="name">Categories</field>
+       <field name="type">ir.actions.act_window</field>
+       <field name="res_model">product.category</field>
+       <!-- <field name="view_type">form</field> -->
+       <field name="view_mode">tree,form,kanban</field>
+       <field name="domain">[('qbook_id','!=',False)]</field>
+	</record>
+
+</data>
+</odoo>

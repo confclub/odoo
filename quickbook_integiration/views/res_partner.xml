@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+        <record id="res_partner_form_inherit" model="ir.ui.view">
+            <field name="name">res.partner.view.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='category_id']" position="after">
+                    <field name="employee_id" string="QuickBook Id"/>
+                    <field name="description" string="Description"/>
+                    <field name="b2b" string="B2B Commerce"/>
+                    <field name="company_typeee" string="Company Type"/>
+                </xpath>
+
+
+            </field>
+        </record>
+    </data>
+</odoo>

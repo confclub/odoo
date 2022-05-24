@@ -1,0 +1,104 @@
+<odoo>
+    <data>
+        <!-- formmmmmm -->
+
+
+        <record model="ir.ui.view" id="caps_contract_form">
+            <field name="name">cap.contract.form</field>
+            <field name="model">cap.contract</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_start_contract" string="Start Contract" type="object"
+                                class="oe_highlight"/>
+                        <button name="action_modify_contract" string="Modify Contract" class="oe_highlight"
+                                type="object"/>
+
+                        <button name="%(caps_nogaps.contract_cancel_form)d" string="Cancel Contract" type="action"/>
+                        <field name="state" widget="statusbar" readonly="1"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="open_sale_order" type="object" class="oe_stat_button" icon='fa-cube'
+                                    attrs="{'invisible': [('sale_count', '=', 0)]}">
+                                <field name="sale_count" widget="statinfo"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h2>
+                                <field name="name" readonly="1"/>
+                            </h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="customer_id" string="Customer" required="1"/>
+                                <!--                                <field name="pieces_per_carton" string="piecesPerCarton"/>-->
+                                <!--                                <field name="pieces_per_bag" string="piecesPerBag"/>-->
+                                <!--                                <field name="pieces_per_daily_pack" string="piecesPerDailyPack"/>-->
+                                <!--                                <field name="num_daily_packs" string="numDailyPacks"/>-->
+                            </group>
+                            <group>
+                                <field name="start_date" string="Start Date:" required="1"/>
+                                <field name="end_date" string="End Date:" required="1"/>
+                                <field name="reason" string="Reason" readonly="1"/>
+                                <field name="order_months" string="orderMonths" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="Products" string="Products">
+                                <field name="product_ids">
+                                    <tree editable="bottom">
+                                        <field name="product_pack_id" string="Product Pack"/>
+                                        <field name="product_carton_id" string="Product Carton"/>
+                                        <field name="description" string="Description"/>
+                                        <field name="pieces_per_carton" string="piecesPerCarton"/>
+                                        <field name="pieces_per_bag" string="piecesPerBag"/>
+                                        <field name="pieces_per_daily_pack" string="piecesPerDailyPack"/>
+                                        <field name="num_daily_packs" string="numDailyPacks"/>
+                                    </tree>
+
+                                </field>
+                            </page>
+
+                            <page name="attachments" string="Attachments">
+                                <field name="attachment_ids">
+                                    <tree editable="bottom">
+                                        <field name="description" string="Description"/>
+                                        <field name="attachment_ids" widget="many2many_binary"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+
+                        </notebook>
+                    </sheet>
+
+                </form>
+            </field>
+        </record>
+        <!--        treeeeeeeee-->
+
+        <record model="ir.ui.view" id="caps_contract_list">
+            <field name="name">caps.contract.list</field>
+            <field name="model">cap.contract</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" string="Name"/>
+                    <field name="start_date" string="Start Date:"/>
+                    <field name="end_date" string="End Date:"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="contract_action_window">
+            <field name="name">Contracts</field>
+            <field name="res_model">cap.contract</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+
+        <menuitem name="Contracts" id="contract_menu_root" action="contract_action_window"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,39 @@
+<odoo>		
+		<record model="ir.ui.view" id="view_export_purchase_order_wiz_form">
+			<field name="name">view.export.purchase.order.wiz.form</field>
+			<field name="model">export.purchase.order.wiz</field>
+			<field name="arch" type="xml">
+				<form>
+					<group>
+						<field name="shop_ids"/>
+					</group>					
+					<footer>
+						<button string='Export Purchase Order' name="export_to_qbook" type="object" class="btn-primary"/>
+						<button string="Cancel" class="btn-default" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+		<record model="ir.actions.act_window" id="action_export_purchase_order_wiz">
+			<field name="name">Export Purchase Order To Qbooks</field>
+			<field name="res_model">export.purchase.order.wiz</field>
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="view_export_purchase_order_wiz_form" />
+			<field name="target">new</field>			
+		</record>
+<!--		<record model="ir.values" id="action_export_purchase_order_wiz_window">-->
+<!--			<field name="model_id" ref="model_purchase_order" />-->
+<!--			<field name="name">Export Purchase Order</field>-->
+<!--			<field name="key2">client_action_multi</field>-->
+<!--			<field name="value" eval="'ir.actions.act_window,' + str(ref('action_export_purchase_order_wiz'))" />-->
+<!--			<field name="key">action</field>-->
+<!--			<field name="model">purchase.order</field>			-->
+<!--		</record>-->
+
+		<!-- <act_window id="action_export_purchase_order_wiz_window"
+            name="Export Purchase Order To Qbooks"
+            src_model="purchase.order"
+            res_model="export.purchase.order.wiz"
+            view_type="form" view_mode="form"
+            key2="client_action_multi" target="new"/> -->
+</odoo>

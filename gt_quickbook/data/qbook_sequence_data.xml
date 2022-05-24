@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+         <record id="seq_qbook_log" model="ir.sequence">
+            <field name="name">Qbook Log</field>
+            <field name="code">log.error</field>
+            <field name="prefix">QbookErrorLog_</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

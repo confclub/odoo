@@ -1,0 +1,39 @@
+<odoo>		
+		<record model="ir.ui.view" id="view_export_prod_wiz_form">
+			<field name="name">view.export.product.wiz.form</field>
+			<field name="model">export.product.wiz</field>
+			<field name="arch" type="xml">
+				<form>
+					<group>
+						<field name="shop_ids"/>
+					</group>					
+					<footer>
+						<button string='Export Product' name="export_to_qbook" type="object" class="btn-primary"/>
+						<button string="Cancel" class="btn-default" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+		<record model="ir.actions.act_window" id="action_export_prod_wiz">
+			<field name="name">Export Product And Inventory To Qbooks</field>
+			<field name="res_model">export.product.wiz</field>
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="view_export_prod_wiz_form" />
+			<field name="target">new</field>			
+		</record>
+<!--		<record model="ir.values" id="action_export_prod_wiz_window">-->
+<!--			<field name="model_id" ref="model_product_template"/>-->
+<!--			<field name="name">Export Product And Inventory</field>-->
+<!--			<field name="key2">client_action_multi</field>-->
+<!--			<field name="value" eval="'ir.actions.act_window,' + str(ref('action_export_prod_wiz'))" />-->
+<!--			<field name="key">action</field>-->
+<!--			<field name="model">product.template</field>			-->
+<!--		</record>-->
+
+		<!-- <act_window id="action_export_prod_wiz_window"
+            name="Export Product And Inventory"
+            src_model="product.template"
+            res_model="export.product.wiz"
+            view_type="form" view_mode="form"
+            key2="client_action_multi" target="new"/> -->
+</odoo>

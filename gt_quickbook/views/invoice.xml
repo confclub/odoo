@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+	<record id="view_invoice_form_qbooks" model="ir.ui.view">
+        <field name="name">view.account.move.form.qbooks</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name='qbook_id'/>      
+                <field name='to_be_exported'/>                         
+            </xpath>
+        </field>
+    </record>
+    <record id="action_invoice_qbooks" model="ir.actions.act_window">
+        <field name="name">Customer Invoice</field>
+        <field name="res_model">account.move</field>
+        <!-- <field name="view_type">form</field> -->
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+        <field name="domain">[('qbook_id','!=', False)]</field>
+    </record>
+    <record id="action_invoice_qbooks_tree_view_qbookd" model="ir.actions.act_window.view">
+        <field eval="1" name="sequence"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="account.view_invoice_tree"/>
+        <field name="act_window_id" ref="action_invoice_qbooks"/>
+    </record>
+    <record id="action_invoice_qbooks_form_view_qbookd" model="ir.actions.act_window.view">
+        <field eval="2" name="sequence"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="account.view_move_form"/>
+        <field name="act_window_id" ref="action_invoice_qbooks"/>
+    </record>
+
+
+
+    <record id="view_bill_form_qbooks" model="ir.ui.view">
+        <field name="name">view.account.bill.form.qbooks</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name='qbook_id_vendor'/>
+                <!-- <field name='invoice_no'/> -->
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='product_id']" position="after">
+                <field name="line_customer"/>
+                <field name="is_billable"/>
+            </xpath>
+        </field>
+    </record>
+     <record id="action_bill_qbooks" model="ir.actions.act_window">
+        <field name="name">Vendor Bills</field>
+        <field name="res_model">account.move</field>
+        <!-- <field name="view_type">form</field> -->
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+        <field name="domain">[('qbook_id_vendor','!=', False)]</field>
+    </record>
+    <record id="action_bill_qbooks_tree_view_qbookd" model="ir.actions.act_window.view">
+        <field eval="1" name="sequence"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="account.view_invoice_tree"/>
+        <field name="act_window_id" ref="action_bill_qbooks"/>
+    </record>
+    <record id="action_bill_qbooks_form_view_qbookd" model="ir.actions.act_window.view">
+        <field eval="2" name="sequence"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="account.view_move_form"/>
+        <field name="act_window_id" ref="action_bill_qbooks"/>
+    </record>
+
+
+
+
+    <record id="view_account_payment_form_cust_qbooks" model="ir.ui.view">
+        <field name="name">view.account.payment.form.qbooks</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_type']" position="after">
+                <field name='qbook_id' attrs="{'invisible': [('partner_type', '!=','customer')]}"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_payment_cust_qbooks" model="ir.actions.act_window">
+        <field name="name">Customer Payment</field>
+        <field name="res_model">account.payment</field>
+        <!-- <field name="view_type">form</field> -->
+        <field name="view_mode">tree,kanban,form,graph</field>
+        <field name="domain">[('qbook_id','!=', False)]</field>
+    </record>
+    <record id="action_payment_cust_qbooks_tree_view_qbookd" model="ir.actions.act_window.view">
+        <field eval="1" name="sequence"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="account.view_account_payment_tree"/>
+        <field name="act_window_id" ref="action_payment_cust_qbooks"/>
+    </record>
+    <record id="action_payment_cust_qbooks_form_view_qbookd" model="ir.actions.act_window.view">
+        <field eval="2" name="sequence"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="account.view_account_payment_form"/>
+        <field name="act_window_id" ref="action_payment_cust_qbooks"/>
+    </record>
+
+
+
+
+    <record id="view_account_payment_form_vendor_qbooks" model="ir.ui.view">
+        <field name="name">view.account.payment.form.vendor.qbooks</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_type']" position="after">
+                <field name='qbook_id_vendor' attrs="{'invisible': [('partner_type', '!=','supplier')]}"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_payment_vendor_qbooks" model="ir.actions.act_window">
+        <field name="name">Vebdor Payment</field>
+        <field name="res_model">account.payment</field>
+        <!-- <field name="view_type">form</field> -->
+        <field name="view_mode">tree,kanban,form,graph</field>
+        <field name="domain">[('qbook_id_vendor','!=', False)]</field>
+    </record>
+    <record id="action_payment_vendor_qbooks_tree_view_qbookd" model="ir.actions.act_window.view">
+        <field eval="1" name="sequence"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="account.view_account_supplier_payment_tree"/>
+        <field name="act_window_id" ref="action_payment_vendor_qbooks"/>
+    </record>
+    <record id="action_payment_vendor_qbooks_form_view_qbookd" model="ir.actions.act_window.view">
+        <field eval="2" name="sequence"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="account.view_account_payment_form"/>
+        <field name="act_window_id" ref="action_payment_vendor_qbooks"/>
+    </record>
+
+
+
+
+
+
+
+</data>   
+</odoo>

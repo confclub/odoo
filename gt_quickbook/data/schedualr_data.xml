@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+<!--        <record forcecreate="True" id="ir_cron_refresh_access_token_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Refresh Access Token</field>-->
+<!--            <field eval="True" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'refresh_access_token'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>    -->
+        <record forcecreate="True" id="ir_cron_refresh_access_token_scheduler_action" model="ir.cron">
+            <field name="name">Refresh Access Token</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.refresh_access_token()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_accounts_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Accounts</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_account_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>    -->
+
+        <record forcecreate="True" id="ir_cron_import_accounts_scheduler_action" model="ir.cron">
+            <field name="name">Import Accounts</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_account_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_taxs_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Taxes</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_taxes_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>   -->
+
+        <record forcecreate="True" id="ir_cron_import_taxs_scheduler_action" model="ir.cron">
+            <field name="name">Import Taxes</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_taxes_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_payment_method_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Payment Method</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_payment_method_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>     -->
+
+        <record forcecreate="True" id="ir_cron_import_payment_method_scheduler_action" model="ir.cron">
+            <field name="name">Import Payment Method</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_payment_method_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_payment_term_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Payment Terms</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_payment_term_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>   -->
+
+
+        <record forcecreate="True" id="ir_cron_import_payment_term_scheduler_action" model="ir.cron">
+            <field name="name">Import Payment Terms</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_payment_term_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+
+<!--        <record forcecreate="True" id="ir_cron_import_department_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Department</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_departments_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>   -->
+
+        <record forcecreate="True" id="ir_cron_import_department_scheduler_action" model="ir.cron">
+            <field name="name">Import Department</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_departments_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_customer_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Customer</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_customers_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+        <record forcecreate="True" id="ir_cron_import_customer_scheduler_action" model="ir.cron">
+            <field name="name">Import Customer</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_customers_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+
+<!--        <record forcecreate="True" id="ir_cron_import_vendor_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Vendor</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_vendors_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+        <record forcecreate="True" id="ir_cron_import_vendor_scheduler_action" model="ir.cron">
+            <field name="name">Import Vendor</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_vendors_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+
+<!--        <record forcecreate="True" id="ir_cron_import_employee_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Employee</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_employees_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+        <record forcecreate="True" id="ir_cron_import_employee_scheduler_action" model="ir.cron">
+            <field name="name">Import Employee</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_employees_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_prod_category_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Product Category</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_prod_category_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+        <record forcecreate="True" id="ir_cron_import_prod_category_scheduler_action" model="ir.cron">
+            <field name="name">Import Product Category</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_prod_category_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_product_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Products</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_product_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+        <record forcecreate="True" id="ir_cron_import_product_scheduler_action" model="ir.cron">
+            <field name="name">Import Product</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_product_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_product_inventory_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Products Inventory</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_product_inventory_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+        <record forcecreate="True" id="ir_cron_import_product_inventory_scheduler_action" model="ir.cron">
+            <field name="name">Import Product Inventory</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_product_inventory_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_order_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Orders</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_orders_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+        <record forcecreate="True" id="ir_cron_import_order_scheduler_action" model="ir.cron">
+            <field name="name">Import Orders</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_orders_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_purchase_order_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Purchase Orders</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_purchase_orders_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+        <record forcecreate="True" id="ir_cron_import_purchase_order_scheduler_action" model="ir.cron">
+            <field name="name">Import Purchase Orders</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_purchase_orders_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_cust_invoice_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Customer Invoices</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_cust_invoices_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>-->
+
+        <record forcecreate="True" id="ir_cron_import_cust_invoice_scheduler_action" model="ir.cron">
+            <field name="name">Import Customer Invoices</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_cust_invoices_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_vendor_bills_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Vendor Bills</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_vend_bills_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+        <record forcecreate="True" id="ir_cron_import_vendor_bills_scheduler_action" model="ir.cron">
+            <field name="name">Import Vendor Bills</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_vend_bills_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--        <record forcecreate="True" id="ir_cron_import_cust_payments_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Customer Payments</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_cust_payments_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record>  -->
+
+         <record forcecreate="True" id="ir_cron_import_cust_payments_scheduler_action" model="ir.cron">
+            <field name="name">Import Customer Payments</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_cust_payments_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+<!--         <record forcecreate="True" id="ir_cron_import_vendor_bills_payments_scheduler_action" model="ir.cron">-->
+<!--            <field name="name">Import Vendor Bill Payments</field>-->
+<!--            <field eval="False" name="active"/>-->
+<!--            <field name="user_id" ref="base.user_root"/>-->
+<!--            <field name="interval_number">60</field>-->
+<!--            <field name="interval_type">minutes</field>-->
+<!--            <field name="numbercall"ir_cron_import_cust_invoice_scheduler_action>-1</field>-->
+<!--            <field eval="False" name="doall"/>-->
+<!--            <field eval="'quickbook.integration'" name="model"/>-->
+<!--            <field eval="'import_vend_bills_payments_schedular'" name="function"/>-->
+<!--            <field eval="'()'" name="args"/>-->
+<!--        </record> -->
+
+        <record forcecreate="True" id="ir_cron_import_vendor_bills_payments_scheduler_action" model="ir.cron">
+            <field name="name">Import Vendor Bill Payments</field>
+            <field name="model_id" ref="model_quickbook_integration"/>
+            <field name="state">code</field>
+            <field name="code">model.import_vend_bills_payments_schedular()</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data  noupdate="1">
+        <record id="product_product_shipping" model="product.product">
+            <field name="name">Shipping and Handling</field>
+            <field name="standard_price">0.0</field>
+            <field name="list_price">1.0</field>
+            <field name="type">service</field>
+            <field name="description_sale">Shipping and Handling</field>
+        </record>
+
+        <record id="product_product_discount" model="product.product">
+            <field name="name">Discount Given</field>
+            <field name="standard_price">0.0</field>
+            <field name="list_price">1.0</field>
+            <field name="type">service</field>
+            <field name="description_sale">Discount Given</field>
+        </record>
+    </data>
+</odoo>

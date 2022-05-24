@@ -1,0 +1,40 @@
+<odoo>		
+		<record model="ir.ui.view" id="view_export_payment_method_wiz_form">
+			<field name="name">view.export.payment.method.wiz.form</field>
+			<field name="model">export.payment.method.wiz</field>
+			<field name="arch" type="xml">
+				<form>
+					<group>
+						<field name="shop_ids"/>
+					</group>					
+					<footer>
+						<button string='Export Payment Method' name="export_to_qbook" type="object" class="btn-primary"/>
+						<button string="Cancel" class="btn-default" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+		<record model="ir.actions.act_window" id="action_export_payment_method_wiz">
+			<field name="name">Export Payment Method To Qbooks</field>
+			<field name="res_model">export.payment.method.wiz</field>
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="view_export_payment_method_wiz_form" />
+			<field name="target">new</field>			
+		</record>
+<!--		<record model="ir.values" id="action_export_payment_method_wiz_window">-->
+<!--			<field name="model_id" ref="model_payment_method" />-->
+<!--			<field name="name">Export Payment Method</field>-->
+<!--			<field name="key2">client_action_multi</field>-->
+<!--			<field name="value" eval="'ir.actions.act_window,' + str(ref('action_export_payment_method_wiz'))" />-->
+<!--			<field name="key">action</field>-->
+<!--			<field name="model">payment.method</field>			-->
+<!--		</record>-->
+
+		<!-- <act_window id="action_export_payment_method_wiz_window"
+            name="Export Payment Method To Qbooks"
+            src_model="payment.method"
+            res_model="export.payment.method.wiz"
+            view_type="form" view_mode="form"
+            key2="client_action_multi" target="new"/> -->
+
+</odoo>

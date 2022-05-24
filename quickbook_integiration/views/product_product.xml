@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+        <record id="product_product_form_inherit" model="ir.ui.view">
+            <field name="name">product.product.view.form.inherit</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='categ_id']" position="after">
+<!--                    <field name="option1_label" string="Option1 Label"/>-->
+<!--                    <field name="option2_label" string="Option2 Label"/>-->
+<!--                    <field name="option3_label" string="Option3 Label"/>-->
+<!--                    <field name="varient_name" string="Variant Name"/>-->
+<!--                    <field name="weight_value" string="Weight Value"/>-->
+                </xpath>
+
+                <xpath expr="//field[@name='company_id']" position="after">
+<!--                    <field name="option1_value" string="Option1 Value"/>-->
+<!--                    <field name="option2_value" string="Option2 Value"/>-->
+<!--                    <field name="option3_value" string="Option3 Value"/>-->
+<!--                    <field name="varient_description" string="Variant description"/>-->
+                    <field name="qb_varient_id" string="Qb Variant Id"/>
+<!--                    <field name="buy_price" string="Buy Price"/>-->
+<!--                    <field name="wholesale_price" string="Wholesale Price"/>-->
+<!--                    <field name="retail_price" string="Retail Price"/>-->
+
+                </xpath>
+
+
+            </field>
+        </record>
+    </data>
+</odoo>
