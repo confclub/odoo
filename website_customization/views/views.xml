@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="website_customization.list">
+      <field name="name">website_customization list</field>
+      <field name="model">website_customization.website_customization</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="website_customization.action_window">
+      <field name="name">website_customization window</field>
+      <field name="res_model">website_customization.website_customization</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="website_customization.action_server">
+      <field name="name">website_customization server</field>
+      <field name="model_id" ref="model_website_customization_website_customization"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="website_customization" id="website_customization.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="website_customization.menu_1" parent="website_customization.menu_root"/>
+    <menuitem name="Menu 2" id="website_customization.menu_2" parent="website_customization.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="website_customization.menu_1_list" parent="website_customization.menu_1"
+              action="website_customization.action_window"/>
+    <menuitem name="Server to list" id="website_customization" parent="website_customization.menu_2"
+              action="website_customization.action_server"/>
+-->
+  </data>
+</odoo>

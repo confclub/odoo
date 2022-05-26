@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <template id="website_sale.pricelist_list" name="Pricelists Dropdown">
+        <t t-set="website_sale_pricelists" t-value="website.get_pricelist_available(show_visible=True)"/>
+        <div t-attf-class="dropdown#{'' if website_sale_pricelists and len(website_sale_pricelists)&gt;1 else ' d-none'} #{_classes}">
+            <t t-set="curr_pl" t-value="website.get_current_pricelist()"/>
+            <a role="button" href="#" class="dropdown-toggle btn btn-secondary" data-toggle="dropdown">
+                <t t-esc="request.env.user.partner_id.property_product_pricelist.name"/>
+            </a>
+            <div class="dropdown-menu" role="menu">
+<!--                <t t-foreach="website_sale_pricelists" t-as="pl">-->
+<!--                    <a role="menuitem" t-att-href="'/shop/change_pricelist/%s' % pl.id" class="dropdown-item">-->
+<!--                        <span class="switcher_pricelist" t-att-data-pl_id="pl.id" t-esc="pl.name"/>-->
+<!--                    </a>-->
+<!--                </t>-->
+
+                <a role="menuitem" t-att-href="'/shop/change_pricelist/%s' % request.env.user.partner_id.property_product_pricelist.id"
+                   class="dropdown-item">
+                    <span class="switcher_pricelist"
+                          t-att-data-pl_id="request.env.user.partner_id.property_product_pricelist.id"
+                          t-esc="request.env.user.partner_id.property_product_pricelist.name"/>
+                </a>
+            </div>
+        </div>
+    </template>
+</odoo>

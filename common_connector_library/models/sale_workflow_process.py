@@ -373,7 +373,8 @@ class SaleWorkflowProcess(models.Model):
                 #             # reverse_move._check_balanced()
 
         else:
-            orders._create_invoices()
+            if not orders.invoice_ids:
+                orders._create_invoices()
 
         # if data_dic.get('financial_status') == "refunded":
         #     dict_of_shopify = {}
