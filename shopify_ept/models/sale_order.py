@@ -175,12 +175,17 @@ class SaleOrder(models.Model):
         order_number = order_response.get("order_number")
 
         for line in lines:
-            shopify_product = self.search_shopify_product_for_order_line(line, instance)
-            product = shopify_product.product_id
+            # shopify_product = self.search_shopify_product_for_order_line(line, instance)
+            # product = shopify_product.product_id
+            product = self.env['product.product'].search([('default_code', '=', line.get('sku'))])
+            package_id = False
+            if not product:
+                package_id = self.env['variant.package'].search([('code', '=', line.get('sku'))])
+                product = package_id.product_id
 
             order_line = self.shopify_create_sale_order_line(line, product, line.get("quantity"),
                                                              product.name, line.get("price"),
-                                                             order_response)
+                                                             order_response, package=package_id)
             if float(total_discount) > 0.0:
                 discount_amount = 0.0
                 for discount_allocation in line.get("discount_allocations"):
@@ -268,12 +273,12 @@ class SaleOrder(models.Model):
                     continue
 
                 lines = order_response.get("line_items")
-                if self.check_mismatch_details(lines, instance, order_number, order_data_line, log_book):
-                    _logger.info("Mismatch details found in this Shopify Order(%s) and id (%s)" % (
-                        order_number, order_response.get("id")))
-                    if order_data_line:
-                        order_data_line.write({"state": "failed", "processed_at": datetime.now()})
-                    continue
+                # if self.check_mismatch_details(lines, instance, order_number, order_data_line, log_book):
+                #     _logger.info("Mismatch details found in this Shopify Order(%s) and id (%s)" % (
+                #         order_number, order_response.get("id")))
+                #     if order_data_line:
+                #         order_data_line.write({"state": "failed", "processed_at": datetime.now()})
+                #     continue
 
                 sale_order = self.shopify_create_order(instance, partner, delivery_address, invoice_address,
                                                        order_data_line, order_response, log_book)
@@ -519,7 +524,7 @@ class SaleOrder(models.Model):
 
     def shopify_create_sale_order_line(self, line, product, quantity, product_name, price,
                                        order_response, is_shipping=False, previous_line=False,
-                                       is_discount=False):
+                                       is_discount=False, package=False):
         """
         This method used to create a sale order line.
         @param : self, line, product, quantity,product_name, order_id,price, is_shipping=False
@@ -538,6 +543,7 @@ class SaleOrder(models.Model):
             "product_uom": uom_id,
             "name": product_name,
             "price_unit": price,
+            "variant_package_id": package.id if package else False,
             "order_qty": quantity,
         }
         order_line_vals = sale_order_line_obj.create_sale_order_line_ept(line_vals)
@@ -580,9 +586,12 @@ class SaleOrder(models.Model):
         order_line_vals.update({
             "shopify_line_id": line.get("id"),
             "is_delivery": is_shipping,
-            "name": product.default_code
+            "name": product.default_code,
+            "qty": quantity,
+            # 'display_type': 'line_note'
         })
         order_line = sale_order_line_obj.create(order_line_vals)
+        order_line._onchange_qty()
         return order_line
 
     @api.model

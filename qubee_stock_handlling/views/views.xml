@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="qubee_stock_handlling.list">
+      <field name="name">qubee_stock_handlling list</field>
+      <field name="model">qubee_stock_handlling.qubee_stock_handlling</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="qubee_stock_handlling.action_window">
+      <field name="name">qubee_stock_handlling window</field>
+      <field name="res_model">qubee_stock_handlling.qubee_stock_handlling</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="qubee_stock_handlling.action_server">
+      <field name="name">qubee_stock_handlling server</field>
+      <field name="model_id" ref="model_qubee_stock_handlling_qubee_stock_handlling"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="qubee_stock_handlling" id="qubee_stock_handlling.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="qubee_stock_handlling.menu_1" parent="qubee_stock_handlling.menu_root"/>
+    <menuitem name="Menu 2" id="qubee_stock_handlling.menu_2" parent="qubee_stock_handlling.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="qubee_stock_handlling.menu_1_list" parent="qubee_stock_handlling.menu_1"
+              action="qubee_stock_handlling.action_window"/>
+    <menuitem name="Server to list" id="qubee_stock_handlling" parent="qubee_stock_handlling.menu_2"
+              action="qubee_stock_handlling.action_server"/>
+-->
+  </data>
+</odoo>

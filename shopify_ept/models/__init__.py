@@ -33,3 +33,4 @@ from . import shopify_payout_report_ept
 from . import shopify_payout_account_config
 from . import account_bank_statement
 from . import data_queue_mixin_ept
+from . import shopify_ept_variant_package

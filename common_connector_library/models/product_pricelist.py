@@ -1,10 +1,30 @@
 # -*- coding: utf-8 -*-
 # See LICENSE file for full copyright and licensing details.
-from odoo import models
+from odoo import models, fields, api
+from odoo.exceptions import UserError, ValidationError
 
 
 class ProductPricelist(models.Model):
     _inherit = "product.pricelist"
+
+    price_check_box = fields.Boolean(default=False)
+
+    # def create(self, vals):
+    #     price_list = self.env['product.pricelist'].search([('price_check_box', '=', True)])
+    #     if len(price_list):
+    #         raise ValidationError("sorry you cant")
+    #     else:
+    #         return super(ProductPricelist, self).create(vals)
+    #
+    # def write(self, vals):
+    #     price_list = self.env['product.pricelist'].search([('price_check_box', '=', True)])
+    #     if len(price_list):
+    #         raise ValidationError("sorry you cant")
+    #     else:
+    #         return super(ProductPricelist, self).write(vals)
+
+
+
 
     def get_product_price_ept(self, product, partner=False):
         """

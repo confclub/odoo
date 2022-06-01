@@ -1,8 +1,6 @@
 <?xml version="1.0" ?>
 <odoo>
     <data>
-
-
         <record id="product_varient_form_view" model="ir.ui.view">
             <field name="name">product.vareint.form</field>
             <field name="model">product.product</field>
@@ -10,6 +8,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='uom_id']" position="before">
                     <field name="price_listed" string="Price Listed" />
+                    <field name="attribut_compute" string="Computed attributes" />
                 </xpath>
 
             </field>
@@ -139,6 +138,30 @@
                                     </field>
                                 </group>
                             </page>
+                            <page string="Packages" name="packages">
+                        <field name="variant_package_ids">
+                            <form>
+                                <group>
+                                    <group>
+                                        <field name="name"/>
+                                        <field name="qty"/>
+                                        <field name="company_id"/>
+                                    </group>
+                                    <group>
+                                        <field name="code"/>
+                                        <field name="price"/>
+                                    </group>
+                                </group>
+                            </form>
+                            <tree>
+                                <field name="name"/>
+                                <field name="qty"/>
+                                <field name="code"/>
+                                <field name="price"/>
+                                <field name="company_id"/>
+                            </tree>
+                        </field>
+                    </page>
                         </notebook>
                     </sheet>
                 </form>

@@ -56,7 +56,16 @@ class PrepareProductForExport(models.TransientModel):
 
         shopify_templates = shopify_template_obj = self.env["shopify.product.template.ept"]
         shopify_product_obj = self.env["shopify.product.product.ept"]
-
+        # for variant in product_templates.product_variant_ids:
+        #     if variant.variant_package_ids:
+        #         for package in variant.variant_package_ids:
+        #             self.env['product.product'].create({
+        #                 "name": product_templates.name,
+        #                 "default_code": package.code,
+        #                 "lst_price": package.price,
+        #                 "product_tmpl_id": variant.product_tmpl_id.id,
+        #
+        #             })
         variants = product_templates.product_variant_ids
         shopify_instance = self.shopify_instance_id
 
@@ -116,8 +125,37 @@ class PrepareProductForExport(models.TransientModel):
             })
             if not shopify_variant:
                 shopify_variant = shopify_product_obj.create(shopify_variant_vals)
+                if variant.variant_package_ids:
+                    for packege in variant.variant_package_ids:
+                        self.env['shopify.variant.package'].create({
+                            "name": packege.name,
+                            "code": packege.code,
+                            "price": packege.price,
+                            "qty": packege.qty,
+                            "company_id": packege.company_id.id,
+                            "shopify_product_id": shopify_variant.id,
+                        })
+
+                        self.env["shopify.product.product.ept"].create({
+                            "shopify_instance_id": shopify_instance.id,
+                            "name": product_templates.name,
+                            "default_code": packege.code,
+                            "product_id": variant.id,
+                            "shopify_template_id": shopify_template.id,
+                            "sequence": sequence,
+                        })
             else:
                 shopify_variant.write(shopify_variant_vals)
+                if variant.variant_package_ids:
+                    for packege in variant.variant_package_ids:
+                        self.env['shopify.variant.package'].create({
+                            "name": packege.name,
+                            "code": packege.code,
+                            "price": packege.price,
+                            "qty": packege.qty,
+                            "company_id": packege.company_id.id,
+                            "shopify_product_id": shopify_variant.id,
+                        })
 
             self.create_shopify_variant_images(shopify_template, shopify_variant)
         return True

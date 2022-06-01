@@ -186,7 +186,7 @@ class ShopifyOrderDataQueueEpt(models.Model):
                                                                    instance,
                                                                    created_by)
             # self.process_shopify_orders_directly(order_unship_ids, instance)
-            instance.last_date_order_import = to_date - timedelta(days=2)
+            # instance.last_date_order_import = to_date - timedelta(days=2)
 
 
         # else:
