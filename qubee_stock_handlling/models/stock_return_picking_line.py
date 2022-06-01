@@ -8,7 +8,7 @@ class StockReturnPickingLine(models.TransientModel):
     _inherit = 'stock.return.picking.line'
 
     variant_package_id = fields.Many2one('variant.package', 'Package')
-    qty = fields.Float(string='Package Qty')
+    qty = fields.Float(string='Quantity')
 
     @api.onchange('qty')
     def _onchange_qty_done(self):

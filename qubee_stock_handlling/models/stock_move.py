@@ -13,8 +13,8 @@ class StockMove(models.Model):
     _inherit = 'stock.move'
 
     variant_package_id = fields.Many2one('variant.package', 'Package')
-    qty = fields.Float(string='Package Qty')
-    package_qty_done = fields.Float(string='Pack Done')
+    qty = fields.Float(string='Quantity')
+    package_qty_done = fields.Float(string='Done')
 
     @api.onchange('package_qty_done')
     def _onchange_qty_done(self):
