@@ -177,7 +177,7 @@ class SaleOrder(models.Model):
         for line in lines:
             # shopify_product = self.search_shopify_product_for_order_line(line, instance)
             # product = shopify_product.product_id
-            product = self.env['product.product'].search([('default_code', '=', line.get('sku'))])
+            product = self.env['product.product'].search([('default_code', '=', line.get('sku'))], limit=1)
             package_id = False
             if not product:
                 package_id = self.env['variant.package'].search([('code', '=', line.get('sku'))])
