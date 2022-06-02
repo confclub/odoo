@@ -109,6 +109,7 @@ class ShopifyOrderDataQueueEpt(models.Model):
 
         self.shopify_create_order_data_queues(instance, from_date, to_date, created_by="scheduled_action",
                                               order_type="unshipped")
+        instance.last_date_order_import = to_date
         return
 
     def convert_dates_by_timezone(self, instance, from_date, to_date):
