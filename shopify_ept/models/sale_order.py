@@ -543,7 +543,6 @@ class SaleOrder(models.Model):
             "product_uom": uom_id,
             "name": product_name,
             "price_unit": price,
-            "variant_package_id": package.id if package else False,
             "order_qty": quantity,
         }
         order_line_vals = sale_order_line_obj.create_sale_order_line_ept(line_vals)
@@ -588,6 +587,7 @@ class SaleOrder(models.Model):
             "is_delivery": is_shipping,
             "name": product.default_code,
             "qty": quantity,
+            "variant_package_id": package.id if package else False,
             # 'display_type': 'line_note'
         })
         order_line = sale_order_line_obj.create(order_line_vals)

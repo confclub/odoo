@@ -166,8 +166,10 @@ class SaleWorkflowProcess(models.Model):
                             
                 for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
                     for line in pick.move_ids_without_package:
-                        if line.product_id.default_code in list(dict_of_shopify):
-                            line.quantity_done = dict_of_shopify[line.product_id.default_code]
+                        code = line.variant_package_id.code if line.variant_package_id else line.product_id.default_code
+                        if code in list(dict_of_shopify):
+                            line.package_qty_done = dict_of_shopify[code]
+                            line._onchange_qty_done()
 
                     pick.shopify_delivery_id = ful_fill_list.get("id")
                     pick.action_assign()
