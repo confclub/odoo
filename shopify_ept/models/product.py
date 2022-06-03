@@ -20,6 +20,8 @@ class ProductTemplate(models.Model):
                 if pro.product_variant_ids[0].variant_package_ids:
                     for pack in pro.product_variant_ids[0].variant_package_ids:
                         attr_list["values"].append(pack.value_name)
+                else:
+                    attr_list = {}
             pro.templ_attribut_compute = attr_list
 
     def write(self, vals):
@@ -60,14 +62,14 @@ class ProductProduct(models.Model):
 
     def _compute_attributes(self):
         for pro in self:
-            # attr_list = {}
-            # if pro.product_template_attribute_value_ids:
-            #     for temp_attr in pro.product_template_attribute_value_ids:
-            #         attr_list[pro.default_code] = str(temp_attr.name) + str(',') + "Single"
-            # if pro.variant_package_ids:
-            #     for att in pro.variant_package_ids:
-            #         attr_list[att.code] = str(temp_attr.name) + str(',') + att.value_name
-            pro.attribut_compute = 'attr_list'
+            attr_list = {}
+            if pro.product_template_attribute_value_ids:
+                for temp_attr in pro.product_template_attribute_value_ids:
+                    attr_list[pro.default_code] = str(temp_attr.name) + str(',') + "Single"
+            if pro.variant_package_ids:
+                for att in pro.variant_package_ids:
+                    attr_list[att.code] = str(temp_attr.name) + str(',') + att.value_name
+            pro.attribut_compute = attr_list
 
     def price_compute(self, price_type, uom=False, currency=False, company=None):
         # TDE FIXME: delegate to template or not ? fields are reencoded here ...

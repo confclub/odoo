@@ -2,18 +2,34 @@
 <odoo>
 
 
+    <record id="product_pricelist_view_inherit" model="ir.ui.view">
+        <field name="name">product.pricelist.form.inherit</field>
+        <field name="model">product.pricelist</field>
+        <field name="inherit_id" ref="product.product_pricelist_view"/>
+        <field name="arch" type="xml">
+            <field name="country_group_ids" position="after">
+                <field name="price_check_box"/>
 
-                    <record id="product_pricelist_view_inherit" model="ir.ui.view">
-            <field name="name">product.pricelist.form.inherit</field>
-            <field name="model">product.pricelist</field>
-            <field name="inherit_id" ref="product.product_pricelist_view"/>
-            <field name="arch" type="xml">
-                <field name="country_group_ids" position="after">
-                    <field name="price_check_box" />
-
-                </field>
             </field>
-        </record>
+            <xpath expr="//page[@name='pricelist_rules']" position="after">
+                <page string="Pack Price Rules">
+                    <field name="pack_ids">
+                        <tree editable="bottom">
+                            <field name="product_id"/>
+                            <field name="package_id"/>
+                            <field name="min_quantity"/>
+                            <field name="fixed_price"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </tree>
+
+                    </field>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
 
 
     <record model="ir.ui.view" id="product_form_view_common_vendor_stock_ept">

@@ -9,7 +9,7 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('invoice', 'Invoice'),('product', 'Product'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
 
     def import_xls(self):
         main_list = []
@@ -66,6 +66,47 @@ class ExcelReport(models.Model):
                             print("Record created_________________" + str(i) + "\n")
                 except(Exception) as error:
                     print('Error occur at %s' %(str(inner_list[0])))
+
+        elif self.report_for == "price_list":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+            for inner_list in main_list:
+                product_varient = self.env['product.product'].search([('qb_varient_id', '=', inner_list[1])], limit=1)
+                if product_varient:
+                    self.env['product.pricelist.item'].create({
+                        "product_id": product_varient.id,
+                        "product_tmpl_id": product_varient.product_tmpl_id.id,
+                        "min_quantity": 1,
+                        "fixed_price": 0 if inner_list[39] == "" else float(inner_list[39]),
+                        "pricelist_id": 2,
+                    })
+            print("price add hogai hy")
+
+        elif self.report_for == "pack_price":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+            for inner_list in main_list:
+                product_varient = self.env['product.product'].search([('qb_varient_id', '=', inner_list[1])], limit=1)
+                if product_varient:
+                    if product_varient.variant_package_ids:
+                        for pack in product_varient.variant_package_ids:
+
+                            self.env['product.pricelist.pack.item'].create({
+                                "product_id": product_varient.id,
+                                "package_id": pack.id,
+                                "min_quantity": 1,
+                                "fixed_price": pack.price,
+                                "pricelist_id": 2,
+                            })
+            print("pack add hogai hy")
 
         elif self.report_for == "product":
             for sheet in wb.sheets():

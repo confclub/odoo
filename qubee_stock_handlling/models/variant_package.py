@@ -5,6 +5,7 @@ from odoo import models, fields, api
 
 class VariantPackage(models.Model):
     _name = 'variant.package'
+    _rec_name = 'code'
 
     name = fields.Char(string='Name')
     code = fields.Char(string='Code/Sku')

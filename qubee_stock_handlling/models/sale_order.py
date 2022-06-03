@@ -171,7 +171,16 @@ class SaleOrderLine(models.Model):
     @api.onchange('variant_package_id')
     def _onchange_variant_package_id(self):
         if self.variant_package_id:
-            self.price_unit = self.variant_package_id.price
+            pack = self.order_id.pricelist_id.pack_ids.search([('package_id', '=', self.variant_package_id.id)])
+            if pack:
+                self.price_unit = pack.fixed_price
+        else:
+            if self.product_id:
+                product = self.order_id.pricelist_id.item_ids.search([('product_id', '=', self.product_id.id)])
+                price = self.product_id.lst_price
+                if product:
+                    price = product.fixed_price
+                self.price_unit = price
 
     @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id', 'variant_package_id')
     def _compute_amount(self):

@@ -8,20 +8,21 @@ class ProductPricelist(models.Model):
     _inherit = "product.pricelist"
 
     price_check_box = fields.Boolean(default=False)
+    pack_ids = fields.One2many('product.pricelist.pack.item', 'pricelist_id')
 
-    # def create(self, vals):
-    #     price_list = self.env['product.pricelist'].search([('price_check_box', '=', True)])
-    #     if len(price_list):
-    #         raise ValidationError("sorry you cant")
-    #     else:
-    #         return super(ProductPricelist, self).create(vals)
-    #
-    # def write(self, vals):
-    #     price_list = self.env['product.pricelist'].search([('price_check_box', '=', True)])
-    #     if len(price_list):
-    #         raise ValidationError("sorry you cant")
-    #     else:
-    #         return super(ProductPricelist, self).write(vals)
+    def create(self, vals):
+        if vals.get('price_check_box'):
+            price_list = self.env['product.pricelist'].search([('price_check_box', '=', True)])
+            if len(price_list):
+                raise ValidationError("sorry you cant")
+        return super(ProductPricelist, self).create(vals)
+
+    def write(self, vals):
+        if vals.get('price_check_box'):
+            price_list = self.env['product.pricelist'].search([('price_check_box', '=', True)])
+            if len(price_list):
+                raise ValidationError("sorry you cant")
+        return super(ProductPricelist, self).write(vals)
 
 
 
@@ -67,3 +68,24 @@ class ProductPricelist(models.Model):
                 {name: new_record[name] for name in new_record._cache})
             product_pricelist_item = product_pricelist_item_obj.create(new_vals)
         return product_pricelist_item
+
+
+class ProductPricelistPackItem(models.Model):
+    _name = "product.pricelist.pack.item"
+
+
+    product_id = fields.Many2one(
+        'product.product', 'Product')
+    package_id = fields.Many2one('variant.package', 'Package')
+    min_quantity = fields.Float(
+        'Min. Quantity', default=0)
+    fixed_price = fields.Float(default=0)
+    pricelist_id = fields.Many2one('product.pricelist')
+    date_start = fields.Datetime('Start Date', help="Starting datetime for the pricelist item validation\n"
+                                                    "The displayed value depends on the timezone set in your preferences.")
+    date_end = fields.Datetime('End Date', help="Ending datetime for the pricelist item validation\n"
+                                                "The displayed value depends on the timezone set in your preferences.")
+
+
+
+
