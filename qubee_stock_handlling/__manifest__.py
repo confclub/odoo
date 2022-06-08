@@ -20,13 +20,15 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'sale', 'product'],
+    'depends': ['base', 'sale', 'product', 'account', 'purchase'],
 
     # always loaded
     'data': [
         'security/ir.model.access.csv',
         'views/product_product.xml',
         'views/sale_order_line.xml',
+        'views/purchase_order.xml',
+        'views/account_move.xml',
         'views/stock_picking.xml',
         'views/stock_picking_return_line.xml',
         'views/templates.xml',

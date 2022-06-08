@@ -4,22 +4,26 @@
         <record id="variant_package_stock_picking_inherit_form" model="ir.ui.view">
             <field name="name">variant.package.stock.picking.inherit.form</field>
             <field name="model">stock.picking</field>
-            <field name="inherit_id" ref="stock.view_picking_form" />
+            <field name="inherit_id" ref="stock.view_picking_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom_qty']" position="after">
-                    <field name="qty" />
-                    <field name="variant_package_id" />
-                    <field name="package_qty_done" />
+                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom_qty']"
+                       position="after">
+                    <field name="qty"/>
+                    <field name="variant_package_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                    <field name="package_qty_done"/>
                 </xpath>
-                <!--<xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom_qty']" position="attributes">
+                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom_qty']"
+                       position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
-                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='quantity_done']" position="attributes">
+                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='quantity_done']"
+                       position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
-                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='forecast_availability']" position="attributes">
+                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom']"
+                       position="attributes">
                     <attribute name="invisible">1</attribute>
-                </xpath>-->
+                </xpath>
             </field>
         </record>
 

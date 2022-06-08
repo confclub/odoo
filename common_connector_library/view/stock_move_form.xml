@@ -1,0 +1,16 @@
+<odoo>
+    <data>
+
+        <record id="stock_move_inherit_form" model="ir.ui.view">
+            <field name="name">stock.move.inherit.form</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='date']" position="after">
+                    <field name="shopify_refund_id"/>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -8,7 +8,7 @@
         <field name="inherit_id" ref="product.product_pricelist_view"/>
         <field name="arch" type="xml">
             <field name="country_group_ids" position="after">
-                <field name="price_check_box"/>
+                <field name ="price_check_box" string="Is Shopify pricelist?"/>
 
             </field>
             <xpath expr="//page[@name='pricelist_rules']" position="after">

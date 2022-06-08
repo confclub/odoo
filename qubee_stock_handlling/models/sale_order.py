@@ -149,7 +149,6 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     variant_package_ids = fields.One2many(related='product_id.variant_package_ids')
-    # shopify_order_common_log_lines_ids = fields.One2many(related="shopify_order_common_log_book_id.log_lines")
     variant_package_id = fields.Many2one('variant.package', 'Package', domain="[('id', 'in', variant_package_ids)]")
     qty = fields.Float(string='Qty')
     price_subtotal = fields.Monetary(compute='_compute_amount', string='Subtotal', readonly=True, store=True)
@@ -174,6 +173,8 @@ class SaleOrderLine(models.Model):
             pack = self.order_id.pricelist_id.pack_ids.search([('package_id', '=', self.variant_package_id.id)])
             if pack:
                 self.price_unit = pack.fixed_price
+            else:
+                self.price_unit = self.variant_package_id.price
         else:
             if self.product_id:
                 product = self.order_id.pricelist_id.item_ids.search([('product_id', '=', self.product_id.id)])
@@ -221,4 +222,5 @@ class SaleOrderLine(models.Model):
     def _prepare_invoice_line(self, **optional_values):
         res = super(SaleOrderLine, self)._prepare_invoice_line(**optional_values)
         res['quantity'] = self.qty
+        res['variant_package_id'] = self.variant_package_id.id
         return res

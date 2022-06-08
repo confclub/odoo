@@ -15,3 +15,5 @@ class VariantPackage(models.Model):
     value_name = fields.Char()
     qb_variant_id = fields.Char()
     product_id = fields.Many2one('product.product', 'Product')
+    inventory_item_id = fields.Char()
+    shopify_variant_id = fields.Char()

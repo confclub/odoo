@@ -47,6 +47,24 @@ class ShopifyProductProductEpt(models.Model):
     shopify_image_ids = fields.One2many("shopify.product.image.ept", "shopify_variant_id")
     taxable = fields.Boolean(default=True)
     variant_package_ids = fields.One2many("shopify.variant.package", "shopify_product_id")
+    computed_price = fields.Float(compute='_compute_variant_price')
+
+
+    def _compute_variant_price(self):
+        for var in self:
+            pricelist = self.env['product.pricelist'].search([('price_check_box', '=', True)], limit=1)
+            package = self.env['variant.package'].search([('code', '=', var.default_code)], limit=1)
+            product = self.env['product.product'].search([('default_code', '=', var.default_code)], limit=1)
+            product_var = pricelist.item_ids.search(
+                [('product_id', '=', product.id), ('pricelist_id', '=', pricelist.id)])
+            package_box = pricelist.pack_ids.search(
+                [('package_id', '=', package.id), ('pricelist_id', '=', pricelist.id)])
+            if product_var:
+                var.computed_price = product_var.fixed_price
+            elif package_box:
+                var.computed_price = package_box.fixed_price
+            else:
+                var.computed_price = 0
 
     def toggle_active(self):
         """
@@ -411,8 +429,9 @@ class ShopifyProductProductEpt(models.Model):
         if variant.variant_id:
             variant_vals.update({"id": variant.variant_id})
         if is_set_price:
-            price = instance.shopify_pricelist_id.get_product_price(variant.product_id, 1.0, partner=False,
-                                                                    uom_id=variant.product_id.uom_id.id)
+            # price = instance.shopify_pricelist_id.get_product_price(variant.product_id, 1.0, partner=False,
+            #                                                         uom_id=variant.product_id.uom_id.id)
+            price = variant.computed_price
             variant_vals.update({"price": float(price)})
         if is_set_basic_detail:
             # Changing is  variant.product_id.barcode or
@@ -505,6 +524,14 @@ class ShopifyProductProductEpt(models.Model):
                     "inventory_item_id": inventory_item_id,
                     "exported_in_shopify": True
                 })
+                product_var = self.env['product.product'].search([('default_code', '=', variant_dict.get("sku"))])
+                pro_pack = self.env['variant.package'].search([('code', '=', variant_dict.get("sku"))])
+                if product_var:
+                    product_var.inventory_item_id = inventory_item_id
+                    product_var.shopify_variant_id = variant_id
+                elif pro_pack:
+                    pro_pack.inventory_item_id = inventory_item_id
+                    pro_pack.shopify_variant_id = variant_id
         return True
 
     def export_product_images(self, instance, shopify_template):

@@ -462,13 +462,36 @@ class ShopifyProductTemplateEpt(models.Model):
             barcode = variant.get("barcode")
             variant['vendor'] = template_data.get('vendor')
             variant_vals = self.prepare_variant_vals(instance, variant)
-
+            product_var = self.env['product.product'].search([('default_code', '=', variant.get('sku'))])
+            pro_pack = self.env['variant.package'].search([('code', '=', variant.get('sku'))])
             if not sku and not barcode:
                 message = "Product %s have no sku and barcode having variant id %s." % (name, variant_id)
                 self.create_log_line_for_queue_line(message, model_id, log_book_id, product_data_line_id,
                                                     order_data_line_id, sku)
                 continue
+            if '10.00%' in name:
+                message = "Product %s have 10.00 variant id %s." % (name, variant_id)
+                self.create_log_line_for_queue_line(message, model_id, log_book_id, product_data_line_id,
+                                                    order_data_line_id, sku)
+                continue
+            if product_var:
+                message = "Product %s have Already sku on variant id %s." % (name, variant_id)
+                self.create_log_line_for_queue_line(message, model_id, log_book_id, product_data_line_id,
+                                                    order_data_line_id, sku)
+
+                product_var.inventory_item_id = variant.get('inventory_item_id')
+                product_var.shopify_variant_id = variant.get('id')
+                continue
+            elif pro_pack:
+                message = "Product %s have Already sku on Pack id %s." % (name, variant_id)
+                self.create_log_line_for_queue_line(message, model_id, log_book_id, product_data_line_id,
+                                                    order_data_line_id, sku)
+                pro_pack.inventory_item_id = variant.get('inventory_item_id')
+                pro_pack.shopify_variant_id = variant.get('id')
+                continue
+            # yaha kam karna hy a k
             try:
+
                 shopify_product, odoo_product = self.shopify_search_odoo_product_variant(instance, variant_id, sku, barcode)
             except Exception as error:
                 error

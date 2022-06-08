@@ -22,3 +22,5 @@ from . import account_move
 from . import ir_cron
 from . import data_queue_mixin_ept
 from . import account_bank_statement_line
+from . import stock_move
+from . import purchase_order_line

@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 # See LICENSE file for full copyright and licensing details.
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.tests import Form, tagged
 import json
+from ...shopify_ept import shopify
+
 
 
 class SaleWorkflowProcess(models.Model):
     _name = "sale.workflow.process.ept"
     _description = "sale workflow process"
+
+    def _update_qty_on_shopify(self, product_id, pack_id):
+        pass
 
     @api.model
     def _default_journal(self):
@@ -108,6 +113,38 @@ class SaleWorkflowProcess(models.Model):
         data_dic = json.loads(orders.sale_api_data)
         if not orders.picking_ids and orders.order_line:
             orders.action_confirm()
+        instance = self.env['shopify.instance.ept'].search([], limit=1, order='id desc')
+        location_id = self.env["shopify.location.ept"].search([("instance_id", "=", instance.id)], limit=1)
+        instance.connect_in_shopify()
+        for order_line in orders.order_line:
+            #if pack
+            if order_line.variant_package_id:
+                if order_line.product_id.product_tmpl_id.temp_checkbox:
+                    forcast_qty = order_line.variant_package_id.product_id.virtual_available
+                    packs = order_line.variant_package_id.product_id.variant_package_ids
+                    # for product stock Update on shopify
+                    shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                               order_line.product_id.inventory_item_id,
+                                               int(forcast_qty))
+                    #for packs stock Update on shopify
+                    if packs:
+                        for pac in packs:
+                            shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
+                                               int(forcast_qty/pac.qty))
+            # if product and no pack stock Update on shopify
+            else:
+                if order_line.product_id.product_tmpl_id.temp_checkbox:
+                    forcast_qty = order_line.product_id.virtual_available
+                    packs = order_line.product_id.variant_package_ids
+                    #for product
+                    shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                               order_line.product_id.inventory_item_id,
+                                               int(forcast_qty))
+                    # for packs
+                    if packs:
+                        for pac in packs:
+                            shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
+                                               int(forcast_qty/ pac.qty))
 
         if data_dic.get('fulfillment_status') == 'fulfilled':
             if orders.picking_ids:
@@ -120,6 +157,90 @@ class SaleWorkflowProcess(models.Model):
                     res_dict = pick.button_validate()
                     Form(self.env['stock.immediate.transfer']).save().process()
             orders.state = 'sale'
+        # only restock items without payments
+        if data_dic.get('refunds'):
+            odoo_refund_list = [refund.shopify_refund_id for refund in self.env['stock.move'].search([])]
+            for refund in data_dic.get('refunds'):
+                if str(refund['id']) not in odoo_refund_list:
+                    if refund.get("restock"):
+                        for item in refund.get('refund_line_items'):
+                            for line in orders.order_line:
+                                if line.variant_package_id:
+                                    if line.variant_package_id.code == item.get('line_item')['sku']:
+                                        product = line.variant_package_id.product_id
+                                        product_qty = item.get('quantity')
+                                        product_uom = line.product_uom
+                                        if product and product_qty and product_uom:
+                                            vals = {
+                                                'name': _('Auto processed move : %s') % product.display_name,
+                                                'company_id': self.env.company.id,
+                                                'origin': line.order_id.name,
+                                                'product_id': product.id if product else False,
+                                                'product_uom_qty': product_qty,
+                                                'product_uom': product_uom.id if product_uom else False,
+                                                'location_id': customer_location.id,
+                                                'location_dest_id': self.env['stock.location'].search(
+                                                    [('usage', '=', 'internal')]).id,
+                                                'state': 'confirmed',
+                                                'shopify_refund_id': refund['id'],
+                                                'sale_line_id': line.id
+                                            }
+                                            stock_move = self.env['stock.move'].create(vals)
+                                            stock_move._action_assign()
+                                            stock_move._set_quantity_done(product_qty)
+                                            # stock_move._action_done()
+                                    # proccess for updating stock of pack in shopify
+                                    if line.product_id.product_tmpl_id.temp_checkbox:
+                                        forcast_qty = line.variant_package_id.product_id.virtual_available
+                                        packs = line.variant_package_id.product_id.variant_package_ids
+                                        # for product
+                                        shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                   line.product_id.inventory_item_id,
+                                                                   int(forcast_qty))
+                                        if packs:
+                                            for pac in packs:
+                                                shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                           pac.inventory_item_id,
+                                                                           int(forcast_qty / pac.qty))
+                                else:
+                                    if line.product_id.default_code == item.get('line_item')['sku']:
+                                        product = line.product_id
+                                        product_qty = item.get('quantity')
+                                        product_uom = line.product_uom
+                                        if product and product_qty and product_uom:
+                                            vals = {
+                                                'name': _('Auto processed move : %s') % product.name,
+                                                'company_id': self.env.company.id,
+                                                'origin': line.order_id.name,
+                                                'product_id': product.id if product else False,
+                                                'product_uom_qty': product_qty,
+                                                'product_uom': product_uom.id if product_uom else False,
+                                                'location_id': customer_location.id,
+                                                'location_dest_id': self.env['stock.location'].search(
+                                                    [('usage', '=', 'internal')]).id,
+                                                'state': 'confirmed',
+                                                'shopify_refund_id': refund['id'],
+                                                'sale_line_id': line.id
+                                            }
+                                            stock_move = self.env['stock.move'].create(vals)
+                                            stock_move._action_assign()
+                                            stock_move._set_quantity_done(product_qty)
+                                            # stock_move._action_done()
+
+                                    # proccess for updating stock in shopify
+                                    if line.product_id.product_tmpl_id.temp_checkbox:
+                                        forcast_qty = line.product_id.virtual_available
+                                        packs = line.product_id.variant_package_ids
+                                        # for product
+                                        shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                   line.product_id.inventory_item_id,
+                                                                   int(forcast_qty))
+                                        # for packs
+                                        if packs:
+                                            for pac in packs:
+                                                shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                           pac.inventory_item_id,
+                                                                           int(forcast_qty / pac.qty))
 
         # elif data_dic.get('fulfillment_status') == 'partial':
         #     dict_of_shopify = {}
@@ -206,8 +327,96 @@ class SaleWorkflowProcess(models.Model):
         #             reversal = move_reversal.reverse_moves()
         #             reverse_move = self.env['account.move'].browse(reversal['res_id'])
 
+
+
+
+
+
         elif data_dic.get('financial_status') in ["partially_refunded", "refunded"]:
 
+            odoo_refund_list = [refund.shopify_refund_id for refund in self.env['stock.move'].search([])]
+
+            if data_dic.get('refunds'):
+                for refund in data_dic.get('refunds'):
+                    if str(refund['id']) not in odoo_refund_list:
+                        if refund.get("restock"):
+                            for item in refund.get('refund_line_items'):
+                                for line in orders.order_line:
+                                    if line.variant_package_id:
+                                        if line.variant_package_id.code == item.get('line_item')['sku']:
+                                            product = line.variant_package_id.product_id
+                                            product_qty = item.get('quantity')
+                                            product_uom = line.product_uom
+                                            if product and product_qty and product_uom:
+                                                vals = {
+                                                    'name': _('Auto processed move : %s') % product.display_name,
+                                                    'company_id': self.env.company.id,
+                                                    'origin': line.order_id.name,
+                                                    'product_id': product.id if product else False,
+                                                    'product_uom_qty': product_qty,
+                                                    'product_uom': product_uom.id if product_uom else False,
+                                                    'location_id': customer_location.id,
+                                                    'location_dest_id': self.env['stock.location'].search([('usage', '=', 'internal')]).id,
+                                                    'state': 'confirmed',
+                                                    'shopify_refund_id': refund['id'],
+                                                    'sale_line_id': line.id
+                                                }
+                                                stock_move = self.env['stock.move'].create(vals)
+                                                stock_move._action_assign()
+                                                stock_move._set_quantity_done(product_qty)
+                                                # stock_move._action_done()
+                                        # proccess for updating stock of pack in shopify
+                                        if line.product_id.product_tmpl_id.temp_checkbox:
+                                            forcast_qty = line.variant_package_id.product_id.virtual_available
+                                            packs = line.variant_package_id.product_id.variant_package_ids
+                                            # for product
+                                            shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                       line.product_id.inventory_item_id,
+                                                                       int(forcast_qty))
+                                            if packs:
+                                                for pac in packs:
+                                                    shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                               pac.inventory_item_id,
+                                                                               int(forcast_qty / pac.qty))
+                                    else:
+                                        if line.product_id.default_code == item.get('line_item')['sku']:
+                                            product = line.product_id
+                                            product_qty = item.get('quantity')
+                                            product_uom = line.product_uom
+                                            if product and product_qty and product_uom:
+                                                vals = {
+                                                    'name': _('Auto processed move : %s') % product.name,
+                                                    'company_id': self.env.company.id,
+                                                    'origin': line.order_id.name,
+                                                    'product_id': product.id if product else False,
+                                                    'product_uom_qty': product_qty,
+                                                    'product_uom': product_uom.id if product_uom else False,
+                                                    'location_id': customer_location.id,
+                                                    'location_dest_id': self.env['stock.location'].search([('usage', '=', 'internal')]).id,
+                                                    'state': 'confirmed',
+                                                    'shopify_refund_id': refund['id'],
+                                                    'sale_line_id': line.id
+                                                }
+                                                stock_move = self.env['stock.move'].create(vals)
+                                                stock_move._action_assign()
+                                                stock_move._set_quantity_done(product_qty)
+                                                # stock_move._action_done()
+
+                                        #proccess for updating stock in shopify
+                                        if line.product_id.product_tmpl_id.temp_checkbox:
+                                            forcast_qty = line.product_id.virtual_available
+                                            packs = line.product_id.variant_package_ids
+                                            # for product
+                                            shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                       line.product_id.inventory_item_id,
+                                                                       int(forcast_qty))
+                                            # for packs
+                                            if packs:
+                                                for pac in packs:
+                                                    shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                               pac.inventory_item_id,
+                                                                               int(forcast_qty / pac.qty))
+            #proccess for refund invoices
             invoice = orders.invoice_ids.filtered(
                         lambda r: r.move_type == 'out_invoice' and r.state == 'posted')
 
@@ -247,24 +456,32 @@ class SaleWorkflowProcess(models.Model):
                                 dict_of_refund[item.get('line_item')['sku']] = item.get('quantity')
 
                             for line in reverse_move.invoice_line_ids:
-                                if line.product_id.default_code in dict_of_refund.keys():
-                                    ctx = dict(self._context or {})
-                                    ctx["check_move_validity"] = False
-                                    line.with_context(ctx).write(
-                                        {'quantity': dict_of_refund[line.product_id.default_code]})
-                                    line.move_id.with_context(ctx)._onchange_invoice_line_ids()
-                                    line.with_context(ctx)._onchange_mark_recompute_taxes()
-                                    line.with_context(ctx)._onchange_price_subtotal()
+                                if line.variant_package_id:
+                                    if line.variant_package_id.code in dict_of_refund.keys():
+                                        ctx = dict(self._context or {})
+                                        ctx["check_move_validity"] = False
+                                        line.with_context(ctx).write(
+                                            {'quantity': dict_of_refund[line.variant_package_id.code]})
+                                        line.move_id.with_context(ctx)._onchange_invoice_line_ids()
+                                        line.with_context(ctx)._onchange_mark_recompute_taxes()
+                                        line.with_context(ctx)._onchange_price_subtotal()
+                                    else:
+                                        ctx = dict(self._context or {})
+                                        ctx["check_move_validity"] = False
+                                        line.with_context(ctx).unlink()
                                 else:
-                                    ctx = dict(self._context or {})
-                                    ctx["check_move_validity"] = False
-                                    # line.with_context(ctx).write(
-                                    #     {'quantity': 0})
-                                    # line.move_id.with_context(ctx)._onchange_invoice_line_ids()
-                                    # line.with_context(ctx)._onchange_mark_recompute_taxes()
-                                    # line.with_context(ctx)._onchange_price_subtotal()
-                                    line.with_context(ctx).unlink()
-                                    # line.move_id.with_context(ctx)._onchange_recompute_dynamic_lines()
+                                    if line.product_id.code in dict_of_refund.keys():
+                                        ctx = dict(self._context or {})
+                                        ctx["check_move_validity"] = False
+                                        line.with_context(ctx).write(
+                                            {'quantity': dict_of_refund[line.product_id.code]})
+                                        line.move_id.with_context(ctx)._onchange_invoice_line_ids()
+                                        line.with_context(ctx)._onchange_mark_recompute_taxes()
+                                        line.with_context(ctx)._onchange_price_subtotal()
+                                    else:
+                                        ctx = dict(self._context or {})
+                                        ctx["check_move_validity"] = False
+                                        line.with_context(ctx).unlink()
 
                         else:
                             for i in reverse_move.invoice_line_ids:
@@ -276,8 +493,6 @@ class SaleWorkflowProcess(models.Model):
                                 i.move_id.with_context(ctx)._onchange_invoice_line_ids()
                                 i.with_context(ctx)._onchange_mark_recompute_taxes()
                                 i.with_context(ctx)._onchange_price_subtotal()
-                                # i.with_context(ctx).unlink()
-                                # i.with_context(ctx)._onchange_recompute_dynamic_lines()
 
 
                             product = self.env.ref('shopify_ept.product_product_manual_refund')
@@ -293,9 +508,7 @@ class SaleWorkflowProcess(models.Model):
                                 "account_id": account.id,
                                 "move_id": reverse_move.id,
                             })
-                            # line.move_id.with_context(ctx)._onchange_invoice_line_ids()
-                            # line.with_context(ctx)._onchange_mark_recompute_taxes()
-                            # line.with_context(ctx)._onchange_price_subtotal()
+
                         reverse_move.with_context(ctx)._onchange_invoice_line_ids()
                         if reverse_move.amount_total:
                             reverse_move.action_post()
@@ -303,6 +516,10 @@ class SaleWorkflowProcess(models.Model):
                             wizard = Form(self.env['account.payment.register'].with_context(
                                 action_data['context'])).save()
                             wizard.action_create_payments()
+
+
+
+
 
                 # if invoice:
                 #     for invo in invoice:
@@ -471,7 +688,6 @@ class SaleWorkflowProcess(models.Model):
 
         # Remove this line because it create stock move.
         # order.auto_shipped_order_ept(customer_location, mrp_module)
-
         # delivered_lines = orders.order_line.filtered(lambda l: l.product_id.invoice_policy != 'order')
         # if delivered_lines:
         #     orders.validate_and_paid_invoices_ept(self)

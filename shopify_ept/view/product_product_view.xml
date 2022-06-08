@@ -122,6 +122,7 @@
                                         <field name="inventory_management"/>
                                         <field name="check_product_stock"
                                                attrs="{'invisible': [('inventory_management', '=','Dont track Inventory')]}"/>
+                                        <field name="computed_price" />
                                     </group>
                                     <group>
                                         <field name="fix_stock_type"/>
