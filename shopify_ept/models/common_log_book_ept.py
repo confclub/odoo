@@ -87,7 +87,7 @@ class CommonLogLineEpt(models.Model):
             log_line = self.search(domain)
             if log_line:
                 log_line.update({"write_date": datetime.now()})
-                return log_line
+                # return log_line
         vals = {'message': message,
                 'model_id': model_id,
                 'res_id': queue_line_id and queue_line_id.id or False,
