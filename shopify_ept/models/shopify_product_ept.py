@@ -48,21 +48,23 @@ class ShopifyProductProductEpt(models.Model):
     taxable = fields.Boolean(default=True)
     variant_package_ids = fields.One2many("shopify.variant.package", "shopify_product_id")
     computed_price = fields.Float(compute='_compute_variant_price')
+    need_to_sync = fields.Boolean(default=True)
 
 
     def _compute_variant_price(self):
         for var in self:
             pricelist = self.env['product.pricelist'].search([('price_check_box', '=', True)], limit=1)
             package = self.env['variant.package'].search([('code', '=', var.default_code)], limit=1)
-            product = self.env['product.product'].search([('default_code', '=', var.default_code)], limit=1)
-            product_var = pricelist.item_ids.search(
-                [('product_id', '=', product.id), ('pricelist_id', '=', pricelist.id)])
-            package_box = pricelist.pack_ids.search(
-                [('package_id', '=', package.id), ('pricelist_id', '=', pricelist.id)])
-            if product_var:
-                var.computed_price = product_var.fixed_price
-            elif package_box:
-                var.computed_price = package_box.fixed_price
+            product = self.env['product.product'].search([('default_code', '=', var.default_code)])
+            if product:
+                product_var = pricelist.item_ids.search(
+                    [('product_id', '=', product.id), ('pricelist_id', '=', pricelist.id)],  limit=1)
+                var.computed_price = product_var.fixed_price if product_var else 0
+            elif package:
+                package_box = pricelist.pack_ids.search(
+                    [('package_id', '=', package.id), ('pricelist_id', '=', pricelist.id)], limit=1)
+                var.computed_price = package_box.fixed_price if package_box else 0
+
             else:
                 var.computed_price = 0
 
@@ -251,11 +253,12 @@ class ShopifyProductProductEpt(models.Model):
         if is_set_basic_detail or is_set_price:
             variants = []
             for variant in template.shopify_product_ids:
-                variant_vals = self.shopify_prepare_variant_vals(instance, variant, is_set_price,
-                                                                 is_set_basic_detail)
-                variants.append(variant_vals)
-            new_product.variants = variants
-            self.prepare_export_update_product_attribute_vals(template, new_product)
+                if variant.need_to_sync:
+                    variant_vals = self.shopify_prepare_variant_vals(instance, variant, is_set_price,
+                                                                     is_set_basic_detail)
+                    variants.append(variant_vals)
+                new_product.variants = variants
+                self.prepare_export_update_product_attribute_vals(template, new_product)
         return True
 
     def shopify_export_products(self, instance, is_set_basic_detail, is_set_price, is_set_images, is_publish,

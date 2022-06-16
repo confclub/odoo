@@ -10,7 +10,8 @@
                 <form>
                     <header>
                         <button name="action_start_contract" string="Start Contract" type="object"
-                                class="oe_highlight"/>
+                                class="oe_highlight"
+                                attrs="{'invisible': [('state', 'in', ('start','modified','end','cancel'))]}"/>
                         <button name="action_modify_contract" string="Modify Contract" class="oe_highlight"
                                 type="object"/>
 
@@ -39,9 +40,10 @@
                             </group>
                             <group>
                                 <field name="start_date" string="Start Date:" required="1"/>
-                                <field name="end_date" string="End Date:" required="1"/>
                                 <field name="reason" string="Reason" readonly="1"/>
-                                <field name="order_months" string="orderMonths" readonly="1"/>
+                                <field name="order_months" string="orderMonths" required="1"/>
+                                <field name="shipment_price" string="Shipment Price"/>
+                                <field name="shopify_order_id" string="Shopify Order Id" readonly="1"/>
                             </group>
                         </group>
                         <notebook>
@@ -55,6 +57,9 @@
                                         <field name="pieces_per_bag" string="piecesPerBag"/>
                                         <field name="pieces_per_daily_pack" string="piecesPerDailyPack"/>
                                         <field name="num_daily_packs" string="numDailyPacks"/>
+                                        <field name="total_funding" string="TotalFunding"/>
+                                        <field name="price_per_pack" string="Pack Price"/>
+                                        <field name="price_per_carton" string=" Carton Price"/>
                                     </tree>
 
                                 </field>
@@ -85,7 +90,6 @@
                 <tree>
                     <field name="name" string="Name"/>
                     <field name="start_date" string="Start Date:"/>
-                    <field name="end_date" string="End Date:"/>
                 </tree>
             </field>
         </record>

@@ -76,7 +76,8 @@ class ProductPricelistPackItem(models.Model):
 
     product_id = fields.Many2one(
         'product.product', 'Product')
-    package_id = fields.Many2one('variant.package', 'Package')
+    variant_package_ids = fields.One2many(related='product_id.variant_package_ids')  # for domain purpose only
+    package_id = fields.Many2one('variant.package', 'Package', domain="[('id', 'in', variant_package_ids)]")
     min_quantity = fields.Float(
         'Min. Quantity', default=0)
     fixed_price = fields.Float(default=0)

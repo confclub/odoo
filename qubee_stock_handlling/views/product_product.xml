@@ -29,30 +29,30 @@
                             <form>
                                 <group>
                                     <group>
-                                        <field name="name"/>
+                                        <field name="name" invisible="1"/>
+                                        <field name="value_name" string="Name"/>
                                         <field name="qty"/>
-                                        <field name="company_id"/>
+                                        <field name="company_id" invisible="1"/>
                                     </group>
                                     <group>
                                         <field name="code"/>
                                         <field name="price"/>
-                                        <field name="value_name"/>
-                                        <field name="qb_variant_id"/>
-                                        <field name="inventory_item_id"/>
-                                        <field name="shopify_variant_id"/>
+                                        <field name="qb_variant_id" invisible="1"/>
+                                        <field name="inventory_item_id" invisible="1"/>
+                                        <field name="shopify_variant_id" invisible="1"/>
                                     </group>
                                 </group>
                             </form>
                             <tree>
-                                <field name="name"/>
+                                <field name="name" invisible="1"/>
+                                <field name="value_name" string="Name"/>
                                 <field name="qty"/>
                                 <field name="code"/>
                                 <field name="price"/>
-                                <field name="company_id"/>
-                                <field name="value_name"/>
-                                <field name="qb_variant_id"/>
-                                <field name="inventory_item_id"/>
-                                <field name="shopify_variant_id"/>
+                                <field name="company_id" invisible="1"/>
+                                <field name="qb_variant_id" invisible="1"/>
+                                <field name="inventory_item_id" invisible="1"/>
+                                <field name="shopify_variant_id" invisible="1"/>
                             </tree>
                         </field>
                     </page>

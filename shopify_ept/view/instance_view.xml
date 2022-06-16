@@ -96,6 +96,7 @@
                                        readonly="1" groups="base.group_multi_company"/>
                                 <field name="shopify_warehouse_id" required="1"
                                        readonly="1"/>
+                                <field name="is_cap_no_gap" string="Is CapsNoGaps?" />
                             </group>
                         </group>
                         <group string="Shopify Site Info">

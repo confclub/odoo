@@ -212,6 +212,7 @@ class ShopifyInstanceEpt(models.Model):
 
     _sql_constraints = [('unique_host', 'unique(shopify_host)',
                          "Instance already exists for given host. Host must be Unique for the instance!")]
+    is_cap_no_gap = fields.Boolean(default=False)
 
     @api.model
     def create(self, vals):

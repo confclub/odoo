@@ -32,8 +32,9 @@ class ShopifyOrderDataQueueLineEpt(models.Model):
                                                          "shopify_order_data_queue_line_id",
                                                          help="Log lines created against which line.")
     name = fields.Char(help="Order Name")
+    is_cap_no_gap = fields.Boolean(default=False)
 
-    def create_order_queue_line(self, order_dict, instance, order_data, customer_name, customer_email, order_queue_id):
+    def create_order_queue_line(self, order_dict, instance, order_data, customer_name, customer_email, order_queue_id, is_caps=False):
         """
         Creates order data queue line from order data.
         @author: Maulik Barad on Date 10-Sep-2020.
@@ -44,10 +45,11 @@ class ShopifyOrderDataQueueLineEpt(models.Model):
                                  "name": order_dict.get("name", ""),
                                  "customer_name": customer_name,
                                  "customer_email": customer_email,
+                                 "is_cap_no_gap": is_caps,
                                  "shopify_order_data_queue_id": order_queue_id.id}
         return self.create(order_queue_line_vals)
 
-    def create_order_data_queue_line(self, orders_data, instance, created_by="import"):
+    def create_order_data_queue_line(self, orders_data, instance, created_by="import", is_cap=False):
         """
         This method used to create order data queue lines. It creates new queue after 50 order queue
         lines.
@@ -96,7 +98,7 @@ class ShopifyOrderDataQueueLineEpt(models.Model):
                 customer_name = False
                 customer_email = False
 
-            self.create_order_queue_line(order, instance, data, customer_name, customer_email, order_queue)
+            self.create_order_queue_line(order, instance, data, customer_name, customer_email, order_queue, is_caps=is_cap)
             if created_by == "webhook" and len(order_queue.order_data_queue_line_ids) >= 50:
                 order_queue.order_data_queue_line_ids.process_import_order_queue_data(update_order=True)
 

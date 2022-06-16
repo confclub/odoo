@@ -21,6 +21,7 @@
                             <field name="fixed_price"/>
                             <field name="date_start"/>
                             <field name="date_end"/>
+                            <field name="variant_package_ids" invisible="1"/>
                         </tree>
 
                     </field>

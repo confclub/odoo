@@ -136,6 +136,7 @@
                                         <field name="write_date" string="Last Updated On"/>
                                         <field name="order_data" invisible="1"/>
                                         <field name="state"/>
+                                        <field name="is_cap_no_gap" string="Is CapNoGap"/>
                                     </tree>
                                 </field>
                             </page>

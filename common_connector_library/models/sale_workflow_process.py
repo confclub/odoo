@@ -113,7 +113,7 @@ class SaleWorkflowProcess(models.Model):
         data_dic = json.loads(orders.sale_api_data)
         if not orders.picking_ids and orders.order_line:
             orders.action_confirm()
-        instance = self.env['shopify.instance.ept'].search([], limit=1, order='id desc')
+        instance = self.env['shopify.instance.ept'].search([('is_cap_no_gap', '=', False)], limit=1)
         location_id = self.env["shopify.location.ept"].search([("instance_id", "=", instance.id)], limit=1)
         instance.connect_in_shopify()
         for order_line in orders.order_line:
@@ -123,12 +123,13 @@ class SaleWorkflowProcess(models.Model):
                     forcast_qty = order_line.variant_package_id.product_id.virtual_available
                     packs = order_line.variant_package_id.product_id.variant_package_ids
                     # for product stock Update on shopify
-                    shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                               order_line.product_id.inventory_item_id,
-                                               int(forcast_qty))
+                    if order_line.product_id.inventory_item_id:
+                        shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                   order_line.product_id.inventory_item_id,
+                                                   int(forcast_qty))
                     #for packs stock Update on shopify
-                    if packs:
-                        for pac in packs:
+                    for pac in packs:
+                        if pac.inventory_item_id:
                             shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
                                                int(forcast_qty/pac.qty))
             # if product and no pack stock Update on shopify
@@ -137,14 +138,15 @@ class SaleWorkflowProcess(models.Model):
                     forcast_qty = order_line.product_id.virtual_available
                     packs = order_line.product_id.variant_package_ids
                     #for product
-                    shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                               order_line.product_id.inventory_item_id,
-                                               int(forcast_qty))
-                    # for packs
-                    if packs:
-                        for pac in packs:
+                    if order_line.product_id.inventory_item_id:
+                        shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                   order_line.product_id.inventory_item_id,
+                                                   int(forcast_qty))
+                    # for packs stock Update on shopify
+                    for pac in packs:
+                        if pac.inventory_item_id:
                             shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
-                                               int(forcast_qty/ pac.qty))
+                                                       int(forcast_qty / pac.qty))
 
         if data_dic.get('fulfillment_status') == 'fulfilled':
             if orders.picking_ids:
@@ -157,9 +159,32 @@ class SaleWorkflowProcess(models.Model):
                     res_dict = pick.button_validate()
                     Form(self.env['stock.immediate.transfer']).save().process()
             orders.state = 'sale'
+
+        elif data_dic.get('fulfillment_status') == 'partial':
+            dict_of_shopify = {}
+            dilevries = orders.picking_ids.filtered(lambda line: line.state in ['done'])
+            delivery_list = [delivery.shopify_delivery_id for delivery in dilevries]
+            if data_dic.get('fulfillments'):
+                for ful_fill_list in data_dic.get('fulfillments'):
+                    if str(ful_fill_list.get("id")) not in delivery_list:
+                        for item_line in ful_fill_list.get('line_items'):
+                             dict_of_shopify[item_line.get('sku')] = item_line.get('quantity')
+
+                for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
+                    for line in pick.move_ids_without_package:
+                        code = line.variant_package_id.code if line.variant_package_id else line.product_id.default_code
+                        if code in list(dict_of_shopify):
+                            line.package_qty_done = dict_of_shopify[code]
+                            line._onchange_qty_done()
+
+                    pick.shopify_delivery_id = ful_fill_list.get("id")
+                    pick.action_assign()
+                    res_dict = pick.button_validate()
+                    Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
+
         # only restock items without payments
         if data_dic.get('refunds'):
-            odoo_refund_list = [refund.shopify_refund_id for refund in self.env['stock.move'].search([])]
+            odoo_refund_list = [refund.shopify_refund_id for refund in self.env['stock.move'].search([('origin', '=', orders.name)])]
             for refund in data_dic.get('refunds'):
                 if str(refund['id']) not in odoo_refund_list:
                     if refund.get("restock"):
@@ -168,7 +193,7 @@ class SaleWorkflowProcess(models.Model):
                                 if line.variant_package_id:
                                     if line.variant_package_id.code == item.get('line_item')['sku']:
                                         product = line.variant_package_id.product_id
-                                        product_qty = item.get('quantity')
+                                        product_qty = (item.get('quantity') * line.variant_package_id.qty)
                                         product_uom = line.product_uom
                                         if product and product_qty and product_uom:
                                             vals = {
@@ -178,30 +203,32 @@ class SaleWorkflowProcess(models.Model):
                                                 'product_id': product.id if product else False,
                                                 'product_uom_qty': product_qty,
                                                 'product_uom': product_uom.id if product_uom else False,
-                                                'location_id': customer_location.id,
-                                                'location_dest_id': self.env['stock.location'].search(
-                                                    [('usage', '=', 'internal')]).id,
+                                                'location_id': self.env.ref("shopify_ept.customer_location").id,
+                                                'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
                                                 'state': 'confirmed',
                                                 'shopify_refund_id': refund['id'],
+                                                'package_id': line.variant_package_id.id,
                                                 'sale_line_id': line.id
                                             }
                                             stock_move = self.env['stock.move'].create(vals)
                                             stock_move._action_assign()
                                             stock_move._set_quantity_done(product_qty)
-                                            # stock_move._action_done()
+                                            stock_move._action_done()
                                     # proccess for updating stock of pack in shopify
                                     if line.product_id.product_tmpl_id.temp_checkbox:
                                         forcast_qty = line.variant_package_id.product_id.virtual_available
                                         packs = line.variant_package_id.product_id.variant_package_ids
                                         # for product
-                                        shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                                   line.product_id.inventory_item_id,
-                                                                   int(forcast_qty))
-                                        if packs:
-                                            for pac in packs:
+                                        if line.product_id.inventory_item_id:
+                                            shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                       line.product_id.inventory_item_id,
+                                                                       int(forcast_qty))
+                                        for pac in packs:
+                                            if pac.inventory_item_id:
                                                 shopify.InventoryLevel.set(location_id.shopify_location_id,
                                                                            pac.inventory_item_id,
                                                                            int(forcast_qty / pac.qty))
+
                                 else:
                                     if line.product_id.default_code == item.get('line_item')['sku']:
                                         product = line.product_id
@@ -215,9 +242,8 @@ class SaleWorkflowProcess(models.Model):
                                                 'product_id': product.id if product else False,
                                                 'product_uom_qty': product_qty,
                                                 'product_uom': product_uom.id if product_uom else False,
-                                                'location_id': customer_location.id,
-                                                'location_dest_id': self.env['stock.location'].search(
-                                                    [('usage', '=', 'internal')]).id,
+                                                'location_id': self.env.ref("shopify_ept.customer_location").id,
+                                                'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
                                                 'state': 'confirmed',
                                                 'shopify_refund_id': refund['id'],
                                                 'sale_line_id': line.id
@@ -225,19 +251,20 @@ class SaleWorkflowProcess(models.Model):
                                             stock_move = self.env['stock.move'].create(vals)
                                             stock_move._action_assign()
                                             stock_move._set_quantity_done(product_qty)
-                                            # stock_move._action_done()
+                                            stock_move._action_done()
 
                                     # proccess for updating stock in shopify
                                     if line.product_id.product_tmpl_id.temp_checkbox:
                                         forcast_qty = line.product_id.virtual_available
                                         packs = line.product_id.variant_package_ids
                                         # for product
-                                        shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                                   line.product_id.inventory_item_id,
-                                                                   int(forcast_qty))
+                                        if line.product_id.inventory_item_id:
+                                            shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                       line.product_id.inventory_item_id,
+                                                                       int(forcast_qty))
                                         # for packs
-                                        if packs:
-                                            for pac in packs:
+                                        for pac in packs:
+                                            if pac.inventory_item_id:
                                                 shopify.InventoryLevel.set(location_id.shopify_location_id,
                                                                            pac.inventory_item_id,
                                                                            int(forcast_qty / pac.qty))
@@ -275,27 +302,6 @@ class SaleWorkflowProcess(models.Model):
         #             res_dict = pick.button_validate()
         #             Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
 
-        elif data_dic.get('fulfillment_status') == 'partial':
-            dict_of_shopify = {}
-            dilevries = orders.picking_ids.filtered(lambda line: line.state in ['done'])
-            delivery_list = [delivery.shopify_delivery_id for delivery in dilevries]
-            if data_dic.get('fulfillments'):
-                for ful_fill_list in data_dic.get('fulfillments'):
-                    if str(ful_fill_list.get("id")) not in delivery_list:
-                        for item_line in ful_fill_list.get('line_items'):
-                             dict_of_shopify[item_line.get('sku')] = item_line.get('quantity')
-                            
-                for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
-                    for line in pick.move_ids_without_package:
-                        code = line.variant_package_id.code if line.variant_package_id else line.product_id.default_code
-                        if code in list(dict_of_shopify):
-                            line.package_qty_done = dict_of_shopify[code]
-                            line._onchange_qty_done()
-
-                    pick.shopify_delivery_id = ful_fill_list.get("id")
-                    pick.action_assign()
-                    res_dict = pick.button_validate()
-                    Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
 
         if data_dic.get('financial_status') == 'paid':
             if orders.order_line.filtered(lambda l: l.product_id.invoice_policy == 'order'):
@@ -327,14 +333,9 @@ class SaleWorkflowProcess(models.Model):
         #             reversal = move_reversal.reverse_moves()
         #             reverse_move = self.env['account.move'].browse(reversal['res_id'])
 
-
-
-
-
-
         elif data_dic.get('financial_status') in ["partially_refunded", "refunded"]:
 
-            odoo_refund_list = [refund.shopify_refund_id for refund in self.env['stock.move'].search([])]
+            odoo_refund_list = [refund.shopify_refund_id for refund in self.env['stock.move'].search([('origin', '=', orders.name)])]
 
             if data_dic.get('refunds'):
                 for refund in data_dic.get('refunds'):
@@ -345,7 +346,7 @@ class SaleWorkflowProcess(models.Model):
                                     if line.variant_package_id:
                                         if line.variant_package_id.code == item.get('line_item')['sku']:
                                             product = line.variant_package_id.product_id
-                                            product_qty = item.get('quantity')
+                                            product_qty = (item.get('quantity') * line.variant_package_id.qty)
                                             product_uom = line.product_uom
                                             if product and product_qty and product_uom:
                                                 vals = {
@@ -355,29 +356,32 @@ class SaleWorkflowProcess(models.Model):
                                                     'product_id': product.id if product else False,
                                                     'product_uom_qty': product_qty,
                                                     'product_uom': product_uom.id if product_uom else False,
-                                                    'location_id': customer_location.id,
-                                                    'location_dest_id': self.env['stock.location'].search([('usage', '=', 'internal')]).id,
+                                                    'location_id': self.env.ref("shopify_ept.customer_location").id,
+                                                    'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
                                                     'state': 'confirmed',
                                                     'shopify_refund_id': refund['id'],
+                                                    'package_id':line.variant_package_id.id,
                                                     'sale_line_id': line.id
                                                 }
                                                 stock_move = self.env['stock.move'].create(vals)
                                                 stock_move._action_assign()
                                                 stock_move._set_quantity_done(product_qty)
-                                                # stock_move._action_done()
+                                                stock_move._action_done()
                                         # proccess for updating stock of pack in shopify
                                         if line.product_id.product_tmpl_id.temp_checkbox:
                                             forcast_qty = line.variant_package_id.product_id.virtual_available
                                             packs = line.variant_package_id.product_id.variant_package_ids
                                             # for product
-                                            shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                                       line.product_id.inventory_item_id,
-                                                                       int(forcast_qty))
-                                            if packs:
-                                                for pac in packs:
+                                            if line.product_id.inventory_item_id:
+                                                shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                           line.product_id.inventory_item_id,
+                                                                           int(forcast_qty))
+                                            for pac in packs:
+                                                if pac.inventory_item_id:
                                                     shopify.InventoryLevel.set(location_id.shopify_location_id,
                                                                                pac.inventory_item_id,
                                                                                int(forcast_qty / pac.qty))
+
                                     else:
                                         if line.product_id.default_code == item.get('line_item')['sku']:
                                             product = line.product_id
@@ -391,8 +395,8 @@ class SaleWorkflowProcess(models.Model):
                                                     'product_id': product.id if product else False,
                                                     'product_uom_qty': product_qty,
                                                     'product_uom': product_uom.id if product_uom else False,
-                                                    'location_id': customer_location.id,
-                                                    'location_dest_id': self.env['stock.location'].search([('usage', '=', 'internal')]).id,
+                                                    'location_id': self.env.ref("shopify_ept.customer_location").id,
+                                                    'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
                                                     'state': 'confirmed',
                                                     'shopify_refund_id': refund['id'],
                                                     'sale_line_id': line.id
@@ -400,19 +404,20 @@ class SaleWorkflowProcess(models.Model):
                                                 stock_move = self.env['stock.move'].create(vals)
                                                 stock_move._action_assign()
                                                 stock_move._set_quantity_done(product_qty)
-                                                # stock_move._action_done()
+                                                stock_move._action_done()
 
                                         #proccess for updating stock in shopify
                                         if line.product_id.product_tmpl_id.temp_checkbox:
                                             forcast_qty = line.product_id.virtual_available
                                             packs = line.product_id.variant_package_ids
                                             # for product
-                                            shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                                       line.product_id.inventory_item_id,
-                                                                       int(forcast_qty))
+                                            if line.product_id.inventory_item_id:
+                                                shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                           line.product_id.inventory_item_id,
+                                                                           int(forcast_qty))
                                             # for packs
-                                            if packs:
-                                                for pac in packs:
+                                            for pac in packs:
+                                                if pac.inventory_item_id:
                                                     shopify.InventoryLevel.set(location_id.shopify_location_id,
                                                                                pac.inventory_item_id,
                                                                                int(forcast_qty / pac.qty))
@@ -513,8 +518,7 @@ class SaleWorkflowProcess(models.Model):
                         if reverse_move.amount_total:
                             reverse_move.action_post()
                             action_data = reverse_move.action_register_payment()
-                            wizard = Form(self.env['account.payment.register'].with_context(
-                                action_data['context'])).save()
+                            wizard = self.env['account.payment.register'].with_context(action_data['context']).create({})
                             wizard.action_create_payments()
 
 

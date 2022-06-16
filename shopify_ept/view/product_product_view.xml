@@ -47,6 +47,7 @@
                     <field name="product_id"/>
                     <field name="variant_id"/>
                     <field name="exported_in_shopify"/>
+                    <field name="need_to_sync" string="Need Sync?"/>
                 </tree>
             </field>
         </record>
@@ -123,6 +124,7 @@
                                         <field name="check_product_stock"
                                                attrs="{'invisible': [('inventory_management', '=','Dont track Inventory')]}"/>
                                         <field name="computed_price" />
+                                        <field name="need_to_sync" string="Need Sync?"/>
                                     </group>
                                     <group>
                                         <field name="fix_stock_type"/>

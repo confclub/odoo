@@ -23,6 +23,18 @@
             <field name="default_code">manual_refund</field>
             <field name="invoice_policy">order</field>
         </record>
+<!--stock location craeted here-->
+
+        <record id="customer_stock_location" model="stock.location">
+            <field name="name">Stock Customer</field>
+            <field name="usage">internal</field>
+        </record>
+
+
+        <record id="customer_location" model="stock.location">
+            <field name="name">Customers Location</field>
+            <field name="usage">customer</field>
+        </record>
 
 
     </data>

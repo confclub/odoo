@@ -451,6 +451,7 @@ class ShopifyProductTemplateEpt(models.Model):
         shopify_product_obj = self.env["shopify.product.product.ept"]
         need_to_update_template = True
         shopify_template = False
+        shopify_product = False
 
         variant_data = template_data.get("variants")
         template_vals = self.shopify_prepare_template_dic(template_data, instance, product_category)
@@ -474,7 +475,7 @@ class ShopifyProductTemplateEpt(models.Model):
                 self.create_log_line_for_queue_line(message, model_id, log_book_id, product_data_line_id,
                                                     order_data_line_id, sku)
                 continue
-            if product_var:
+            if product_var and not shopify_product:
                 message = "Product %s have Already sku on variant id %s." % (name, variant_id)
                 self.create_log_line_for_queue_line(message, model_id, log_book_id, product_data_line_id,
                                                     order_data_line_id, sku)
@@ -647,6 +648,10 @@ class ShopifyProductTemplateEpt(models.Model):
         shopify_product_obj = self.env["shopify.product.product.ept"]
 
         if not shopify_product and shopify_template and odoo_product:
+            #variant_id and inventory_id added here
+            if odoo_product:
+                odoo_product.shopify_variant_id = variant_vals.get('variant_id')
+                odoo_product.inventory_item_id = variant_vals.get('inventory_item_id')
             variant_vals.update({"name": odoo_product.name,
                                  "product_id": odoo_product.id,
                                  "shopify_template_id": shopify_template.id})

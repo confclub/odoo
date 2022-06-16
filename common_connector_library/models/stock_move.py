@@ -15,3 +15,4 @@ class StockMoveInherit(models.Model):
 
 
     shopify_refund_id = fields.Char()
+    package_id = fields.Many2one("variant.package")

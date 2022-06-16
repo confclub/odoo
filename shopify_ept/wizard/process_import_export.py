@@ -122,13 +122,13 @@ class ShopifyProcessImportExport(models.TransientModel):
         elif self.shopify_operation == "import_unshipped_orders":
             order_date_queue_obj.shopify_create_order_data_queues(instance, self.orders_from_date,
                                                                   self.orders_to_date,
-                                                                  order_type="unshipped")
+                                                                  order_type="unshipped", is_caps=instance.is_cap_no_gap)
 
         elif self.shopify_operation == "import_shipped_orders":
             order_queues = order_date_queue_obj.shopify_create_order_data_queues(instance,
                                                                                  self.orders_from_date,
                                                                                  self.orders_to_date,
-                                                                                 order_type="shipped")
+                                                                                 order_type="shipped", is_caps=instance.is_cap_no_gap)
             if order_queues:
                 queue_ids = order_queues
                 action_name = "shopify_ept.action_shopify_order_data_queue_ept"

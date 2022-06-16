@@ -24,12 +24,13 @@ class CapsContract(models.Model):
     ], default='draft')
     customer_id = fields.Many2one("res.partner")
     start_date = fields.Date()
-    end_date = fields.Date()
     attachment_ids = fields.One2many('contract.attachment', 'contract_id', string='Attachments')
 
     product_ids = fields.One2many("contract.product", "contract_id")
     sale_count = fields.Integer(string="Sale Count", compute='_compute_sale_count')
-    order_months = fields.Integer(compute='_compute_order_months', help='how many months this order is for' )
+    order_months = fields.Integer(help='how many months this order is for' )
+    shipment_price = fields.Float()
+    shopify_order_id = fields.Char()
 
     @api.model
     def create(self, vals):
@@ -356,6 +357,8 @@ class CapsContract(models.Model):
                 # Configuration
                 roundToWholeCarton = 0.75
                 daysPerYear = 365
+                CAPSFundingTotal = line.total_funding
+                fundingTotal = self.order_months * CAPSFundingTotal / 12
 
                 # Output Values
                 deliveryCartons1_1 = 0
@@ -419,6 +422,15 @@ class CapsContract(models.Model):
                 # print("Cartons:",wholeCartons)
                 # print("Bags   :",requiredBags)
 
+                # Calculate the sell price per bag and sell price per carton
+                sellPricePerBag = fundingTotal / (requiredBags + wholeCartons * (line.pieces_per_carton / line.pieces_per_bag))
+                sellPricePerCarton = sellPricePerBag * (line.pieces_per_carton / line.pieces_per_bag)
+                line.price_per_pack = sellPricePerBag
+                line.price_per_carton = sellPricePerCarton
+
+                print("Bag Sell Price: ", sellPricePerBag)
+                print("Carton Sell Price: ", sellPricePerCarton)
+
                 #################################
                 # NOW WE CALCULATE THE DELIVERIES
                 #################################
@@ -449,11 +461,11 @@ class CapsContract(models.Model):
                 print("##### DELIVERY 1.1 / NOW #####")
                 print("Cartons:", deliveryCartons1_1)
                 print("Packs  :", deliveryPacks1_1)
-                if fields.Date.today() in list(product_dic.keys()):
-                    product_dic[fields.Date.today()].append([line.product_pack_id.id, deliveryPacks1_1])
-                    product_dic[fields.Date.today()].append([line.product_carton_id.id, deliveryCartons1_1])
+                if self.start_date in list(product_dic.keys()):
+                    product_dic[self.start_date].append([line.product_pack_id.id, deliveryPacks1_1, line.price_per_pack,line.product_pack_id.uom_id.id])
+                    product_dic[self.start_date].append([line.product_carton_id.id, deliveryCartons1_1, line.price_per_carton, line.product_carton_id.product_id.uom_id.id])
                 else:
-                    product_dic[fields.Date.today()] = [[line.product_pack_id.id, deliveryPacks1_1], [line.product_carton_id.id,deliveryCartons1_1]]
+                    product_dic[self.start_date] = [[line.product_pack_id.id, deliveryPacks1_1, line.price_per_pack,line.product_pack_id.uom_id.id], [line.product_carton_id.id,deliveryCartons1_1, line.price_per_carton, line.product_carton_id.product_id.uom_id.id]]
 
                 # so = self.env['sale.order'].create({
                 #     'partner_id': self.customer_id.id,
@@ -498,11 +510,11 @@ class CapsContract(models.Model):
                 print("##### DELIVERY 1.2 / 10 Days after Delivery 1.1 Received #####")
                 print("Cartons:", deliveryCartons1_2)
                 print("Packs  :", deliveryPacks1_2)
-                if fields.Date.today() + timedelta(10) in list(product_dic.keys()):
-                    product_dic[fields.Date.today() + timedelta(10)].append([line.product_pack_id.id, deliveryPacks1_2])
-                    product_dic[fields.Date.today() + timedelta(10)].append([line.product_carton_id.id, deliveryCartons1_2])
+                if self.start_date + timedelta(10) in list(product_dic.keys()):
+                    product_dic[self.start_date + timedelta(10)].append([line.product_pack_id.id, deliveryPacks1_2, line.price_per_pack,line.product_pack_id.uom_id.id])
+                    product_dic[self.start_date + timedelta(10)].append([line.product_carton_id.id, deliveryCartons1_2, line.price_per_carton,line.product_carton_id.product_id.uom_id.id])
                 else:
-                    product_dic[fields.Date.today() + timedelta(10)] = [[line.product_pack_id.id, deliveryPacks1_2], [line.product_carton_id.id, deliveryCartons1_2]]
+                    product_dic[self.start_date + timedelta(10)] = [[line.product_pack_id.id, deliveryPacks1_2, line.price_per_pack,line.product_pack_id.uom_id.id], [line.product_carton_id.id, deliveryCartons1_2, line.price_per_carton,line.product_carton_id.product_id.uom_id.id]]
 
                 # so = self.env['sale.order'].create({
                 #     'partner_id': self.customer_id.id,
@@ -561,11 +573,11 @@ class CapsContract(models.Model):
                     #     'product_uom': 1,
                     #     'order_id': so.id,
                     # })
-                    if fields.Date.today() + timedelta(endPeriodDays) in list(product_dic.keys()):
-                        product_dic[fields.Date.today() + timedelta(endPeriodDays)].append([line.product_carton_id.id, deliveryCartons2])
+                    if self.start_date + timedelta(daysInFirstPeriod) in list(product_dic.keys()):
+                        product_dic[self.start_date + timedelta(daysInFirstPeriod)].append([line.product_carton_id.id, deliveryCartons2, line.price_per_carton,line.product_carton_id.product_id.uom_id.id])
                     else:
 
-                        product_dic[fields.Date.today() + timedelta(endPeriodDays)] = [[line.product_carton_id.id, deliveryCartons2]]
+                        product_dic[self.start_date + timedelta(daysInFirstPeriod)] = [[line.product_carton_id.id, deliveryCartons2, line.price_per_carton,line.product_carton_id.product_id.uom_id.id]]
 
                     numPeriodsRemaining = numPeriodsRemaining - 1
 
@@ -601,10 +613,10 @@ class CapsContract(models.Model):
                     #     'product_uom': 1,
                     #     'order_id': so.id,
                     # })
-                    if fields.Date.today() + timedelta(endPeriodDays) in list(product_dic.keys()):
-                        product_dic[fields.Date.today() + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons3])
+                    if self.start_date + timedelta(endPeriodDays) in list(product_dic.keys()):
+                        product_dic[self.start_date + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons3, line.price_per_carton,line.product_carton_id.product_id.uom_id.id])
                     else:
-                        product_dic[fields.Date.today() + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons3]]
+                        product_dic[self.start_date + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons3, line.price_per_carton,line.product_carton_id.product_id.uom_id.id]]
 
                     numPeriodsRemaining = numPeriodsRemaining - 1
 
@@ -640,40 +652,51 @@ class CapsContract(models.Model):
                     #     'product_uom': 1,
                     #     'order_id': so.id,
                     # })
-                    if fields.Date.today() + timedelta(endPeriodDays) in list(product_dic.keys()):
-                        product_dic[fields.Date.today() + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons4])
+                    if self.start_date + timedelta(endPeriodDays) in list(product_dic.keys()):
+                        product_dic[self.start_date + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons4, line.price_per_carton,line.product_carton_id.product_id.uom_id.id])
                     else:
-                        product_dic[fields.Date.today() + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons4]]
+                        product_dic[self.start_date + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons4, line.price_per_carton,line.product_carton_id.product_id.uom_id.id]]
 
                     numPeriodsRemaining = numPeriodsRemaining - 1
 
                     print("##### DELIVERY 4 / 3 Months After Delivery 3 #####")
                     print("Cartons:", deliveryCartons4)
-
+            shipment_pro = self.env['product.product'].search([('default_code', '=', 'shopifyshippingproduct')])
             for key in product_dic:
                 so = self.env['sale.order'].create({
                     'partner_id': self.customer_id.id,
                     'date_order': key,
                     'contract_id': self.id,
                 })
+                if key == self.start_date:
+                    sol = self.env['sale.order.line'].create({
+                        'product_id': shipment_pro.id,
+                        'qty': 1,
+                        'price_unit': self.shipment_price,
+                        'product_uom': shipment_pro.uom_id.id,
+                        'order_id': so.id,
+                    })
+                    sol._onchange_qty()
                 for line in product_dic[key]:
-                    self.env['sale.order.line'].create({
+                    sol = self.env['sale.order.line'].create({
                             'product_id': line[0],
-                            'product_uom_qty': line[1],
-                            'product_uom': 1,
+                            'qty': line[1],
+                            'price_unit': line[2],
+                            'product_uom': line[3],
                             'order_id': so.id,
                     })
+                    sol._onchange_qty()
                 if so.order_line:
                     for so_line in so.order_line:
-                        if so_line.product_uom_qty == 0:
+                        if so_line.qty == 0:
                             so_line.unlink()
         self.state = "start"
 
-    def _compute_order_months(self):
-        for line in self:
-             months = relativedelta.relativedelta(line.end_date, line.start_date).months
-
-             line.order_months = months
+    # def _compute_order_months(self):
+    #     for line in self:
+    #          months = relativedelta.relativedelta(line.end_date, line.start_date).months
+    #
+    #          line.order_months = months
 
     def action_modify_contract(self):
 

@@ -98,20 +98,20 @@ class ShopifyOrderDataQueueEpt(models.Model):
         return super(ShopifyOrderDataQueueEpt, self).create(vals)
 
     def import_order_cron_action(self, ctx={}):
-        if not ctx:
-            ctx['shopify_instance_id'] = self.env['shopify.instance.ept'].search([], limit=1).id
-        instance_id = ctx.get('shopify_instance_id')
-        instance = self.env['shopify.instance.ept'].browse(instance_id)
-        from_date = instance.last_date_order_import
-        to_date = datetime.now()
-        if not from_date:
-            from_date = to_date - timedelta(3)
+        instences = self.env['shopify.instance.ept'].search([])
+        for instenc in instences:
+            instance_id = instenc.id
+            instance = self.env['shopify.instance.ept'].browse(instance_id)
+            from_date = instance.last_date_order_import
+            to_date = datetime.now()
+            if not from_date:
+                from_date = to_date - timedelta(3)
 
-        self.shopify_create_order_data_queues(instance, from_date, to_date, created_by="scheduled_action",
-                                              order_type="unshipped")
-        instance.last_date_order_import = to_date
-        # auto sale_order proccess cron job called here
-        self.env['shopify.order.data.queue.line.ept'].auto_import_order_queue_data()
+            self.shopify_create_order_data_queues(instance, from_date, to_date, created_by="scheduled_action",
+                                                  order_type="unshipped", is_caps=instance.is_cap_no_gap)
+            instance.last_date_order_import = to_date
+            # auto sale_order proccess cron job called here
+            self.env['shopify.order.data.queue.line.ept'].auto_import_order_queue_data()
 
         return
 
@@ -135,7 +135,7 @@ class ShopifyOrderDataQueueEpt(models.Model):
         return from_date, to_date
 
     def shopify_create_order_data_queues(self, instance, from_date, to_date, created_by="import",
-                                         order_type="unshipped"):
+                                         order_type="unshipped", is_caps=False):
         """
         This method used to create order data queues.
         @param : self, instance,  from_date, to_date, created_by, order_type
@@ -174,12 +174,14 @@ class ShopifyOrderDataQueueEpt(models.Model):
         if order_partial_ids:
             order_queues = order_data_queue_line_obj.create_order_data_queue_line(order_partial_ids,
                                                                                   instance,
-                                                                                  created_by)
+                                                                                  created_by,
+                                                                                  is_cap=is_caps)
 
         if order_ship_ids:
             order_queues = order_data_queue_line_obj.create_order_data_queue_line(order_ship_ids,
                                                                                   instance,
-                                                                                  created_by)
+                                                                                  created_by,
+                                                                                  is_cap=is_caps)
         #     if len(order_ship_ids) >= 250:
         #         order_ship_ids, order_queue_list = self.list_all_orders(order_ship_ids, instance, created_by,
         #                                                            'shipped')
@@ -188,7 +190,8 @@ class ShopifyOrderDataQueueEpt(models.Model):
         if order_unship_ids:
             order_data_queue_line_obj.create_order_data_queue_line(order_unship_ids,
                                                                    instance,
-                                                                   created_by)
+                                                                   created_by,
+                                                                   is_cap=is_caps)
             # self.process_shopify_orders_directly(order_unship_ids, instance)
             # instance.last_date_order_import = to_date - timedelta(days=2)
 
@@ -220,47 +223,47 @@ class ShopifyOrderDataQueueEpt(models.Model):
             log_book.unlink()
         return order_ids
 
-    def list_all_orders(self, result, instance, created_by, order_type):
-        """
-        This method used to get the list of orders from Shopify to Odoo.
-        @param : self, result, instance, created_by, order_type
-        @author: Haresh Mori @Emipro Technologies Pvt. Ltd on date 06/11/2019.
-        Task_id : 157350
-        Modify on date 27/12/2019 Taken pagination changes
-        @change : Maulik Barad on Date 10-Sep-2020.
-        """
-        order_data_queue_line_obj = self.env["shopify.order.data.queue.line.ept"]
-        sum_order_list = []
-        order_queue_list = []
-        catch = ""
-
-        while result:
-            page_info = ""
-            if order_type == "unshipped":
-                sum_order_list += result
-            link = shopify.ShopifyResource.connection.response.headers.get('Link')
-            if not link or not isinstance(link, str):
-                return sum_order_list, order_queue_list
-
-            for page_link in link.split(','):
-                if page_link.find('next') > 0:
-                    page_info = page_link.split(';')[0].strip('<>').split('page_info=')[1]
-                    try:
-                        result = shopify.Order().find(limit=250, page_info=page_info)
-                    except ClientError as e:
-                        if hasattr(e, "response"):
-                            if e.response.code == 429 and e.response.msg == "Too Many Requests":
-                                time.sleep(5)
-                                result = shopify.Order().find(limit=250, page_info=page_info)
-                    except Exception as e:
-                        raise UserError(e)
-                    if result and order_type == "shipped":
-                        order_queues = order_data_queue_line_obj.create_order_data_queue_line(result, instance,
-                                                                                              created_by)
-                        order_queue_list += order_queues
-            if catch == page_info:
-                break
-        return sum_order_list, order_queue_list
+    # def list_all_orders(self, result, instance, created_by, order_type):
+    #     """
+    #     This method used to get the list of orders from Shopify to Odoo.
+    #     @param : self, result, instance, created_by, order_type
+    #     @author: Haresh Mori @Emipro Technologies Pvt. Ltd on date 06/11/2019.
+    #     Task_id : 157350
+    #     Modify on date 27/12/2019 Taken pagination changes
+    #     @change : Maulik Barad on Date 10-Sep-2020.
+    #     """
+    #     order_data_queue_line_obj = self.env["shopify.order.data.queue.line.ept"]
+    #     sum_order_list = []
+    #     order_queue_list = []
+    #     catch = ""
+    #
+    #     while result:
+    #         page_info = ""
+    #         if order_type == "unshipped":
+    #             sum_order_list += result
+    #         link = shopify.ShopifyResource.connection.response.headers.get('Link')
+    #         if not link or not isinstance(link, str):
+    #             return sum_order_list, order_queue_list
+    #
+    #         for page_link in link.split(','):
+    #             if page_link.find('next') > 0:
+    #                 page_info = page_link.split(';')[0].strip('<>').split('page_info=')[1]
+    #                 try:
+    #                     result = shopify.Order().find(limit=250, page_info=page_info)
+    #                 except ClientError as e:
+    #                     if hasattr(e, "response"):
+    #                         if e.response.code == 429 and e.response.msg == "Too Many Requests":
+    #                             time.sleep(5)
+    #                             result = shopify.Order().find(limit=250, page_info=page_info)
+    #                 except Exception as e:
+    #                     raise UserError(e)
+    #                 if result and order_type == "shipped":
+    #                     order_queues = order_data_queue_line_obj.create_order_data_queue_line(result, instance,
+    #                                                                                           created_by)
+    #                     order_queue_list += order_queues
+    #         if catch == page_info:
+    #             break
+    #     return sum_order_list, order_queue_list
 
     def import_order_process_by_remote_ids(self, instance, order_ids):
         """

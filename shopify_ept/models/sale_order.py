@@ -229,110 +229,163 @@ class SaleOrder(models.Model):
         order_ids = []
         commit_count = 0
         instance = log_book.shopify_instance_id
-
+        #ak yaha chnage ki hy
+        instance.auto_import_product = True
         instance.connect_in_shopify()
 
         for order_data_line in order_data_lines:
-            commit_count += 1
-            if commit_count == 5:
-                self._cr.commit()
-                commit_count = 0
-            if is_queue_line:
-                order_data = order_data_line.order_data
-                order_response = json.loads(order_data)
+            #if order if from caps no gaps
+            if order_data_line.is_cap_no_gap:
+                customer = self.env['res.partner'].search([('name', '=', order_data_line.customer_name), ('email', '=',order_data_line.customer_email)], limit=1)
+                if not customer:
+                    customer = self.env['res.partner'].create({
+                        "name": order_data_line.customer_name,
+                        "email": order_data_line.customer_email
+                    })
+                order_response = json.loads(order_data_line.order_data)
+                order_date = parser.parse(order_response.get('created_at')).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S")
+                cap_contract = self.env['cap.contract'].search([('shopify_order_id', '=', order_response.get("id"))])
+                if not cap_contract:
+                    cap_contract = self.env['cap.contract'].create({
+                        "name": order_response.get("order_number"),
+                        "customer_id": customer.id,
+                        "start_date": order_date,
+                        "order_months": int(order_response.get('note_attributes')[0].get('value')),
+                        "shopify_order_id": order_response.get("id"),
+                    })
+                    #contract lines of caps no gaps
+                    lines = order_response.get("line_items")
+                    for line in lines:
+                        product = self.env['product.product'].search([('default_code', '=',line.get("sku")[2:])])
+                        package = self.env['variant.package'].search([('code', '=', line.get("sku")[2:])])
+                        pieces_per_carton = pieces_per_bag = 0
+                        if product:
+                            try:
+                                pieces_per_bag = int(line.get("sku")[-2:])
+                                pieces_per_carton = pieces_per_bag * product.variant_package_ids[0].qty if product.variant_package_ids[0] else 0
+                            except Exception:
+                                pieces_per_carton = 20
+                                pieces_per_bag = 6
+                        elif package:
+                            pieces_per_carton = 20
+                            pieces_per_bag = 6
+
+                        self.env['contract.product'].create({
+                            "product_pack_id": product.id,
+                            "product_carton_id": product.variant_package_ids[0].id if product.variant_package_ids else None,
+                            "description": line.get('name'),
+                            "pieces_per_carton": pieces_per_carton,
+                            "pieces_per_bag": pieces_per_bag,
+                            "total_funding": float(line.get('price')),
+                            "pieces_per_daily_pack": 2,
+                            "num_daily_packs": 1,
+                            "contract_id": cap_contract.id,
+                        })
+                    order_data_line.state = "done"
+                #when order is from confidence club
             else:
-                if not isinstance(order_data_line, dict):
-                    order_response = order_data_line.to_dict()
+
+                commit_count += 1
+                if commit_count == 5:
+                    self._cr.commit()
+                    commit_count = 0
+                if is_queue_line:
+                    order_data = order_data_line.order_data
+                    order_response = json.loads(order_data)
                 else:
-                    order_response = order_data_line
-                order_data_line = False
+                    if not isinstance(order_data_line, dict):
+                        order_response = order_data_line.to_dict()
+                    else:
+                        order_response = order_data_line
+                    order_data_line = False
 
-            order_number = order_response.get("order_number")
-            _logger.info("Started processing Shopify order(%s) and order id is(%s)"
-                         % (order_number, order_response.get("id")))
-            sale_order = self.search([("shopify_order_id", "=", order_response.get("id")),
-                                      ("shopify_instance_id", "=", instance.id),
-                                      ("shopify_order_number", "=", order_number)])
-            if not sale_order:
-                sale_order = self.search([("shopify_instance_id", "=", instance.id),
-                                          ("client_order_ref", "=", order_response.get("name"))])
+                order_number = order_response.get("order_number")
+                _logger.info("Started processing Shopify order(%s) and order id is(%s)"
+                             % (order_number, order_response.get("id")))
+                sale_order = self.search([("shopify_order_id", "=", order_response.get("id")),
+                                          ("shopify_instance_id", "=", instance.id),
+                                          ("shopify_order_number", "=", order_number)])
+                if not sale_order:
+                    sale_order = self.search([("shopify_instance_id", "=", instance.id),
+                                              ("client_order_ref", "=", order_response.get("name"))])
 
-            if sale_order:
+                if sale_order:
+                    if order_data_line:
+                        order_data_line.write({"state": "done", "processed_at": datetime.now(),
+                                               "sale_order_id": sale_order.id})
+                        self._cr.commit()
+                    _logger.info("Done the Process of order Because Shopify Order(%s) is exist in Odoo and "
+                                 "Odoo order is(%s)" % (order_number, sale_order.name))
+                    # continue  # Skip existing order
+                if not sale_order:
+                    pos_order = True if order_response.get("source_name", "") == "pos" else False
+                    partner, delivery_address, invoice_address = self.prepare_shopify_customer_and_addresses(
+                        order_response, pos_order, instance, order_data_line, log_book)
+                    if not partner:
+                        continue
+
+                    lines = order_response.get("line_items")
+                    if self.check_mismatch_details(lines, instance, order_number, order_data_line, log_book):
+                        _logger.info("Mismatch details found in this Shopify Order(%s) and id (%s)" % (
+                            order_number, order_response.get("id")))
+                        if order_data_line:
+                            order_data_line.write({"state": "failed", "processed_at": datetime.now()})
+                            #ak yeh change kiya hy
+                        continue
+
+                    sale_order = self.shopify_create_order(instance, partner, delivery_address, invoice_address,
+                                                           order_data_line, order_response, log_book)
+                    if not sale_order:
+                        message = "Configuration missing in Odoo while importing Shopify Order(%s) and id (%s)" % (
+                            order_number, order_response.get("id"))
+                        _logger.info(message)
+                        self.create_shopify_log_line(message, order_data_line, log_book, order_response.get("name"))
+                        continue
+                    order_ids.append(sale_order.id)
+
+                    location_vals = self.set_shopify_location_and_warehouse(order_response, instance, pos_order)
+                    sale_order.write(location_vals)
+
+                    risk_result = shopify.OrderRisk().find(order_id=order_response.get("id"))
+                    if risk_result:
+                        order_risk_obj.shopify_create_risk_in_order(risk_result, sale_order)
+                        risk = sale_order.risk_ids.filtered(lambda x: x.recommendation != "accept")
+                        if risk:
+                            sale_order.is_risky_order = True
+
+                    _logger.info("Creating order lines for Odoo order(%s) and Shopify order is (%s)." % (
+                        sale_order.name, order_number))
+                    sale_order.create_shopify_order_lines(lines, order_response, instance)  # Order Line create here
+
+                    _logger.info("Created order lines for Odoo order(%s) and Shopify order is (%s)"
+                                 % (sale_order.name, order_number))
+
+                    sale_order.create_shopify_shipping_lines(order_response, instance)
+                    _logger.info("Created Shipping lines for order (%s)." % sale_order.name)
+
+                    _logger.info("Starting auto workflow process for Odoo order(%s) and Shopify order is (%s)"
+                                 % (sale_order.name, order_number))
+
+                # if not sale_order.is_risky_order:
+
+                    # if sale_order.shopify_order_status == "fulfilled":
+                sale_order.sale_api_data = str(order_data_line.order_data) if order_data_line else str(order_response)
+                sale_order.auto_workflow_process_id.shipped_order_workflow_ept(sale_order)
+
+                    # elif sale_order.shopify_order_status == "partial":
+                    #     sale_order.auto_workflow_process_id.shipped_order_workflow_ept(sale_order)
+                    #
+                    # else:
+                    #     sale_order.process_orders_and_invoices_ept()
+
+                _logger.info("Done auto workflow process for Odoo order(%s) and Shopify order is (%s)"
+                             % (sale_order.name, order_number))
+
                 if order_data_line:
                     order_data_line.write({"state": "done", "processed_at": datetime.now(),
                                            "sale_order_id": sale_order.id})
-                    self._cr.commit()
-                _logger.info("Done the Process of order Because Shopify Order(%s) is exist in Odoo and "
-                             "Odoo order is(%s)" % (order_number, sale_order.name))
-                # continue  # Skip existing order
-            if not sale_order:
-                pos_order = True if order_response.get("source_name", "") == "pos" else False
-                partner, delivery_address, invoice_address = self.prepare_shopify_customer_and_addresses(
-                    order_response, pos_order, instance, order_data_line, log_book)
-                if not partner:
-                    continue
-
-                lines = order_response.get("line_items")
-                # if self.check_mismatch_details(lines, instance, order_number, order_data_line, log_book):
-                #     _logger.info("Mismatch details found in this Shopify Order(%s) and id (%s)" % (
-                #         order_number, order_response.get("id")))
-                #     if order_data_line:
-                #         order_data_line.write({"state": "failed", "processed_at": datetime.now()})
-                #     continue
-
-                sale_order = self.shopify_create_order(instance, partner, delivery_address, invoice_address,
-                                                       order_data_line, order_response, log_book)
-                if not sale_order:
-                    message = "Configuration missing in Odoo while importing Shopify Order(%s) and id (%s)" % (
-                        order_number, order_response.get("id"))
-                    _logger.info(message)
-                    self.create_shopify_log_line(message, order_data_line, log_book, order_response.get("name"))
-                    continue
-                order_ids.append(sale_order.id)
-
-                location_vals = self.set_shopify_location_and_warehouse(order_response, instance, pos_order)
-                sale_order.write(location_vals)
-
-                risk_result = shopify.OrderRisk().find(order_id=order_response.get("id"))
-                if risk_result:
-                    order_risk_obj.shopify_create_risk_in_order(risk_result, sale_order)
-                    risk = sale_order.risk_ids.filtered(lambda x: x.recommendation != "accept")
-                    if risk:
-                        sale_order.is_risky_order = True
-
-                _logger.info("Creating order lines for Odoo order(%s) and Shopify order is (%s)." % (
-                    sale_order.name, order_number))
-                sale_order.create_shopify_order_lines(lines, order_response, instance)  # Order Line create here
-
-                _logger.info("Created order lines for Odoo order(%s) and Shopify order is (%s)"
+                _logger.info("Processed the Odoo Order %s process and Shopify Order (%s)"
                              % (sale_order.name, order_number))
-
-                sale_order.create_shopify_shipping_lines(order_response, instance)
-                _logger.info("Created Shipping lines for order (%s)." % sale_order.name)
-
-                _logger.info("Starting auto workflow process for Odoo order(%s) and Shopify order is (%s)"
-                             % (sale_order.name, order_number))
-
-            # if not sale_order.is_risky_order:
-
-                # if sale_order.shopify_order_status == "fulfilled":
-            sale_order.sale_api_data = str(order_data_line.order_data) if order_data_line else str(order_response)
-            sale_order.auto_workflow_process_id.shipped_order_workflow_ept(sale_order)
-
-                # elif sale_order.shopify_order_status == "partial":
-                #     sale_order.auto_workflow_process_id.shipped_order_workflow_ept(sale_order)
-                #
-                # else:
-                #     sale_order.process_orders_and_invoices_ept()
-
-            _logger.info("Done auto workflow process for Odoo order(%s) and Shopify order is (%s)"
-                         % (sale_order.name, order_number))
-
-            if order_data_line:
-                order_data_line.write({"state": "done", "processed_at": datetime.now(),
-                                       "sale_order_id": sale_order.id})
-            _logger.info("Processed the Odoo Order %s process and Shopify Order (%s)"
-                         % (sale_order.name, order_number))
 
         return order_ids
 
@@ -346,23 +399,29 @@ class SaleOrder(models.Model):
         """
         shopify_product_obj = self.env["shopify.product.product.ept"]
         shopify_product_template_obj = self.env["shopify.product.template.ept"]
+        #odoo Objects
+        product_obj = self.env["product.product"]
+        product_package_obj = self.env["variant.package"]
         mismatch = False
 
         for line in lines:
-            shopify_variant = False
-            sku = line.get("sku") or False
-            if line.get("variant_id", None):
-                shopify_variant = shopify_product_obj.search(
-                    [("variant_id", "=", line.get("variant_id")),
-                     ("shopify_instance_id", "=", instance.id)])
-            if not shopify_variant and sku:
-                shopify_variant = shopify_product_obj.search(
-                    [("default_code", "=", sku),
-                     ("shopify_instance_id", "=", instance.id)])
-            if shopify_variant:
+            # shopify_variant = False
+            product_package = False
+            product_variant = False
+            # sku = line.get("sku") or False
+            if line.get("variant_id"):
+                product_variant = product_obj.search([("shopify_variant_id", "=", line.get("variant_id"))])
+                product_package = product_package_obj.search([("shopify_variant_id", "=", line.get("variant_id"))])
+            else:
+                product_variant = product_obj.search([("default_code", "=", line.get("sku"))])
+                product_package = product_package_obj.search([("code", "=", line.get("sku"))])
+
+            if product_variant:
+                continue
+            if product_package:
                 continue
 
-            if not shopify_variant:
+            if not product_variant:
                 line_variant_id = line.get("variant_id", False)
                 line_product_id = line.get("product_id", False)
                 if line_product_id and line_variant_id:
@@ -370,19 +429,24 @@ class SaleOrder(models.Model):
                                                                        instance, log_book_id,
                                                                        order_data_queue_line)
                     if line.get("variant_id"):
-                        shopify_variant = shopify_product_obj.search(
-                            [("variant_id", "=", line.get("variant_id")),
-                             ("shopify_instance_id", "=", instance.id)])
-                    if not shopify_variant and sku:
-                        shopify_variant = shopify_product_obj.search(
-                            [("default_code", "=", sku),
-                             ("shopify_instance_id", "=", instance.id)])
-                    if not shopify_variant:
+                        product_variant = product_obj.search(
+                            [("shopify_variant_id", "=", line.get("variant_id"))])
+
+                        product_package = product_package_obj.search(
+                            [("shopify_variant_id", "=", line.get("variant_id"))])
+
+                    if not product_variant:
                         message = "Product [%s][%s] not found for Order %s" % (
                             line.get("sku"), line.get("name"), order_number)
                         self.create_shopify_log_line(message, order_data_queue_line, log_book_id, order_number)
                         mismatch = True
                         break
+                    # if not product_package:
+                    #     message = "Product [%s][%s] not found for Order %s" % (
+                    #         line.get("sku"), line.get("name"), order_number)
+                    #     self.create_shopify_log_line(message, order_data_queue_line, log_book_id, order_number)
+                    #     mismatch = True
+                    #     break
                 else:
                     message = "Product ID is not available in %s Order line response. It might " \
                               "have happened that product has been deleted after order was " \
@@ -899,7 +963,8 @@ class SaleOrder(models.Model):
         shopify_order_queue_line_obj = self.env["shopify.order.data.queue.line.ept"]
         shopify_order_queue_line_obj.create_order_data_queue_line([order_data],
                                                                   instance,
-                                                                  created_by='webhook')
+                                                                  created_by='webhook',
+                                                                  is_cap=instance.is_cap_no_gap)
         self._cr.commit()
         return True
 
