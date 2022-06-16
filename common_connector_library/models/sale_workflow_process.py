@@ -177,10 +177,10 @@ class SaleWorkflowProcess(models.Model):
                             line.package_qty_done = dict_of_shopify[code]
                             line._onchange_qty_done()
 
-                    pick.shopify_delivery_id = ful_fill_list.get("id")
                     pick.action_assign()
                     res_dict = pick.button_validate()
                     Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
+                    pick.shopify_delivery_id = ful_fill_list.get("id")
 
         # only restock items without payments
         if data_dic.get('refunds'):
