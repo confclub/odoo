@@ -65,8 +65,12 @@ class PurchaseOrderLine(models.Model):
 
     def _create_stock_moves(self, picking):
         res = super(PurchaseOrderLine, self)._create_stock_moves(picking)
-        res['qty'] = self.qty
-        res['variant_package_id'] = self.variant_package_id.id
+
+        for stock in res:
+            for purchase_line in self:
+                if stock.product_id == purchase_line.product_id:
+                    stock['qty'] = purchase_line.qty
+                    stock['variant_package_id'] = purchase_line.variant_package_id.id
         return res
 
 
