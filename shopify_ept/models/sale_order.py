@@ -409,31 +409,31 @@ class SaleOrder(models.Model):
             product_package = False
             product_variant = False
             # sku = line.get("sku") or False
-            if line.get("variant_id"):
-                product_variant = product_obj.search([("shopify_variant_id", "=", line.get("variant_id"))])
-                product_package = product_package_obj.search([("shopify_variant_id", "=", line.get("variant_id"))])
-            else:
-                product_variant = product_obj.search([("default_code", "=", line.get("sku"))])
-                product_package = product_package_obj.search([("code", "=", line.get("sku"))])
+            # if line.get("variant_id"):
+            #     product_variant = product_obj.search([("shopify_variant_id", "=", line.get("variant_id")), ("default_code", "=", line.get("sku"))])
+            #     product_package = product_package_obj.search([("shopify_variant_id", "=", line.get("variant_id")), ("code", "=", line.get("sku"))])
+            # else:
+            product_variant = product_obj.search([("default_code", "=", line.get("sku"))])
+            product_package = product_package_obj.search([("code", "=", line.get("sku"))])
 
             if product_variant:
                 continue
-            if product_package:
+            elif product_package:
                 continue
 
             if not product_variant:
                 line_variant_id = line.get("variant_id", False)
                 line_product_id = line.get("product_id", False)
                 if line_product_id and line_variant_id:
-                    shopify_product_template_obj.shopify_sync_products(False, line_product_id,
-                                                                       instance, log_book_id,
-                                                                       order_data_queue_line)
-                    if line.get("variant_id"):
-                        product_variant = product_obj.search(
-                            [("shopify_variant_id", "=", line.get("variant_id"))])
-
-                        product_package = product_package_obj.search(
-                            [("shopify_variant_id", "=", line.get("variant_id"))])
+                    # shopify_product_template_obj.shopify_sync_products(False, line_product_id,
+                    #                                                    instance, log_book_id,
+                    #                                                    order_data_queue_line)
+                    # if line.get("variant_id"):
+                    #     product_variant = product_obj.search(
+                    #         [("shopify_variant_id", "=", line.get("variant_id"))])
+                    #
+                    #     product_package = product_package_obj.search(
+                    #         [("shopify_variant_id", "=", line.get("variant_id"))])
 
                     if not product_variant:
                         message = "Product [%s][%s] not found for Order %s" % (

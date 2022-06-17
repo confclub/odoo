@@ -152,11 +152,12 @@ class SaleWorkflowProcess(models.Model):
             if orders.picking_ids:
                 for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
                     for line in pick.move_ids_without_package:
-                        line.quantity_done = line.product_uom_qty
+                        line.package_qty_done = line.qty
+                        line._onchange_qty_done()
                     pick.action_assign()
                     # if pick.action_assign():
                         # pass
-                    res_dict = pick.button_validate()
+                    pick.button_validate()
                     Form(self.env['stock.immediate.transfer']).save().process()
             orders.state = 'sale'
 
@@ -207,7 +208,7 @@ class SaleWorkflowProcess(models.Model):
                                                 'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
                                                 'state': 'confirmed',
                                                 'shopify_refund_id': refund['id'],
-                                                'package_id': line.variant_package_id.id,
+                                                'variant_package_id': line.variant_package_id.id,
                                                 'sale_line_id': line.id
                                             }
                                             stock_move = self.env['stock.move'].create(vals)
@@ -309,12 +310,12 @@ class SaleWorkflowProcess(models.Model):
                     if orders.invoice_ids and orders.invoice_ids[0] and orders.invoice_ids[0].state == 'draft':
                         orders.invoice_ids[0].action_post()
                         action_data = orders.invoice_ids[0].action_register_payment()
-                        wizard = Form(self.env['account.payment.register'].with_context(action_data['context'])).save()
+                        wizard = self.env['account.payment.register'].with_context(action_data['context']).create({})
                         wizard.action_create_payments()
                 elif orders.invoice_ids and orders.invoice_ids[0] and orders.invoice_ids[0].state == 'draft':
                     orders.invoice_ids[0].action_post()
                     action_data = orders.invoice_ids[0].action_register_payment()
-                    wizard = Form(self.env['account.payment.register'].with_context(action_data['context'])).save()
+                    wizard = self.env['account.payment.register'].with_context(action_data['context']).create({})
                     wizard.action_create_payments()
 
                 elif not orders.invoice_ids:
@@ -360,7 +361,7 @@ class SaleWorkflowProcess(models.Model):
                                                     'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
                                                     'state': 'confirmed',
                                                     'shopify_refund_id': refund['id'],
-                                                    'package_id':line.variant_package_id.id,
+                                                    'variant_package_id':line.variant_package_id.id,
                                                     'sale_line_id': line.id
                                                 }
                                                 stock_move = self.env['stock.move'].create(vals)
@@ -432,7 +433,7 @@ class SaleWorkflowProcess(models.Model):
                 else:
                     orders.invoice_ids[0].action_post()
                     action_data = orders.invoice_ids[0].action_register_payment()
-                    wizard = Form(self.env['account.payment.register'].with_context(action_data['context'])).save()
+                    wizard = self.env['account.payment.register'].with_context(action_data['context']).create({})
                     wizard.action_create_payments()
                     invoice = orders.invoice_ids[0]
 

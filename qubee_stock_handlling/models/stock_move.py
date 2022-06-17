@@ -247,3 +247,13 @@ class StockMove(models.Model):
                                                    int(forcast_qty / pac.qty))
 
         return moves_todo
+
+    # def write(self, vals):
+    #     if "package_qty_done" in vals.keys():
+    #         if vals["package_qty_done"] and vals["package_qty_done"] > 0:
+    #             if self.variant_package_id:
+    #                 vals["quantity_done"] = vals["package_qty_done"] * self.variant_package_id.qty
+    #             else:
+    #                 vals["quantity_done"] = vals["package_qty_done"]
+    #     move = super(StockMove, self).write(vals)
+    #     return move

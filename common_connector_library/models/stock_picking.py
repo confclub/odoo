@@ -14,6 +14,7 @@ class StockPicking(models.Model):
         when invoicing policy is 'delivery'.
         """
         result = super(StockPicking, self)._action_done()
+
         for picking in self:
             if picking.sale_id.invoice_status == 'invoiced':
                 continue
@@ -38,40 +39,41 @@ class StockPicking(models.Model):
             return True
         return super(StockPicking, self).send_to_shipper()
 
-
     def action_cancel(self):
         res = super(StockPicking, self).action_cancel()
         instance = self.env['shopify.instance.ept'].search([], limit=1, order='id desc')
         location_id = self.env["shopify.location.ept"].search([("instance_id", "=", instance.id)], limit=1)
         instance.connect_in_shopify()
+        for line in self.move_ids_without_package:
+            if line.variant_package_id:
+                if line.product_id.product_tmpl_id.temp_checkbox:
+                    forcast_qty = line.variant_package_id.product_id.virtual_available
+                    packs = line.variant_package_id.product_id.variant_package_ids
+                    # for product stock Update on shopify
+                    if line.product_id.inventory_item_id:
+                        shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                   line.product_id.inventory_item_id,
+                                                   int(forcast_qty))
+                    # for packs stock Update on shopify
+                    for pac in packs:
+                        if pac.inventory_item_id:
+                            shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
+                                                       int(forcast_qty / pac.qty))
 
-        if self.move_ids_without_package:
-            for line in self.move_ids_without_package:
-                if line.variant_package_id:
-                    if line.product_id.product_tmpl_id.temp_checkbox:
-                        forcast_qty = line.variant_package_id.product_id.virtual_available
-                        packs = line.variant_package_id.product_id.variant_package_ids
-                        # for product stock Update on shopify
+            # if product and no pack stock Update on shopify
+            else:
+                if line.product_id.product_tmpl_id.temp_checkbox:
+                    forcast_qty = line.product_id.virtual_available
+                    packs = line.product_id.variant_package_ids
+                    # for product
+                    if line.product_id.inventory_item_id:
                         shopify.InventoryLevel.set(location_id.shopify_location_id,
                                                    line.product_id.inventory_item_id,
                                                    int(forcast_qty))
-                        # for packs stock Update on shopify
-                        if packs:
-                            for pac in packs:
-                                shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
-                                                           int(forcast_qty / pac.qty))
-                # if product and no pack stock Update on shopify
-                else:
-                    if line.product_id.product_tmpl_id.temp_checkbox:
-                        forcast_qty = line.product_id.virtual_available
-                        packs = line.product_id.variant_package_ids
-                        # for product
-                        shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                   line.product_id.inventory_item_id,
-                                                   int(forcast_qty))
-                        # for packs
-                        if packs:
-                            for pac in packs:
-                                shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
-                                                           int(forcast_qty / pac.qty))
+                    # for packs
+                    for pac in packs:
+                        if pac.inventory_item_id:
+                            shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
+                                                       int(forcast_qty / pac.qty))
+
         return res
