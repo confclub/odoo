@@ -249,7 +249,7 @@ class StockMove(models.Model):
         return moves_todo
 
     def write(self, vals):
-        if "package_qty_done" in vals.keys():
+        if "package_qty_done" or "quantity_done" in vals.keys():
             if vals["package_qty_done"] and vals["package_qty_done"] > 0:
                 if self.variant_package_id:
                     vals["quantity_done"] = vals["package_qty_done"] * self.variant_package_id.qty
