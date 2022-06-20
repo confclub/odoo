@@ -149,16 +149,19 @@ class SaleWorkflowProcess(models.Model):
                                                        int(forcast_qty / pac.qty))
 
         if data_dic.get('fulfillment_status') == 'fulfilled':
-            if orders.picking_ids:
-                for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
-                    for line in pick.move_ids_without_package:
-                        line.package_qty_done = line.qty
-                        line._onchange_qty_done()
-                    pick.action_assign()
-                    # if pick.action_assign():
-                        # pass
-                    pick.button_validate()
-                    Form(self.env['stock.immediate.transfer']).save().process()
+            for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
+                for ful_fill_list in data_dic.get('fulfillments'):
+                    if str(ful_fill_list.get("id")) != pick.shopify_delivery_id and pick.state != 'done':
+                        for line in pick.move_ids_without_package:
+                            line.package_qty_done = line.qty
+                            line.quantity_done = line.qty * line.variant_package_id.qty if line.variant_package_id else line.qty
+                            line._onchange_qty_done()
+                        pick.action_assign()
+                        pick.button_validate()
+                        pick.shopify_delivery_id = ful_fill_list.get("id")
+
+                Form(self.env['stock.immediate.transfer']).save().process()
+
             orders.state = 'sale'
 
         elif data_dic.get('fulfillment_status') == 'partial':
@@ -176,12 +179,13 @@ class SaleWorkflowProcess(models.Model):
                         code = line.variant_package_id.code if line.variant_package_id else line.product_id.default_code
                         if code in list(dict_of_shopify):
                             line.package_qty_done = dict_of_shopify[code]
+                            line.quantity_done = dict_of_shopify[code] * line.variant_package_id.qty if line.variant_package_id else dict_of_shopify[code]
                             line._onchange_qty_done()
 
                     pick.action_assign()
                     res_dict = pick.button_validate()
-                    Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
                     pick.shopify_delivery_id = ful_fill_list.get("id")
+                    Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
 
         # only restock items without payments
         if data_dic.get('refunds'):
