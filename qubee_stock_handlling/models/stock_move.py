@@ -17,6 +17,7 @@ class StockMove(models.Model):
     package_qty_done = fields.Float(string='Done')
 
     @api.onchange('package_qty_done')
+    @api.depends('package_qty_done')
     def _onchange_qty_done(self):
         if self.variant_package_id:
             self.quantity_done = self.package_qty_done * self.variant_package_id.qty
@@ -248,12 +249,13 @@ class StockMove(models.Model):
 
         return moves_todo
 
-    # def write(self, vals):
-    #     if "package_qty_done" in vals.keys():
-    #         if vals.get('package_qty_done') and vals["package_qty_done"] > 0:
-    #             if self.variant_package_id:
-    #                 vals["quantity_done"] = vals["package_qty_done"] * self.variant_package_id.qty
-    #             else:
-    #                 vals["quantity_done"] = vals["package_qty_done"]
-    #     move = super(StockMove, self).write(vals)
-    #     return move
+    def write(self, vals):
+        if "package_qty_done" in vals.keys():
+            if vals.get('package_qty_done') and vals["package_qty_done"] > 0:
+                if self.variant_package_id:
+                    vals.update({"quantity_done": vals.get("package_qty_done") * self.variant_package_id.qty})
+                else:
+                    vals["quantity_done"] = vals["package_qty_done"]
+                    vals.update({"quantity_done": vals.get("package_qty_done")})
+        move = super(StockMove, self).write(vals)
+        return move
