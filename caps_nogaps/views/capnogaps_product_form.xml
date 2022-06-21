@@ -13,6 +13,8 @@
                                 <field name="name"/>
                                 <field name="product_id"/>
                                 <field name="package_id"/>
+                                <field name="daily_pack"/>
+                                <field name="daily_pack_sku"/>
                             </group>
                             <group>
                                 <field name="pcs_per_day"/>
