@@ -3,3 +3,4 @@ access_cap_contract,cap.contract,model_cap_contract,,1,1,1,1
 access_contract_product,contract.product,model_contract_product,,1,1,1,1
 access_contract_attachment,contract.attachment,model_contract_attachment,,1,1,1,1
 access_cap_contract_wizard,cap.contract.wizard,model_cap_contract_wizard,,1,1,1,1
+access_cap_no_gap,cap.no.gap,model_cap_no_gap,,1,1,1,1

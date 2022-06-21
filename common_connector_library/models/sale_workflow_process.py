@@ -3,7 +3,10 @@
 from odoo import models, fields, api, _
 from odoo.tests import Form, tagged
 import json
+import pytz
+from dateutil import parser
 from ...shopify_ept import shopify
+utc = pytz.utc
 
 
 
@@ -113,6 +116,9 @@ class SaleWorkflowProcess(models.Model):
         data_dic = json.loads(orders.sale_api_data)
         if not orders.picking_ids and orders.order_line:
             orders.action_confirm()
+            created_date = data_dic.get("created_at", False)
+            date_order = parser.parse(created_date).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S")
+            orders.date_order = date_order
         instance = self.env['shopify.instance.ept'].search([('is_cap_no_gap', '=', False)], limit=1)
         location_id = self.env["shopify.location.ept"].search([("instance_id", "=", instance.id)], limit=1)
         instance.connect_in_shopify()

@@ -3,6 +3,7 @@
 from odoo import models, fields, api
 import base64
 import xlrd
+from datetime import datetime
 
 
 class ExcelReport(models.Model):
@@ -1032,49 +1033,67 @@ class ExcelReport(models.Model):
                 try:
                     partner = self.env['res.partner'].search([('name', '=', inner_list[21]), ('email', '=', inner_list[22])], limit=1)
                     if not partner:
-                        pass
-                    else:
-                        sale_order = self.env['sale.order'].search([('name', '=', str(inner_list[0]).split('.')[0])], limit=1)
-                        if not sale_order:
-                            sale_order = self.env['sale.order'].create({
-                                "name": str(inner_list[0]).split('.')[0],
-                                "partner_id": partner.id,
-                                "date_order": fields.Datetime.today(),
-                            })
-                            if inner_list[1]:
-                                varient_sku = self.env['product.product'].search([('default_code', '=', inner_list[1])], limit=1)
-                                if not varient_sku:
-                                    pass
-                                if varient_sku:
-                                    sale_order_line = self.env['sale.order.line'].create({
-                                        "name": varient_sku.name,
-                                        "product_id": varient_sku.id,
-                                        "product_uom": varient_sku.uom_id.id,
-                                        'order_id': sale_order.id,
-                                        'discount': 0 if inner_list[9] == '' else float(inner_list[9]),
-                                    })
+                        partner = self.env['res.partner'].create({
+                            'name': inner_list[21],
+                            'email': inner_list[22],
+                        })
 
+                    sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[0]).split('.')[0])],
+                                                               limit=1)
+                    if sale_order and not sale_order.from_excel:
+                        continue
 
-                            else:
-                                shipment = self.env['product.product'].search([('name', '=', "shippment")])
-                                sale_order_line = self.env['sale.order.line'].create({
-                                    "name": "shippment",
-                                    "product_id": shipment.id,
-                                    "product_uom": shipment.uom_id.id,
-                                    'order_id': sale_order.id
-                                })
+                    if not sale_order:
+                        sale_order = self.env['sale.order'].create({
+                            "name": '#'+str(inner_list[0]).split('.')[0],
+                            "partner_id": partner.id,
+                            "date_order": datetime.strptime(inner_list[13], "%Y-%m-%d").date(),
+                            "from_excel": True,
+                        })
 
-                        else:
-
-                            shipment = self.env['product.product'].search([('name', '=', "shippment")])
+                    if inner_list[1]:
+                        varient = self.env['product.product'].search([('default_code', '=', inner_list[1])],
+                                                                     limit=1)
+                        package = self.env['variant.package'].search([('code', '=', inner_list[1])],
+                                                                     limit=1)
+                        tax_id = self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[11]))], limit=1).id if float(inner_list[11]) > 0 else []
+                        if package:
                             sale_order_line = self.env['sale.order.line'].create({
-                                "name": "shippment",
-                                "product_id": shipment.id,
-                                "product_uom": shipment.uom_id.id,
-                                'order_id': sale_order.id
+                                "name": package.name,
+                                "product_id": package.product_id.id,
+                                "variant_package_id": package.id,
+                                "product_uom": package.product_id.uom_id.id,
+                                "price_unit": float(inner_list[8]) if inner_list[8] else 0,
+                                "qty": inner_list[7],
+                                'order_id': sale_order.id,
+                                'discount': float(inner_list[9]) if inner_list[9] else 0,
+                                'tax_id': [tax_id]
                             })
+                            sale_order_line._onchange_qty
+                        elif varient:
+                            sale_order_line = self.env['sale.order.line'].create({
+                                "name": varient.name,
+                                "product_id": varient.id,
+                                "product_uom": varient.uom_id.id,
+                                "price_unit": float(inner_list[8]) if inner_list[8] else 0,
+                                "qty": inner_list[7],
+                                'order_id': sale_order.id,
+                                'discount': float(inner_list[9]) if inner_list[9] else 0,
+                                'tax_id': [tax_id]
+                            })
+                            sale_order_line._onchange_qty
 
-
+                        #
+                    else:
+                        shipment = self.env.ref("excel_report.shipping_product_for_excel")
+                        sale_order_line = self.env['sale.order.line'].create({
+                            "name": "shippment",
+                            "product_id": shipment.id,
+                            "product_uom": shipment.uom_id.id,
+                            "qty": 1,
+                            'order_id': sale_order.id
+                        })
+                        sale_order_line._onchange_qty
                         i += 1
                         if (int(i % 500) == 0):
                             print("Record created_________________" + str(i) + "\n")

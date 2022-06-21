@@ -29,6 +29,7 @@
         'data/sequence.xml',
         # 'views/templates.xml',
         'views/contract_cancal_wizard.xml',
+        'views/capnogaps_product_form.xml',
         'views/sale_order_view.xml',
         'views/contract.xml',
     ],

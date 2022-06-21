@@ -1,0 +1,60 @@
+<odoo>
+    <data>
+        <!-- explicit list view definition -->
+
+        <record model="ir.ui.view" id="caps_view_form">
+            <field name="name">Caps Product Form</field>
+            <field name="model">cap.no.gap</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="product_id"/>
+                                <field name="package_id"/>
+                            </group>
+                            <group>
+                                <field name="pcs_per_day"/>
+                                <field name="pcs_per_bag"/>
+                                <field name="bags_per_carton"/>
+                                <field name="pcs_per_carton"/>
+                            </group>
+                        </group>
+                    </sheet>
+
+                </form>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="caps_tree_view_list">
+            <field name="name">Caps Product list</field>
+            <field name="model">cap.no.gap</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="package_id"/>
+                    <field name="pcs_per_day"/>
+                    <field name="pcs_per_bag"/>
+                    <field name="bags_per_carton"/>
+                    <field name="pcs_per_carton"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- actions opening views on models -->
+        <record model="ir.actions.act_window" id="caps_product_action_window">
+            <field name="name">Caps Products window</field>
+            <field name="res_model">cap.no.gap</field>
+            <field name="view_id" ref="caps_tree_view_list"/>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Top menu item -->
+        <menuitem name="Caps Product" id="caps_product_manu" sequence="4" parent="sale.sale_menu_root"
+                  action="caps_product_action_window"/>
+
+    </data>
+</odoo>

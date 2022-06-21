@@ -1,0 +1,16 @@
+<odoo>
+    <data>
+
+        <record id="sale_order_inherit_form" model="ir.ui.view">
+            <field name="name">sale.order.inherit.form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='payment_term_id']"
+                       position="after">
+                    <field name="from_excel" string="From Excel" readonly="1" />
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
