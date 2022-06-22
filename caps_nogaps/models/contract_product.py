@@ -8,7 +8,7 @@ class ContractProduct(models.Model):
 
     contract_id = fields.Many2one('cap.contract')
     product_pack_id = fields.Many2one('cap.no.gap')
-    product_carton_id = fields.Many2one('variant.package', string='Carton', related='product_pack_id.package_id')
+    product_carton_id = fields.Many2one('variant.package', string='Carton')
     description = fields.Char(related='product_pack_id.name')
     pieces_per_carton = fields.Integer(related='product_pack_id.pcs_per_carton', help='how many pieces of the product are in a whole carton')
     pieces_per_bag = fields.Integer(related='product_pack_id.pcs_per_bag', help='how many pieces of the product that are in a single bag')
