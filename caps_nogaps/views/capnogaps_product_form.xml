@@ -12,7 +12,7 @@
                             <group>
                                 <field name="name"/>
                                 <field name="product_id" required="1"/>
-                                <field name="package_id" required="1"/>
+<!--                                <field name="package_id" required="1"/>-->
                                 <field name="daily_pack_sku" required="1"/>
 <!--                                <field name="variant_package_ids" invisible="1"/>-->
                             </group>

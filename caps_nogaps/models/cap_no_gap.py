@@ -11,7 +11,7 @@ class CapNoGap(models.Model):
 
     product_id = fields.Many2one("product.product")
     # variant_package_ids = fields.One2many(related='product_id.variant_package_ids')
-    package_id = fields.Many2one("variant.package")
+    # package_id = fields.Many2one("variant.package")
     name = fields.Char(related='product_id.name')
     daily_pack_sku = fields.Char()
     pcs_per_day = fields.Float()
