@@ -11,16 +11,15 @@
                         <group>
                             <group>
                                 <field name="name"/>
-                                <field name="product_id"/>
-                                <field name="package_id"/>
-                                <field name="daily_pack"/>
-                                <field name="daily_pack_sku"/>
+                                <field name="product_id" required="1"/>
+<!--                                <field name="package_id" required="1"/>-->
+                                <field name="daily_pack_sku" required="1"/>
                             </group>
                             <group>
-                                <field name="pcs_per_day"/>
-                                <field name="pcs_per_bag"/>
-                                <field name="bags_per_carton"/>
-                                <field name="pcs_per_carton"/>
+                                <field name="pcs_per_day" required="1"/>
+                                <field name="pcs_per_bag" required="1"/>
+                                <field name="bags_per_carton" required="1"/>
+                                <field name="pcs_per_carton" required="1"/>
                             </group>
                         </group>
                     </sheet>
