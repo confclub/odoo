@@ -16,3 +16,4 @@ class ContractProduct(models.Model):
     num_daily_packs = fields.Integer(default=1, readonly=1, help='how many daily packs of this product are in the order (their deliveries are combined for efficiency)')
     total_funding = fields.Float()
 
+
