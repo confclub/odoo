@@ -519,8 +519,8 @@ class ActiveResource(six.with_metaclass(ResourceMeta, object)):
             path = cls._collection_path(prefix_options, query_options)
             # response = cls.connection.get(path, cls.headers)
             # objs = cls.format.decode(response.body)
-        if cls._plural == 'orders' and len(prefix_options):
-            path2 = "https://direct-health-supplies.myshopify.com/admin/orders/count.json" + cls._query_string(query_options)
+        if cls._plural == 'orders' and kwargs.get('fulfillment_status'):
+            path2 = cls._collection_path(prefix_options, query_options).split('/admin')[0] + "/admin/orders/count.json" + cls._query_string(query_options)
             response = cls.connection.get(path2, cls.headers)
             total_order_count = cls.format.decode(response.body)
         else:

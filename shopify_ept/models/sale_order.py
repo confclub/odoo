@@ -256,29 +256,30 @@ class SaleOrder(models.Model):
                     #contract lines of caps no gaps
                     lines = order_response.get("line_items")
                     for line in lines:
-                        product = self.env['product.product'].search([('default_code', '=',line.get("sku")[2:])])
-                        package = self.env['variant.package'].search([('code', '=', line.get("sku")[2:])])
-                        pieces_per_carton = pieces_per_bag = 0
-                        if product:
-                            try:
-                                pieces_per_bag = int(line.get("sku")[-2:])
-                                pieces_per_carton = pieces_per_bag * product.variant_package_ids[0].qty if product.variant_package_ids[0] else 0
-                            except Exception:
-                                pieces_per_carton = 20
-                                pieces_per_bag = 6
-                        elif package:
-                            pieces_per_carton = 20
-                            pieces_per_bag = 6
+                        # product = self.env['cap.no.gap'].search([('product_id.default_code', '=', line.get("sku")[2:])])
+                        product = self.env['cap.no.gap'].search([('daily_pack_sku', '=', line.get("sku"))])
+                        # package = self.env['variant.package'].search([('code', '=', line.get("sku")[2:])])
+                        # pieces_per_carton = pieces_per_bag = 0
+                        # if product:
+                        #     try:
+                        #         pieces_per_bag = int(line.get("sku")[-2:])
+                        #         pieces_per_carton = pieces_per_bag * product.variant_package_ids[0].qty if product.variant_package_ids[0] else 0
+                        #     except Exception:
+                        #         pieces_per_carton = 20
+                        #         pieces_per_bag = 6
+                        # elif package:
+                        #     pieces_per_carton = 20
+                        #     pieces_per_bag = 6
 
                         self.env['contract.product'].create({
                             "product_pack_id": product.id,
-                            "product_carton_id": product.variant_package_ids[0].id if product.variant_package_ids else None,
-                            "description": line.get('name'),
-                            "pieces_per_carton": pieces_per_carton,
-                            "pieces_per_bag": pieces_per_bag,
+                            # "product_carton_id": product.variant_package_ids[0].id if product.variant_package_ids else None,
+                            # "description": line.get('name'),
+                            # "pieces_per_carton": pieces_per_carton,
+                            # "pieces_per_bag": pieces_per_bag,
                             "total_funding": float(line.get('price')),
-                            "pieces_per_daily_pack": 2,
-                            "num_daily_packs": 1,
+                            # "pieces_per_daily_pack": 2,
+                            # "num_daily_packs": 1,
                             "contract_id": cap_contract.id,
                         })
                     order_data_line.state = "done"
