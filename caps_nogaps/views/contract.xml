@@ -58,8 +58,8 @@
                                         <field name="pieces_per_daily_pack" string="piecesPerDailyPack"/>
                                         <field name="num_daily_packs" string="numDailyPacks"/>
                                         <field name="total_funding" string="TotalFunding"/>
-<!--                                        <field name="price_per_pack" string="Pack Price"/>-->
-<!--                                        <field name="price_per_carton" string=" Carton Price"/>-->
+                                        <!--                                        <field name="price_per_pack" string="Pack Price"/>-->
+                                        <!--                                        <field name="price_per_carton" string=" Carton Price"/>-->
                                     </tree>
 
                                 </field>
@@ -77,7 +77,11 @@
 
                         </notebook>
                     </sheet>
-
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
                 </form>
             </field>
         </record>

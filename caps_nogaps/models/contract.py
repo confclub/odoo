@@ -7,6 +7,7 @@ from dateutil import relativedelta
 
 class CapsContract(models.Model):
     _name = 'cap.contract'
+    _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(default=lambda self: _('New'))
     # pieces_per_carton = fields.Integer(help='how many pieces of the product are in a whole carton')
