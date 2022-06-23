@@ -4,6 +4,9 @@ from odoo import models, fields, api
 import base64
 import xlrd
 from datetime import datetime
+from dateutil import parser
+import pytz
+utc = pytz.utc
 
 
 class ExcelReport(models.Model):
@@ -1056,7 +1059,7 @@ class ExcelReport(models.Model):
                                                                      limit=1)
                         package = self.env['variant.package'].search([('code', '=', inner_list[1])],
                                                                      limit=1)
-                        tax_id = self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[11]))], limit=1).id if float(inner_list[11]) > 0 else []
+                        tax_id = [self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[11]))], limit=1).id] if float(inner_list[11]) > 0 else []
                         if package:
                             sale_order_line = self.env['sale.order.line'].create({
                                 "name": package.name,
@@ -1067,7 +1070,7 @@ class ExcelReport(models.Model):
                                 "qty": inner_list[7],
                                 'order_id': sale_order.id,
                                 'discount': float(inner_list[9]) if inner_list[9] else 0,
-                                'tax_id': [tax_id]
+                                'tax_id': tax_id
                             })
                             sale_order_line._onchange_qty
                         elif varient:
@@ -1079,7 +1082,7 @@ class ExcelReport(models.Model):
                                 "qty": inner_list[7],
                                 'order_id': sale_order.id,
                                 'discount': float(inner_list[9]) if inner_list[9] else 0,
-                                'tax_id': [tax_id]
+                                'tax_id': tax_id
                             })
                             sale_order_line._onchange_qty
 
@@ -1108,6 +1111,7 @@ class ExcelReport(models.Model):
                         list.append(sheet.cell(row, col).value)
                     main_list.append(list)
             i = 0
+            # products_not_found = []
             for inner_list in main_list:
                 try:
                     partner = self.env['res.partner'].search([('name', '=', inner_list[16]),('email', '=', inner_list[14])], limit=1)
@@ -1118,82 +1122,93 @@ class ExcelReport(models.Model):
                             "vat": inner_list[18],
                         })
 
-                        purchase_order = self.env['purchase.order'].search([('name', '=', str(inner_list[0]))], limit=1)
-                        if not purchase_order:
-                            purchase_order = self.env['purchase.order'].create({
-                                "name": str(inner_list[0]),
-                                "partner_id": partner.id,
-                                "date_order": fields.Datetime.today(),
-                            })
-                            if inner_list[1]:
-                                varient_sku = self.env['product.product'].search([('default_code', '=', inner_list[1])],
-                                                                                 limit=1)
-                                if not varient_sku:
-                                    varient = self.env['product.product'].create({
-                                        "name": inner_list[2],
-                                        "lst_price": inner_list[6],
-                                        "default_code": inner_list[1],
+                    purchase_order = self.env['purchase.order'].search([('name', '=', str(inner_list[0]))], limit=1)
+                    date_order = parser.parse(inner_list[9]).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S")
+                    if not purchase_order:
+                        purchase_order = self.env['purchase.order'].create({
+                            "name": str(inner_list[0]),
+                            "partner_id": partner.id,
+                            "date_order": date_order,
+                        })
+                        if inner_list[1]:
+                            varient = self.env['product.product'].search([('default_code', '=', inner_list[1])],
+                                                                         limit=1)
+                            package = self.env['variant.package'].search([('code', '=', inner_list[1])],
+                                                                         limit=1)
+                            tax_id = [self.env['account.tax'].search(
+                                [('type_tax_use', '=', 'purchase'), ('amount', '=', float(inner_list[7]))],
+                                limit=1).id] if float(inner_list[7]) > 0 else []
+                            if varient:
+                                purchase_order_line = self.env['purchase.order.line'].create({
+                                    "name": varient.name,
+                                    "product_id": varient.id,
+                                    "product_uom": varient.uom_id.id,
+                                    'order_id': purchase_order.id,
+                                    "qty": inner_list[5],
+                                    "price_unit": float(inner_list[6]) if inner_list[6] else 0,
+                                    'taxes_id': tax_id,
 
-                                    })
-                                    purchase_order_line = self.env['purchase.order.line'].create({
-                                        "name": varient.name,
-                                        "product_id": varient.id,
-                                        "product_uom": varient.uom_id.id,
-                                        'order_id': purchase_order.id,
-                                        "product_qty": inner_list[5],
-                                        "price_unit": inner_list[6],
-                                    })
-                                if varient_sku:
-                                    purchase_order_line = self.env['purchase.order.line'].create({
-                                        "name": varient_sku.name,
-                                        "product_id": varient_sku.id,
-                                        "product_uom": varient_sku.uom_id.id,
-                                        'order_id': purchase_order.id,
-                                        "product_qty": inner_list[5],
-                                        "price_unit": inner_list[6],
-                                    })
-
-                        i += 1
+                                })
+                                purchase_order_line._onchange_qty
+                            elif package:
+                                purchase_order_line = self.env['purchase.order.line'].create({
+                                    "name": package.product_id.name,
+                                    "variant_package_id": package.id,
+                                    "product_id": package.product_id.id,
+                                    "product_uom": package.product_id.uom_id.id,
+                                    'order_id': purchase_order.id,
+                                    "qty": inner_list[5],
+                                    "price_unit": float(inner_list[6]) if inner_list[6] else 0,
+                                    'taxes_id': tax_id,
+                                })
+                                purchase_order_line._onchange_qty
+                            # else:
+                            #     products_not_found.append(str(inner_list[1]))
 
                     else:
-                        purchase_order = self.env['purchase.order'].search([('name', '=', str(inner_list[0]))], limit=1)
-                        if not purchase_order:
-                            purchase_order = self.env['purchase.order'].create({
-                                "name": str(inner_list[0]),
-                                "partner_id": partner.id,
-                                "date_order": fields.Datetime.today(),
-                            })
-                            if inner_list[1]:
-                                varient_sku = self.env['product.product'].search([('default_code', '=', inner_list[1])], limit=1)
-                                if not varient_sku:
-                                    varient = self.env['product.product'].create({
-                                        "name": inner_list[2],
-                                        "lst_price": inner_list[6],
-                                        "default_code": inner_list[1],
 
-                                    })
-                                    purchase_order_line = self.env['purchase.order.line'].create({
-                                        "name": varient.name,
-                                        "product_id": varient.id,
-                                        "product_uom": varient.uom_id.id,
-                                        'order_id': purchase_order.id,
-                                        "product_qty": inner_list[5],
-                                        "price_unit": inner_list[6],
-                                    })
-                                if varient_sku:
-                                    purchase_order_line = self.env['purchase.order.line'].create({
-                                        "name": varient_sku.name,
-                                        "product_id": varient_sku.id,
-                                        "product_uom": varient_sku.uom_id.id,
-                                        'order_id': purchase_order.id,
-                                        "product_qty": inner_list[5],
-                                        "price_unit": inner_list[6],
-                                    })
+                        if inner_list[1]:
+                            varient = self.env['product.product'].search([('default_code', '=', inner_list[1])],
+                                                                         limit=1)
+                            package = self.env['variant.package'].search([('code', '=', inner_list[1])],
+                                                                         limit=1)
+                            tax_id = [self.env['account.tax'].search(
+                                [('type_tax_use', '=', 'purchase'), ('amount', '=', float(inner_list[7]))],
+                                limit=1).id] if float(inner_list[7]) > 0 else []
+
+                            if varient:
+                                purchase_order_line = self.env['purchase.order.line'].create({
+                                    "name": varient.name,
+                                    "product_id": varient.id,
+                                    "product_uom": varient.uom_id.id,
+                                    'order_id': purchase_order.id,
+                                    "qty": inner_list[5],
+                                    "price_unit": float(inner_list[6]) if inner_list[6] else 0,
+                                    'taxes_id': tax_id,
+
+                                })
+                                purchase_order_line._onchange_qty
+                            elif package:
+                                purchase_order_line = self.env['purchase.order.line'].create({
+                                    "name": package.product_id.name,
+                                    "variant_package_id": package.id,
+                                    "product_id": package.product_id.id,
+                                    "product_uom": package.product_id.uom_id.id,
+                                    'order_id': purchase_order.id,
+                                    "qty": inner_list[5],
+                                    "price_unit": float(inner_list[6]) if inner_list[6] else 0,
+                                    'taxes_id': tax_id,
+
+                                })
+                                purchase_order_line._onchange_qty
+                            # else:
+                            #     products_not_found.append(str(inner_list[1]))
                         i += 1
                         if (int(i % 500) == 0):
                             print("Record created_________________" + str(i) + "\n")
                 except(Exception) as error:
                     print('Error occur at %s' %(str(inner_list[0])))
+            # print((products_not_found))
 
 
 

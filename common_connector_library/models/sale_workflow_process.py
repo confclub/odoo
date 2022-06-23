@@ -500,30 +500,50 @@ class SaleWorkflowProcess(models.Model):
                                         line.with_context(ctx).unlink()
 
                         else:
+                            first = True
                             for i in reverse_move.invoice_line_ids:
-                                ctx = dict(self._context or {})
-                                ctx["check_move_validity"] = False
+                                if first:
+                                    ctx = dict(self._context or {})
+                                    ctx["check_move_validity"] = False
+                                    i.with_context(ctx).write(
+                                        {'quantity': 1,
+                                         'product_id': self.env.ref('shopify_ept.product_product_manual_refund').id,
+                                         'product_uom_id': self.env.ref('shopify_ept.product_product_manual_refund').uom_idid,
+                                         "price_unit": float(refund.get('transactions')[0]['amount'])})
+                                    i.move_id.with_context(ctx)._onchange_invoice_line_ids()
+                                    i.with_context(ctx)._onchange_mark_recompute_taxes()
+                                    i.with_context(ctx)._onchange_price_subtotal()
+                                    first = False
+                                else:
+                                    ctx = dict(self._context or {})
+                                    ctx["check_move_validity"] = False
 
-                                i.with_context(ctx).write(
-                                    {'quantity': 0})
-                                i.move_id.with_context(ctx)._onchange_invoice_line_ids()
-                                i.with_context(ctx)._onchange_mark_recompute_taxes()
-                                i.with_context(ctx)._onchange_price_subtotal()
+                                    i.with_context(ctx).write(
+                                        {'quantity': 0})
+                                    i.move_id.with_context(ctx)._onchange_invoice_line_ids()
+                                    i.with_context(ctx)._onchange_mark_recompute_taxes()
+                                    i.with_context(ctx)._onchange_price_subtotal()
 
 
-                            product = self.env.ref('shopify_ept.product_product_manual_refund')
-                            account = self.env['account.account'].search([('id', '=', 21)])
-                            ctx = dict(self._context or {})
-                            ctx["check_move_validity"] = False
-                            line = reverse_move.invoice_line_ids.with_context(ctx).create({
-                                "product_id": product.id,
-                                "name": product.name,
-                                'quantity': 1,
-                                "price_unit": float(refund.get('transactions')[0]['amount']),
-                                "product_uom_id": product.uom_id.id,
-                                "account_id": account.id,
-                                "move_id": reverse_move.id,
-                            })
+                            # product = self.env.ref('shopify_ept.product_product_manual_refund')
+                            # account = self.env['account.account'].search([('id', '=', 47)])
+                            # ctx = dict(self._context or {})
+                            # ctx["check_move_validity"] = False
+                            # line = reverse_move.invoice_line_ids.with_context(ctx).create({
+                            #     "product_id": product.id,
+                            #     "name": product.name,
+                            #     'quantity': 0,
+                            #     "price_unit": float(refund.get('transactions')[0]['amount']),
+                            #     "product_uom_id": product.uom_id.id,
+                            #     "account_id": account.id,
+                            #     'currency_id': reverse_move.currency_id.id,
+                            #     "move_id": reverse_move.id,
+                            # })
+                            # line.with_context(ctx).write(
+                            #     {'quantity': 1})
+                            # line.move_id.with_context(ctx)._onchange_invoice_line_ids()
+                            # line.with_context(ctx)._onchange_mark_recompute_taxes()
+                            # line.with_context(ctx)._onchange_price_subtotal()
 
                         reverse_move.with_context(ctx)._onchange_invoice_line_ids()
                         if reverse_move.amount_total:
