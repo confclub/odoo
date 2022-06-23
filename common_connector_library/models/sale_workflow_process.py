@@ -508,7 +508,7 @@ class SaleWorkflowProcess(models.Model):
                                     i.with_context(ctx).write(
                                         {'quantity': 1,
                                          'product_id': self.env.ref('shopify_ept.product_product_manual_refund').id,
-                                         'product_uom_id': self.env.ref('shopify_ept.product_product_manual_refund').uom_idid,
+                                         # 'product_uom_id': self.env.ref('shopify_ept.product_product_manual_refund').uom_id.id,
                                          "price_unit": float(refund.get('transactions')[0]['amount'])})
                                     i.move_id.with_context(ctx)._onchange_invoice_line_ids()
                                     i.with_context(ctx)._onchange_mark_recompute_taxes()

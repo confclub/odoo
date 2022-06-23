@@ -11,10 +11,10 @@ class SaleOrder(models.Model):
     def action_confirm(self):
         super(SaleOrder, self).action_confirm()
         for picking in self.picking_ids:
-            for (move_id, line) in zip(picking.move_ids_without_package, self.order_line):
-                if move_id.product_id == line.product_id:
-                    move_id.write({'qty': line.qty, 'variant_package_id': line.variant_package_id})
-                    pass
+            for line in self.order_line:
+                for move_id in picking.move_ids_without_package:
+                    if move_id.product_id == line.product_id:
+                        move_id.write({'qty': line.qty, 'variant_package_id': line.variant_package_id})
         return True
 
     # def _create_invoices(self, grouped=False, final=False, date=None):

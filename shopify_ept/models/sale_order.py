@@ -371,6 +371,9 @@ class SaleOrder(models.Model):
 
                     # if sale_order.shopify_order_status == "fulfilled":
                 sale_order.sale_api_data = str(order_data_line.order_data) if order_data_line else str(order_response)
+                if not sale_order.auto_workflow_process_id:
+                    sale_order.auto_workflow_process_id = self.env['sale.workflow.process.ept'].search([], limit =1).id
+
                 sale_order.auto_workflow_process_id.shipped_order_workflow_ept(sale_order)
 
                     # elif sale_order.shopify_order_status == "partial":
