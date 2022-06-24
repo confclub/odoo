@@ -1124,11 +1124,13 @@ class ExcelReport(models.Model):
 
                     purchase_order = self.env['purchase.order'].search([('name', '=', str(inner_list[0]))], limit=1)
                     date_order = parser.parse(inner_list[9]).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S")
+                    curruncy = self.env['res.currency'].search([('name', '=', inner_list[12])])
                     if not purchase_order:
                         purchase_order = self.env['purchase.order'].create({
                             "name": str(inner_list[0]),
                             "partner_id": partner.id,
                             "date_order": date_order,
+                            "currency_id": curruncy.id if curruncy else False,
                         })
                         if inner_list[1]:
                             varient = self.env['product.product'].search([('default_code', '=', inner_list[1])],

@@ -28,6 +28,7 @@
         'data/products.xml',
         'views/views.xml',
         'views/sale_order_form.xml',
+        'views/purchase_order_form.xml',
         'views/templates.xml',
     ],
     # only loaded in demonstration mode

@@ -1,0 +1,38 @@
+<odoo>
+    <data>
+
+        <record id="action_purchase_bills" model="ir.actions.server">
+            <field name="name">Create Invoices</field>
+            <field name="model_id" ref="excel_report.model_purchase_order"/>
+            <field name="binding_model_id" ref="excel_report.model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                action = records.create_invoice()
+            </field>
+        </record>
+
+        <record id="action_purchase_delivreis" model="ir.actions.server">
+            <field name="name">Create Deliveries</field>
+            <field name="model_id" ref="excel_report.model_purchase_order"/>
+            <field name="binding_model_id" ref="excel_report.model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                action = records.create_deliveries()
+            </field>
+        </record>
+
+        <record id="action_purchase_delete" model="ir.actions.server">
+            <field name="name">Cancel Purchase Order</field>
+            <field name="model_id" ref="excel_report.model_purchase_order"/>
+            <field name="binding_model_id" ref="excel_report.model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                action = records.delete_orders()
+            </field>
+        </record>
+
+    </data>
+</odoo>
