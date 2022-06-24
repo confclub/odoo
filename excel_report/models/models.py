@@ -1163,7 +1163,7 @@ class ExcelReport(models.Model):
                                 })
                                 purchase_order_line._onchange_qty
                             # else:
-                            #     products_not_found.append(str(inner_list[1]))
+                            #     products_not_found.append([str(inner_list[1]), purchase_order.name])
 
                     else:
 
@@ -1202,7 +1202,7 @@ class ExcelReport(models.Model):
                                 })
                                 purchase_order_line._onchange_qty
                             # else:
-                            #     products_not_found.append(str(inner_list[1]))
+                            #     products_not_found.append([str(inner_list[1]), purchase_order.name])
                         i += 1
                         if (int(i % 500) == 0):
                             print("Record created_________________" + str(i) + "\n")

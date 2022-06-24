@@ -165,6 +165,8 @@ class SaleWorkflowProcess(models.Model):
                         pick.action_assign()
                         pick.button_validate()
                         pick.shopify_delivery_id = ful_fill_list.get("id")
+                        pick.carrier_tracking_ref = ful_fill_list.get("tracking_number") if ful_fill_list.get("tracking_number") else False
+                        pick.carrier_tracking_url = ful_fill_list.get("tracking_url") if ful_fill_list.get("tracking_url") else False
 
                 Form(self.env['stock.immediate.transfer']).save().process()
 
@@ -191,6 +193,8 @@ class SaleWorkflowProcess(models.Model):
                     pick.action_assign()
                     res_dict = pick.button_validate()
                     pick.shopify_delivery_id = ful_fill_list.get("id")
+                    pick.carrier_tracking_ref = ful_fill_list.get("tracking_number") if ful_fill_list.get("tracking_number") else False
+                    pick.carrier_tracking_url = ful_fill_list.get("tracking_url") if ful_fill_list.get("tracking_url") else False
                     Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
 
         # only restock items without payments
