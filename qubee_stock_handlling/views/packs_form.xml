@@ -1,0 +1,63 @@
+<odoo>
+    <data>
+        <!-- explicit list view definition -->
+        <record model="ir.ui.view" id="qubee_stock_handlling.packs_list_view">
+            <field name="name">Packs List view</field>
+            <field name="model">variant.package</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" invisible="1"/>
+                    <field name="value_name" string="Name"/>
+                    <field name="qty"/>
+                    <field name="code"/>
+                    <field name="price"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="qb_variant_id" invisible="1"/>
+                    <field name="inventory_item_id" invisible="1"/>
+                    <field name="shopify_variant_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="qubee_stock_handlling.packs_form_view">
+            <field name="name">Packs Form view</field>
+            <field name="model">variant.package</field>
+            <field name="arch" type="xml">
+
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" invisible="1"/>
+                                <field name="value_name" string="Name"/>
+                                <field name="qty"/>
+                                <field name="company_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                                <field name="price"/>
+                                <field name="qb_variant_id" invisible="1"/>
+                                <field name="inventory_item_id" invisible="1"/>
+                                <field name="shopify_variant_id" invisible="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+
+            </field>
+        </record>
+
+        <!-- actions opening views on models -->
+        <record model="ir.actions.act_window" id="qubee_stock_handlling.packs_action_window">
+            <field name="name">Package window</field>
+            <field name="res_model">variant.package</field>
+            <field name="view_id" ref="packs_list_view"/>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+
+        <menuitem name="Packs" id="product_packs" parent="sale.menu_sale_config" action="packs_action_window"
+                  sequence="150"/>
+    </data>
+</odoo>
