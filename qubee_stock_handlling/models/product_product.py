@@ -8,6 +8,7 @@ class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     temp_checkbox = fields.Boolean(default=False)
+    shopify_product_type = fields.Many2one('product.type')
 
 
 class Product(models.Model):

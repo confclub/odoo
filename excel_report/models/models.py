@@ -119,6 +119,17 @@ class ExcelReport(models.Model):
                     for col in range(sheet.ncols):
                         list.append(sheet.cell(row, col).value)
                     main_list.append(list)
+            for inner_list in main_list:
+                type = self.env['product.type'].search([('name', '=', inner_list[3])])
+                if not type:
+                    type = self.env['product.type'].create({
+                        "name": inner_list[3]
+                    })
+                product = self.env['product.template'].search([('qb_templ_id', '=', inner_list[0])])
+                if product:
+                    if not product.shopify_product_type:
+                        product.shopify_product_type = type.id
+            print("complete")
             # For CSV_0 one variant
             # for inner_list in main_list:
             #     product = self.env['product.template'].search([('qb_templ_id', '=', inner_list[0])])
@@ -151,99 +162,99 @@ class ExcelReport(models.Model):
 
 
             #  Csv_1 for 2 variants
-            for inner_list in main_list:
-                if inner_list[0] == float(45095266):
-                    print('hello')
-
-                product_temp = self.env['product.template'].search([('qb_templ_id', '=', inner_list[0])])
-                if not product_temp and inner_list[49] == 'y':
-                    continue
-                if product_temp and inner_list[49] == 'y':
-                    package = self.env['variant.package'].search([('qb_variant_id', '=', inner_list[1])])
-                    if not package:
-                        product_temp.product_variant_ids[0].variant_package_ids.create({
-                          "name": inner_list[15],
-                          "code": inner_list[16],
-                          "product_id": product_temp.product_variant_ids[0].id,
-                          "value_name": inner_list[10],
-                          "qty": int(inner_list[50]),
-                          "qb_variant_id": inner_list[1],
-                        })
-                    else:
-                        package.product_id = product_temp.product_variant_ids[0].id
-                    continue
-                if product_temp:
-                    product_vari = self.env['product.product'].search([('qb_varient_id', '=', inner_list[1])])
-                    list_of_attr = []
-                    if not product_vari:
-                        if inner_list[9] and inner_list[10]:
-                            attribute_id = self.env['product.attribute'].search([('name', '=', inner_list[9])], limit=1)
-                            if not attribute_id:
-                                attribute_id = self.env['product.attribute'].create({
-                                    'name': inner_list[9]
-                                })
-                            self.create_variants_by_attribute(product_temp, attribute_id,
-                                                              str(inner_list[10]))
-                            list_of_attr.append(str(inner_list[10]))
-
-                        new_product = self.env['product.product'].search(
-                            [('id', 'in', product_temp.product_variant_ids.ids),
-                             ('qb_varient_id', '=', False)])
-
-                        for val in new_product:
-                            set_list = []
-                            for value_name in val.product_template_attribute_value_ids:
-                                set_list.append(value_name.name)
-                            if sorted(set_list) == sorted(list_of_attr):
-                                val.write({
-                                    'qb_varient_id': inner_list[1],
-                                    'default_code': inner_list[16],
-                                    'lst_price': 0 if inner_list[39] == "" else float(inner_list[39]),
-                                })
-                else:
-                    list_of_attr = []
-                    uom = self.env['uom.uom'].search([('name', '=', inner_list[34])])
-                    brand_name = self.env['common.product.brand.ept'].search(
-                        [('name', '=', inner_list[6])]).id
-                    if not brand_name:
-                        brand_name = self.env['common.product.brand.ept'].create({
-                            'name': inner_list[6],
-                        }).id
-                    product_temp = self.env['product.template'].create({
-                        "name": inner_list[2],
-                        "uom_id": uom.id if uom else 1,
-                        "uom_po_id": uom.id if uom else 1,
-                        "type": "product",
-                        "invoice_policy": "order",
-                        "categ_id": self.env.ref('product.product_category_all').id,
-                        "qb_templ_id": inner_list[0],
-                        "description": inner_list[4],
-                        "product_brand_id": brand_name,
-                    })
-                    if inner_list[9] and inner_list[10]:
-                        attribute_id = self.env['product.attribute'].search([('name', '=', inner_list[9])], limit=1)
-                        if not attribute_id:
-                            attribute_id = self.env['product.attribute'].create({
-                                'name': inner_list[9]
-                            })
-                        self.create_variants_by_attribute(product_temp, attribute_id,
-                                                          str(inner_list[10]))
-                        list_of_attr.append(str(inner_list[10]))
-
-                    new_product = self.env['product.product'].search(
-                        [('id', 'in', product_temp.product_variant_ids.ids),
-                         ('qb_varient_id', '=', False)])
-
-                    for val in new_product:
-                        set_list = []
-                        for value_name in val.product_template_attribute_value_ids:
-                            set_list.append(value_name.name)
-                        if sorted(set_list) == sorted(list_of_attr):
-                            val.write({
-                                'qb_varient_id': inner_list[1],
-                                'default_code': inner_list[16],
-                                'lst_price': 0 if inner_list[39] == "" else float(inner_list[39]),
-                            })
+            # for inner_list in main_list:
+            #     if inner_list[0] == float(45095266):
+            #         print('hello')
+            #
+            #     product_temp = self.env['product.template'].search([('qb_templ_id', '=', inner_list[0])])
+            #     if not product_temp and inner_list[49] == 'y':
+            #         continue
+            #     if product_temp and inner_list[49] == 'y':
+            #         package = self.env['variant.package'].search([('qb_variant_id', '=', inner_list[1])])
+            #         if not package:
+            #             product_temp.product_variant_ids[0].variant_package_ids.create({
+            #               "name": inner_list[15],
+            #               "code": inner_list[16],
+            #               "product_id": product_temp.product_variant_ids[0].id,
+            #               "value_name": inner_list[10],
+            #               "qty": int(inner_list[50]),
+            #               "qb_variant_id": inner_list[1],
+            #             })
+            #         else:
+            #             package.product_id = product_temp.product_variant_ids[0].id
+            #         continue
+            #     if product_temp:
+            #         product_vari = self.env['product.product'].search([('qb_varient_id', '=', inner_list[1])])
+            #         list_of_attr = []
+            #         if not product_vari:
+            #             if inner_list[9] and inner_list[10]:
+            #                 attribute_id = self.env['product.attribute'].search([('name', '=', inner_list[9])], limit=1)
+            #                 if not attribute_id:
+            #                     attribute_id = self.env['product.attribute'].create({
+            #                         'name': inner_list[9]
+            #                     })
+            #                 self.create_variants_by_attribute(product_temp, attribute_id,
+            #                                                   str(inner_list[10]))
+            #                 list_of_attr.append(str(inner_list[10]))
+            #
+            #             new_product = self.env['product.product'].search(
+            #                 [('id', 'in', product_temp.product_variant_ids.ids),
+            #                  ('qb_varient_id', '=', False)])
+            #
+            #             for val in new_product:
+            #                 set_list = []
+            #                 for value_name in val.product_template_attribute_value_ids:
+            #                     set_list.append(value_name.name)
+            #                 if sorted(set_list) == sorted(list_of_attr):
+            #                     val.write({
+            #                         'qb_varient_id': inner_list[1],
+            #                         'default_code': inner_list[16],
+            #                         'lst_price': 0 if inner_list[39] == "" else float(inner_list[39]),
+            #                     })
+            #     else:
+            #         list_of_attr = []
+            #         uom = self.env['uom.uom'].search([('name', '=', inner_list[34])])
+            #         brand_name = self.env['common.product.brand.ept'].search(
+            #             [('name', '=', inner_list[6])]).id
+            #         if not brand_name:
+            #             brand_name = self.env['common.product.brand.ept'].create({
+            #                 'name': inner_list[6],
+            #             }).id
+            #         product_temp = self.env['product.template'].create({
+            #             "name": inner_list[2],
+            #             "uom_id": uom.id if uom else 1,
+            #             "uom_po_id": uom.id if uom else 1,
+            #             "type": "product",
+            #             "invoice_policy": "order",
+            #             "categ_id": self.env.ref('product.product_category_all').id,
+            #             "qb_templ_id": inner_list[0],
+            #             "description": inner_list[4],
+            #             "product_brand_id": brand_name,
+            #         })
+            #         if inner_list[9] and inner_list[10]:
+            #             attribute_id = self.env['product.attribute'].search([('name', '=', inner_list[9])], limit=1)
+            #             if not attribute_id:
+            #                 attribute_id = self.env['product.attribute'].create({
+            #                     'name': inner_list[9]
+            #                 })
+            #             self.create_variants_by_attribute(product_temp, attribute_id,
+            #                                               str(inner_list[10]))
+            #             list_of_attr.append(str(inner_list[10]))
+            #
+            #         new_product = self.env['product.product'].search(
+            #             [('id', 'in', product_temp.product_variant_ids.ids),
+            #              ('qb_varient_id', '=', False)])
+            #
+            #         for val in new_product:
+            #             set_list = []
+            #             for value_name in val.product_template_attribute_value_ids:
+            #                 set_list.append(value_name.name)
+            #             if sorted(set_list) == sorted(list_of_attr):
+            #                 val.write({
+            #                     'qb_varient_id': inner_list[1],
+            #                     'default_code': inner_list[16],
+            #                     'lst_price': 0 if inner_list[39] == "" else float(inner_list[39]),
+            #                 })
 
 #<------------------------------------------------------------------------------------------------------------------------->
         # Csv_02 ,Csv_03, csv_08, csv_10 without packes for 3,4, 22 varents 40 variants length grater then 12
@@ -1072,7 +1083,7 @@ class ExcelReport(models.Model):
                                 'discount': float(inner_list[9]) if inner_list[9] else 0,
                                 'tax_id': tax_id
                             })
-                            sale_order_line._onchange_qty
+                            # sale_order_line._onchange_qty
                         elif varient:
                             sale_order_line = self.env['sale.order.line'].create({
                                 "name": varient.name,
@@ -1084,7 +1095,7 @@ class ExcelReport(models.Model):
                                 'discount': float(inner_list[9]) if inner_list[9] else 0,
                                 'tax_id': tax_id
                             })
-                            sale_order_line._onchange_qty
+                            # sale_order_line._onchange_qty
 
                         #
                     else:
@@ -1096,7 +1107,7 @@ class ExcelReport(models.Model):
                             "qty": 1,
                             'order_id': sale_order.id
                         })
-                        sale_order_line._onchange_qty
+                        # sale_order_line._onchange_qty
                         i += 1
                         if (int(i % 500) == 0):
                             print("Record created_________________" + str(i) + "\n")
@@ -1151,7 +1162,7 @@ class ExcelReport(models.Model):
                                     'taxes_id': tax_id,
 
                                 })
-                                purchase_order_line._onchange_qty
+                                # purchase_order_line._onchange_qty
                             elif package:
                                 purchase_order_line = self.env['purchase.order.line'].create({
                                     "name": package.product_id.name,
@@ -1163,7 +1174,7 @@ class ExcelReport(models.Model):
                                     "price_unit": float(inner_list[6]) if inner_list[6] else 0,
                                     'taxes_id': tax_id,
                                 })
-                                purchase_order_line._onchange_qty
+                                # purchase_order_line._onchange_qty
                             # else:
                             #     products_not_found.append([str(inner_list[1]), purchase_order.name])
 
@@ -1189,7 +1200,7 @@ class ExcelReport(models.Model):
                                     'taxes_id': tax_id,
 
                                 })
-                                purchase_order_line._onchange_qty
+                                # purchase_order_line._onchange_qty
                             elif package:
                                 purchase_order_line = self.env['purchase.order.line'].create({
                                     "name": package.product_id.name,
@@ -1202,7 +1213,7 @@ class ExcelReport(models.Model):
                                     'taxes_id': tax_id,
 
                                 })
-                                purchase_order_line._onchange_qty
+                                # purchase_order_line._onchange_qty
                             # else:
                             #     products_not_found.append([str(inner_list[1]), purchase_order.name])
                         i += 1

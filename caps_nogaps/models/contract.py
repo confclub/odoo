@@ -677,7 +677,7 @@ class CapsContract(models.Model):
                         'product_uom': shipment_pro.uom_id.id,
                         'order_id': so.id,
                     })
-                    sol._onchange_qty()
+                    # sol._onchange_qty()
                 for line in product_dic[key]:
                     sol = self.env['sale.order.line'].create({
                             'product_id': line[0],
@@ -687,7 +687,7 @@ class CapsContract(models.Model):
                             'product_uom': line[4],
                             'order_id': so.id,
                     })
-                    sol._onchange_qty()
+                    # sol._onchange_qty()
                 if so.order_line:
                     for so_line in so.order_line:
                         if so_line.qty == 0:

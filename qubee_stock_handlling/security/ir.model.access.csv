@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_variant_package_base,variant.package.base,model_variant_package,base.group_user,1,1,1,1
+access_product_type,product.type,model_product_type,,1,1,1,1

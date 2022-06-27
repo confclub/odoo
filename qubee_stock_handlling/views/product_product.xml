@@ -8,7 +8,9 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='uom_id']" position="before">
                     <field name="temp_checkbox"/>
-
+                </xpath>
+                <xpath expr="//field[@name='barcode']" position="after">
+                    <field name="shopify_product_type"/>
                 </xpath>
             </field>
         </record>
@@ -37,9 +39,9 @@
                                     <group>
                                         <field name="code"/>
                                         <field name="price"/>
-                                        <field name="qb_variant_id" invisible="1"/>
-                                        <field name="inventory_item_id" invisible="1"/>
-                                        <field name="shopify_variant_id" invisible="1"/>
+                                        <field name="qb_variant_id" />
+                                        <field name="inventory_item_id" />
+                                        <field name="shopify_variant_id" />
                                     </group>
                                 </group>
                             </form>
@@ -49,10 +51,10 @@
                                 <field name="qty"/>
                                 <field name="code"/>
                                 <field name="price"/>
-                                <field name="company_id" invisible="1"/>
-                                <field name="qb_variant_id" invisible="1"/>
-                                <field name="inventory_item_id" invisible="1"/>
-                                <field name="shopify_variant_id" invisible="1"/>
+                                <field name="company_id" />
+                                <field name="qb_variant_id" />
+                                <field name="inventory_item_id" />
+                                <field name="shopify_variant_id" />
                             </tree>
                         </field>
                     </page>

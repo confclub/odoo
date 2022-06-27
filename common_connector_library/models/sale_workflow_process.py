@@ -159,9 +159,10 @@ class SaleWorkflowProcess(models.Model):
                 for ful_fill_list in data_dic.get('fulfillments'):
                     if str(ful_fill_list.get("id")) != pick.shopify_delivery_id and pick.state != 'done':
                         for line in pick.move_ids_without_package:
-                            line.package_qty_done = line.qty
-                            line.quantity_done = line.qty * line.variant_package_id.qty if line.variant_package_id else line.qty
-                            line._onchange_qty_done()
+                            line.quantity_done = line.qty
+                            # line.package_qty_done = line.qty
+                            # line.quantity_done = line.qty * line.variant_package_id.qty if line.variant_package_id else line.qty
+                            # line._onchange_qty_done()
                         pick.action_assign()
                         pick.button_validate()
                         pick.shopify_delivery_id = ful_fill_list.get("id")
@@ -186,9 +187,10 @@ class SaleWorkflowProcess(models.Model):
                     for line in pick.move_ids_without_package:
                         code = line.variant_package_id.code if line.variant_package_id else line.product_id.default_code
                         if code in list(dict_of_shopify):
-                            line.package_qty_done = dict_of_shopify[code]
-                            line.quantity_done = dict_of_shopify[code] * line.variant_package_id.qty if line.variant_package_id else dict_of_shopify[code]
-                            line._onchange_qty_done()
+                            line.quantity_done = dict_of_shopify[code]
+                            # line.package_qty_done = dict_of_shopify[code]
+                            # line.quantity_done = dict_of_shopify[code] * line.variant_package_id.qty if line.variant_package_id else dict_of_shopify[code]
+                            # line._onchange_qty_done()
 
                     pick.action_assign()
                     res_dict = pick.button_validate()

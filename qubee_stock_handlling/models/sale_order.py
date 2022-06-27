@@ -8,14 +8,14 @@ from itertools import groupby
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    def action_confirm(self):
-        super(SaleOrder, self).action_confirm()
-        for picking in self.picking_ids:
-            for line in self.order_line:
-                for move_id in picking.move_ids_without_package:
-                    if move_id.product_id == line.product_id:
-                        move_id.write({'qty': line.qty, 'variant_package_id': line.variant_package_id})
-        return True
+    # def action_confirm(self):
+    #     super(SaleOrder, self).action_confirm()
+    #     for picking in self.picking_ids:
+    #         for line in self.order_line:
+    #             for move_id in picking.move_ids_without_package:
+    #                 if move_id.product_id == line.product_id:
+    #                     move_id.write({'qty': line.qty, 'variant_package_id': line.variant_package_id})
+    #     return True
 
     # def _create_invoices(self, grouped=False, final=False, date=None):
     #     """
@@ -159,68 +159,68 @@ class SaleOrderLine(models.Model):
     #     if self.product_id:
     #         self.variant_package_ids = self.product_id.variant_package_ids.ids
 
-    @api.onchange('qty', 'variant_package_id')
-    def _onchange_qty(self):
-        if self.variant_package_id:
-            self.product_uom_qty = self.qty * self.variant_package_id.qty
-            # self.price_unit = self.variant_package_id.price
-        else:
-            self.product_uom_qty = self.qty
+    # @api.onchange('qty', 'variant_package_id')
+    # def _onchange_qty(self):
+    #     if self.variant_package_id:
+    #         self.product_uom_qty = self.qty * self.variant_package_id.qty
+    #         # self.price_unit = self.variant_package_id.price
+    #     else:
+    #         self.product_uom_qty = self.qty
 
-    @api.onchange('variant_package_id')
-    def _onchange_variant_package_id(self):
-        if self.variant_package_id:
-            pack = self.order_id.pricelist_id.pack_ids.search([('package_id', '=', self.variant_package_id.id)])
-            if pack:
-                self.price_unit = pack.fixed_price
-            else:
-                self.price_unit = self.variant_package_id.price
-        else:
-            if self.product_id:
-                product = self.order_id.pricelist_id.item_ids.search([('product_id', '=', self.product_id.id)])
-                price = self.product_id.lst_price
-                if product:
-                    price = product.fixed_price
-                self.price_unit = price
+    # @api.onchange('variant_package_id')
+    # def _onchange_variant_package_id(self):
+    #     if self.variant_package_id:
+    #         pack = self.order_id.pricelist_id.pack_ids.search([('package_id', '=', self.variant_package_id.id)])
+    #         if pack:
+    #             self.price_unit = pack.fixed_price
+    #         else:
+    #             self.price_unit = self.variant_package_id.price
+    #     else:
+    #         if self.product_id:
+    #             product = self.order_id.pricelist_id.item_ids.search([('product_id', '=', self.product_id.id)])
+    #             price = self.product_id.lst_price
+    #             if product:
+    #                 price = product.fixed_price
+    #             self.price_unit = price
 
-    @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id', 'variant_package_id')
-    def _compute_amount(self):
-        """
-        Compute the amounts of the SO line.
-        """
-        for line in self:
-            price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
-            taxes = line.tax_id.compute_all(price, line.order_id.currency_id, line.qty, product=line.product_id, partner=line.order_id.partner_shipping_id)
-            line.update({
-                'price_tax': sum(t.get('amount', 0.0) for t in taxes.get('taxes', [])),
-                'price_total': taxes['total_included'],
-                'price_subtotal': taxes['total_excluded'],
-            })
-            if self.env.context.get('import_file', False) and not self.env.user.user_has_groups(
-                    'account.group_account_manager'):
-                line.tax_id.invalidate_cache(['invoice_repartition_line_ids'], [line.tax_id.id])
+    # @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id', 'variant_package_id')
+    # def _compute_amount(self):
+    #     """
+    #     Compute the amounts of the SO line.
+    #     """
+    #     for line in self:
+    #         price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+    #         taxes = line.tax_id.compute_all(price, line.order_id.currency_id, line.qty, product=line.product_id, partner=line.order_id.partner_shipping_id)
+    #         line.update({
+    #             'price_tax': sum(t.get('amount', 0.0) for t in taxes.get('taxes', [])),
+    #             'price_total': taxes['total_included'],
+    #             'price_subtotal': taxes['total_excluded'],
+    #         })
+    #         if self.env.context.get('import_file', False) and not self.env.user.user_has_groups(
+    #                 'account.group_account_manager'):
+    #             line.tax_id.invalidate_cache(['invoice_repartition_line_ids'], [line.tax_id.id])
 
-    @api.onchange('product_uom', 'product_uom_qty')
-    def product_uom_change(self):
-        if not self.product_uom or not self.product_id:
-            self.price_unit = 0.0
-            return
-        if self.order_id.pricelist_id and self.order_id.partner_id and not self.variant_package_id:
-            product = self.product_id.with_context(
-                lang=self.order_id.partner_id.lang,
-                partner=self.order_id.partner_id,
-                quantity=self.product_uom_qty,
-                date=self.order_id.date_order,
-                pricelist=self.order_id.pricelist_id.id,
-                uom=self.product_uom.id,
-                fiscal_position=self.env.context.get('fiscal_position')
-            )
-            self.price_unit = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product),
-                                                                                      product.taxes_id, self.tax_id,
-                                                                                      self.company_id)
+    # @api.onchange('product_uom', 'product_uom_qty')
+    # def product_uom_change(self):
+    #     if not self.product_uom or not self.product_id:
+    #         self.price_unit = 0.0
+    #         return
+    #     if self.order_id.pricelist_id and self.order_id.partner_id and not self.variant_package_id:
+    #         product = self.product_id.with_context(
+    #             lang=self.order_id.partner_id.lang,
+    #             partner=self.order_id.partner_id,
+    #             quantity=self.product_uom_qty,
+    #             date=self.order_id.date_order,
+    #             pricelist=self.order_id.pricelist_id.id,
+    #             uom=self.product_uom.id,
+    #             fiscal_position=self.env.context.get('fiscal_position')
+    #         )
+    #         self.price_unit = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product),
+    #                                                                                   product.taxes_id, self.tax_id,
+    #                                                                                   self.company_id)
 
-    def _prepare_invoice_line(self, **optional_values):
-        res = super(SaleOrderLine, self)._prepare_invoice_line(**optional_values)
-        res['quantity'] = self.qty
-        res['variant_package_id'] = self.variant_package_id.id
-        return res
+    # def _prepare_invoice_line(self, **optional_values):
+    #     res = super(SaleOrderLine, self)._prepare_invoice_line(**optional_values)
+    #     res['quantity'] = self.qty
+    #     res['variant_package_id'] = self.variant_package_id.id
+    #     return res

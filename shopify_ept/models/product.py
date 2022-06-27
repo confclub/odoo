@@ -68,7 +68,7 @@ class ProductProduct(models.Model):
                     attr_list[pro.default_code] = str(temp_attr.name) + str(',') + "Single"
             if pro.variant_package_ids:
                 for att in pro.variant_package_ids:
-                    attr_list[att.code] = str(temp_attr.name) + str(',') + att.value_name
+                    attr_list[att.code] = str(att.name) + str(',') + att.value_name
             pro.attribut_compute = attr_list
 
     def price_compute(self, price_type, uom=False, currency=False, company=None):

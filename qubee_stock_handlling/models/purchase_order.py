@@ -30,12 +30,12 @@ class PurchaseOrderLine(models.Model):
     variant_package_id = fields.Many2one('variant.package', 'Package', domain="[('id', 'in', variant_package_ids)]")
     qty = fields.Float(string='Qty')
 
-    @api.onchange('qty', 'variant_package_id')
-    def _onchange_qty(self):
-        if self.variant_package_id:
-            self.product_qty = self.qty * self.variant_package_id.qty
-        else:
-            self.product_qty = self.qty
+    # @api.onchange('qty', 'variant_package_id')
+    # def _onchange_qty(self):
+    #     if self.variant_package_id:
+    #         self.product_qty = self.qty * self.variant_package_id.qty
+    #     else:
+    #         self.product_qty = self.qty
 
     # @api.onchange('variant_package_id', 'product_id')
     # def _onchange_variant_package_id(self):
@@ -74,11 +74,11 @@ class PurchaseOrderLine(models.Model):
         return res
 
 
-    def _prepare_account_move_line(self, move=False):
-        res = super(PurchaseOrderLine, self)._prepare_account_move_line(move=False)
-        res['quantity'] = self.qty
-        res['variant_package_id'] = self.variant_package_id.id
-        return res
+    # def _prepare_account_move_line(self, move=False):
+    #     res = super(PurchaseOrderLine, self)._prepare_account_move_line(move=False)
+    #     res['quantity'] = self.qty
+    #     res['variant_package_id'] = self.variant_package_id.id
+    #     return res
 
 
 

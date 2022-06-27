@@ -179,9 +179,9 @@ class SaleOrder(models.Model):
             # product = shopify_product.product_id
             product = self.env['product.product'].search([('default_code', '=', line.get('sku'))], limit=1)
             package_id = False
-            if not product:
-                package_id = self.env['variant.package'].search([('code', '=', line.get('sku'))])
-                product = package_id.product_id
+            # if not product:
+            #     package_id = self.env['variant.package'].search([('code', '=', line.get('sku'))])
+            #     product = package_id.product_id
 
             order_line = self.shopify_create_sale_order_line(line, product, line.get("quantity"),
                                                              product.name, line.get("price"),
@@ -405,7 +405,7 @@ class SaleOrder(models.Model):
         shopify_product_template_obj = self.env["shopify.product.template.ept"]
         #odoo Objects
         product_obj = self.env["product.product"]
-        product_package_obj = self.env["variant.package"]
+        # product_package_obj = self.env["variant.package"]
         mismatch = False
 
         for line in lines:
@@ -418,12 +418,12 @@ class SaleOrder(models.Model):
             #     product_package = product_package_obj.search([("shopify_variant_id", "=", line.get("variant_id")), ("code", "=", line.get("sku"))])
             # else:
             product_variant = product_obj.search([("default_code", "=", line.get("sku"))])
-            product_package = product_package_obj.search([("code", "=", line.get("sku"))])
+            # product_package = product_package_obj.search([("code", "=", line.get("sku"))])
 
             if product_variant:
                 continue
-            elif product_package:
-                continue
+            # elif product_package:
+            #     continue
 
             if not product_variant:
                 line_variant_id = line.get("variant_id", False)
@@ -655,11 +655,11 @@ class SaleOrder(models.Model):
             "is_delivery": is_shipping,
             "name": product.default_code,
             "qty": quantity,
-            "variant_package_id": package.id if package else False,
+            # "variant_package_id": package.id if package else False,
             # 'display_type': 'line_note'
         })
         order_line = sale_order_line_obj.create(order_line_vals)
-        order_line._onchange_qty()
+        # order_line._onchange_qty()
         return order_line
 
     @api.model

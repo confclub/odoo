@@ -178,10 +178,11 @@ class SaleOrder(models.Model):
         """
         self.ensure_one()
         if work_flow_process_record.create_invoice:
-            invoices = self._create_invoices()
-            self.validate_invoice_ept(invoices)
-            if work_flow_process_record.register_payment:
-                self.paid_invoice_ept(invoices)
+            if not self.invoice_ids:
+                invoices = self._create_invoices()
+                self.validate_invoice_ept(invoices)
+                if work_flow_process_record.register_payment:
+                    self.paid_invoice_ept(invoices)
         return True
 
     def validate_invoice_ept(self, invoices):
