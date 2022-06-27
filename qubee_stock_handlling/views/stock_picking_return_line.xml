@@ -1,20 +1,20 @@
 <odoo>
     <data>
 
-        <record id="variant_package_stock_return_picking_inherit_form" model="ir.ui.view">
-            <field name="name">variant.package.stock.return.picking.inherit.form</field>
-            <field name="model">stock.return.picking</field>
-            <field name="inherit_id" ref="stock.view_stock_return_picking_form" />
-            <field name="arch" type="xml">
-<!--                <xpath expr="//field[@name='product_return_moves']/tree/field[@name='quantity']" position="after">-->
-<!--                    <field name="qty" />-->
-<!--                    <field name="variant_package_id" />-->
-<!--                </xpath>-->
-<!--                <xpath expr="//field[@name='product_return_moves']/tree/field[@name='quantity']" position="attributes">-->
-<!--                    <attribute name="invisible">1</attribute>-->
-<!--                </xpath>-->
-            </field>
-        </record>
+<!--        <record id="variant_package_stock_return_picking_inherit_form" model="ir.ui.view">-->
+<!--            <field name="name">variant.package.stock.return.picking.inherit.form</field>-->
+<!--            <field name="model">stock.return.picking</field>-->
+<!--            <field name="inherit_id" ref="stock.view_stock_return_picking_form" />-->
+<!--            <field name="arch" type="xml">-->
+<!--&lt;!&ndash;                <xpath expr="//field[@name='product_return_moves']/tree/field[@name='quantity']" position="after">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <field name="qty" />&ndash;&gt;-->
+<!--&lt;!&ndash;                    <field name="variant_package_id" />&ndash;&gt;-->
+<!--&lt;!&ndash;                </xpath>&ndash;&gt;-->
+<!--&lt;!&ndash;                <xpath expr="//field[@name='product_return_moves']/tree/field[@name='quantity']" position="attributes">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <attribute name="invisible">1</attribute>&ndash;&gt;-->
+<!--&lt;!&ndash;                </xpath>&ndash;&gt;-->
+<!--            </field>-->
+<!--        </record>-->
 
     </data>
 </odoo>
