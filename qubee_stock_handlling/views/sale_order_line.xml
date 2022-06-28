@@ -11,13 +11,13 @@
                     <field name="variant_package_id" options="{'no_create_edit': True, 'no_create': True}"/>
                     <field name="variant_package_ids" invisible="1"/>
                 </xpath>
-                <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
+<!--                <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="attributes">-->
+<!--                    <attribute name="invisible">1</attribute>-->
+<!--                </xpath>-->
 
-                <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
+<!--                <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom']" position="attributes">-->
+<!--                    <attribute name="invisible">1</attribute>-->
+<!--                </xpath>-->
 
             </field>
         </record>

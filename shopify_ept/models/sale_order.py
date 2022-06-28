@@ -440,11 +440,17 @@ class SaleOrder(models.Model):
                     #         [("shopify_variant_id", "=", line.get("variant_id"))])
 
                     if not product_variant:
-                        message = "Product [%s][%s] not found for Order %s" % (
-                            line.get("sku"), line.get("name"), order_number)
-                        self.create_shopify_log_line(message, order_data_queue_line, log_book_id, order_number)
-                        mismatch = True
-                        break
+                        # message = "Product [%s][%s] not found for Order %s" % (
+                        #     line.get("sku"), line.get("name"), order_number)
+                        # self.create_shopify_log_line(message, order_data_queue_line, log_book_id, order_number)
+                        # mismatch = True
+                        # break
+                        self.env['product.template'].create({
+                            "name": line.get('name'),
+                            "default_code": line.get('sku'),
+                            "list_price": line.get('price'),
+                            "invoice_policy": 'order',
+                        })
                     # if not product_package:
                     #     message = "Product [%s][%s] not found for Order %s" % (
                     #         line.get("sku"), line.get("name"), order_number)
@@ -452,12 +458,18 @@ class SaleOrder(models.Model):
                     #     mismatch = True
                     #     break
                 else:
-                    message = "Product ID is not available in %s Order line response. It might " \
-                              "have happened that product has been deleted after order was " \
-                              "placed." % order_number
-                    self.create_shopify_log_line(message, order_data_queue_line, log_book_id, order_number)
-                    mismatch = True
-                    break
+                    # message = "Product ID is not available in %s Order line response. It might " \
+                    #           "have happened that product has been deleted after order was " \
+                    #           "placed." % order_number
+                    # self.create_shopify_log_line(message, order_data_queue_line, log_book_id, order_number)
+                    # mismatch = True
+                    # break
+                    self.env['product.template'].create({
+                        "name": line.get('name'),
+                        "default_code": line.get('sku'),
+                        "list_price": line.get('price'),
+                        "invoice_policy": 'order',
+                    })
         return mismatch
 
     def shopify_create_order(self, instance, partner, shipping_address, invoice_address,
