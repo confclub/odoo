@@ -9,6 +9,8 @@
                 <xpath expr="//field[@name='payment_term_id']"
                        position="after">
                     <field name="from_excel" string="From Excel" readonly="1" />
+                    <field name="invoiced"  readonly="1" />
+                    <field name="delivery" readonly="1" />
                 </xpath>
             </field>
         </record>

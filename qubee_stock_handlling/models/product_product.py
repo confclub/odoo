@@ -17,6 +17,7 @@ class Product(models.Model):
     variant_package_ids = fields.One2many('variant.package', 'product_id')
     inventory_item_id = fields.Char()
     shopify_variant_id = fields.Char()
+    product_not_found = fields.Boolean(default=False)
 
 
 

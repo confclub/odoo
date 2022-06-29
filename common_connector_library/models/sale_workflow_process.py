@@ -124,35 +124,39 @@ class SaleWorkflowProcess(models.Model):
         instance.connect_in_shopify()
         for order_line in orders.order_line:
             #if pack
-            if order_line.variant_package_id:
-                if order_line.product_id.product_tmpl_id.temp_checkbox:
-                    forcast_qty = order_line.variant_package_id.product_id.virtual_available
-                    packs = order_line.variant_package_id.product_id.variant_package_ids
-                    # for product stock Update on shopify
-                    if order_line.product_id.inventory_item_id:
-                        shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                   order_line.product_id.inventory_item_id,
-                                                   int(forcast_qty))
-                    #for packs stock Update on shopify
-                    for pac in packs:
-                        if pac.inventory_item_id:
-                            shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
-                                               int(forcast_qty/pac.qty))
-            # if product and no pack stock Update on shopify
-            else:
-                if order_line.product_id.product_tmpl_id.temp_checkbox:
-                    forcast_qty = order_line.product_id.virtual_available
-                    packs = order_line.product_id.variant_package_ids
-                    #for product
-                    if order_line.product_id.inventory_item_id:
-                        shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                   order_line.product_id.inventory_item_id,
-                                                   int(forcast_qty))
-                    # for packs stock Update on shopify
-                    for pac in packs:
-                        if pac.inventory_item_id:
-                            shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
-                                                       int(forcast_qty / pac.qty))
+            # if order_line.variant_package_id:
+            #     if order_line.product_id.product_tmpl_id.temp_checkbox:
+            #         forcast_qty = order_line.variant_package_id.product_id.virtual_available
+            #         packs = order_line.variant_package_id.product_id.variant_package_ids
+            #         # for product stock Update on shopify
+            #         if order_line.product_id.inventory_item_id:
+            #             shopify.InventoryLevel.set(location_id.shopify_location_id,
+            #                                        order_line.product_id.inventory_item_id,
+            #                                        int(forcast_qty))
+            #         #for packs stock Update on shopify
+            #         for pac in packs:
+            #             if pac.inventory_item_id:
+            #                 shopify.InventoryLevel.set(location_id.shopify_location_id, pac.inventory_item_id,
+            #                                    int(forcast_qty/pac.qty))
+            # # if product and no pack stock Update on shopify
+            # else:
+            if order_line.product_id.product_tmpl_id.temp_checkbox:
+                product_id = order_line.product_id  # changing here
+                bom_id = order_line.product_id.bom_ids
+                if bom_id and len(bom_id) == 1 and bom_id.type == 'phantom' and len(
+                        bom_id.bom_line_ids) == 1 \
+                        and bom_id.bom_line_ids.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                    product_id = bom_id.bom_line_ids.product_id
+                mrp_lines = self.env['mrp.bom.line'].search([('product_id', '=', product_id.id)])
+
+                for mr_line in mrp_lines:
+                    bom_id = mr_line.bom_id
+                    if bom_id.type == 'phantom' and len(
+                            bom_id.bom_line_ids) == 1 and mr_line.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                        if bom_id.product_id.inventory_item_id:
+                            shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                       bom_id.product_id.inventory_item_id,
+                                                       int(bom_id.product_id.virtual_available))
 
         if data_dic.get('fulfillment_status') == 'fulfilled':
             for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
@@ -181,11 +185,20 @@ class SaleWorkflowProcess(models.Model):
                 for ful_fill_list in data_dic.get('fulfillments'):
                     if str(ful_fill_list.get("id")) not in delivery_list:
                         for item_line in ful_fill_list.get('line_items'):
-                             dict_of_shopify[item_line.get('sku')] = item_line.get('quantity')
+                            product = self.env['product.product'].search([('default_code', '=', item_line.get('sku') )],limit=1)
+                            bom_id = product.bom_ids
+                            product_sku = item_line.get('sku')
+                            product_qty = item_line.get('quantity')
+                            if bom_id and len(bom_id) == 1 and bom_id.type == 'phantom' and len(
+                                    bom_id.bom_line_ids) == 1 \
+                                    and bom_id.bom_line_ids.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                                product_sku = bom_id.bom_line_ids.product_id.default_code
+                                product_qty = item_line.get('quantity') * bom_id.bom_line_ids.product_qty
+                            dict_of_shopify[product_sku] = product_qty
 
                 for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
                     for line in pick.move_ids_without_package:
-                        code = line.variant_package_id.code if line.variant_package_id else line.product_id.default_code
+                        code = line.product_id.default_code
                         if code in list(dict_of_shopify):
                             line.quantity_done = dict_of_shopify[code]
                             # line.package_qty_done = dict_of_shopify[code]
@@ -248,8 +261,15 @@ class SaleWorkflowProcess(models.Model):
                                 #
                                 # else:
                                 if line.product_id.default_code == item.get('line_item')['sku']:
-                                    product = line.product_id
+                                    product = line.product_id    #changing here
+                                    bom_id = line.product_id.bom_ids
                                     product_qty = item.get('quantity')
+                                    if bom_id and len(bom_id) == 1 and bom_id.type == 'phantom' and len(
+                                            bom_id.bom_line_ids) == 1 \
+                                            and bom_id.bom_line_ids.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                                        product = bom_id.bom_line_ids.product_id
+                                        product_qty = item.get('quantity') * bom_id.bom_line_ids.product_qty
+                                    # product_qty = item.get('quantity') * bom_id.bom_line_ids.product_qty if bom_id else item.get('quantity')  #changing here
                                     product_uom = line.product_uom
                                     if product and product_qty and product_uom:
                                         vals = {
@@ -272,19 +292,22 @@ class SaleWorkflowProcess(models.Model):
 
                                 # proccess for updating stock in shopify
                                 if line.product_id.product_tmpl_id.temp_checkbox:
-                                    forcast_qty = line.product_id.virtual_available
-                                    packs = line.product_id.variant_package_ids
-                                    # for product
-                                    if line.product_id.inventory_item_id:
-                                        shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                                   line.product_id.inventory_item_id,
-                                                                   int(forcast_qty))
-                                    # for packs
-                                    for pac in packs:
-                                        if pac.inventory_item_id:
-                                            shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                                       pac.inventory_item_id,
-                                                                       int(forcast_qty / pac.qty))
+                                    product_id = line.product_id    #changing here
+                                    bom_id = line.product_id.bom_ids
+                                    if bom_id and len(bom_id) == 1 and bom_id.type == 'phantom' and len(
+                                            bom_id.bom_line_ids) == 1 \
+                                            and bom_id.bom_line_ids.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                                        product_id = bom_id.bom_line_ids.product_id
+                                    mrp_lines = self.env['mrp.bom.line'].search([('product_id', '=', product_id.id)])
+
+                                    for mr_line in mrp_lines:
+                                        bom_id = mr_line.bom_id
+                                        if bom_id.type == 'phantom' and len(
+                                                bom_id.bom_line_ids) == 1 and mr_line.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                                            if bom_id.product_id.inventory_item_id:
+                                                shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                           bom_id.product_id.inventory_item_id,
+                                                                           int(bom_id.product_id.virtual_available))
 
         # elif data_dic.get('fulfillment_status') == 'partial':
         #     dict_of_shopify = {}
@@ -401,8 +424,15 @@ class SaleWorkflowProcess(models.Model):
                                     #
                                     # else:
                                     if line.product_id.default_code == item.get('line_item')['sku']:
-                                        product = line.product_id
+                                        product = line.product_id  # changing here
+                                        bom_id = line.product_id.bom_ids
                                         product_qty = item.get('quantity')
+                                        if bom_id and len(bom_id) == 1 and bom_id.type == 'phantom' and len(
+                                                bom_id.bom_line_ids) == 1 \
+                                                and bom_id.bom_line_ids.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                                            product = bom_id.bom_line_ids.product_id
+                                            product_qty = item.get('quantity') * bom_id.bom_line_ids.product_qty
+                                        # product_qty = item.get('quantity') * bom_id.bom_line_ids.product_qty if bom_id else item.get('quantity')  #changing here
                                         product_uom = line.product_uom
                                         if product and product_qty and product_uom:
                                             vals = {
@@ -425,19 +455,23 @@ class SaleWorkflowProcess(models.Model):
 
                                     #proccess for updating stock in shopify
                                     if line.product_id.product_tmpl_id.temp_checkbox:
-                                        forcast_qty = line.product_id.virtual_available
-                                        packs = line.product_id.variant_package_ids
-                                        # for product
-                                        if line.product_id.inventory_item_id:
-                                            shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                                       line.product_id.inventory_item_id,
-                                                                       int(forcast_qty))
-                                        # for packs
-                                        for pac in packs:
-                                            if pac.inventory_item_id:
-                                                shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                                           pac.inventory_item_id,
-                                                                           int(forcast_qty / pac.qty))
+                                        product_id = line.product_id  # changing here
+                                        bom_id = line.product_id.bom_ids
+                                        if bom_id and len(bom_id) == 1 and bom_id.type == 'phantom' and len(
+                                                bom_id.bom_line_ids) == 1 \
+                                                and bom_id.bom_line_ids.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                                            product_id = bom_id.bom_line_ids.product_id
+                                        mrp_lines = self.env['mrp.bom.line'].search(
+                                            [('product_id', '=', product_id.id)])
+
+                                        for mr_line in mrp_lines:
+                                            bom_id = mr_line.bom_id
+                                            if bom_id.type == 'phantom' and len(
+                                                    bom_id.bom_line_ids) == 1 and mr_line.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                                                if bom_id.product_id.inventory_item_id:
+                                                    shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                                               bom_id.product_id.inventory_item_id,
+                                                                               int(bom_id.product_id.virtual_available))
             #proccess for refund invoices
             invoice = orders.invoice_ids.filtered(
                         lambda r: r.move_type == 'out_invoice' and r.state == 'posted')

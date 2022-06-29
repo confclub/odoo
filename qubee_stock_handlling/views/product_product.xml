@@ -24,6 +24,7 @@
                 <xpath expr="//field[@name='uom_id']" position="before">
                     <field name="inventory_item_id"/>
                     <field name="shopify_variant_id"/>
+                    <field name="product_not_found"/>
                 </xpath>
                 <xpath expr="//page[@name='general_information']" position="after">
                     <page string="Packages" name="packages">

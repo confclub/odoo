@@ -5,6 +5,7 @@ import base64
 import xlrd
 from datetime import datetime
 from dateutil import parser
+from odoo.tests import Form, tagged
 import pytz
 utc = pytz.utc
 
@@ -13,7 +14,7 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
 
     def import_xls(self):
         main_list = []
@@ -1034,6 +1035,13 @@ class ExcelReport(models.Model):
                     #     print("Record created_________________" + str(i) + "\n")
                     # except(Exception) as error:
                     #     print('Error occur at %s with error '%(str(inner_list[0])))
+        #code for updat order
+        # try:
+        #     sale_order = self.env['sale.order'].search([('name', '=', '#' + str(inner_list[0]).split('.')[0])], limit=1)
+        #     if sale_order and not sale_order.from_excel:
+        #         sale_order.write({
+        #             "date_order": datetime.strptime(inner_list[13], "%Y-%m-%d").date()
+        #         })
 
         elif self.report_for == "sale_order":
             for sheet in wb.sheets():
@@ -1068,44 +1076,50 @@ class ExcelReport(models.Model):
                     if inner_list[1]:
                         varient = self.env['product.product'].search([('default_code', '=', inner_list[1])],
                                                                      limit=1)
-                        package = self.env['variant.package'].search([('code', '=', inner_list[1])],
-                                                                     limit=1)
                         tax_id = [self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[11]))], limit=1).id] if float(inner_list[11]) > 0 else []
-                        if package:
-                            sale_order_line = self.env['sale.order.line'].create({
-                                "name": package.name,
-                                "product_id": package.product_id.id,
-                                "variant_package_id": package.id,
-                                "product_uom": package.product_id.uom_id.id,
-                                "price_unit": float(inner_list[8]) if inner_list[8] else 0,
-                                "qty": inner_list[7],
-                                'order_id': sale_order.id,
-                                'discount': float(inner_list[9]) if inner_list[9] else 0,
-                                'tax_id': tax_id
-                            })
-                            # sale_order_line._onchange_qty
-                        elif varient:
+                        if varient:
                             sale_order_line = self.env['sale.order.line'].create({
                                 "name": varient.name,
                                 "product_id": varient.id,
                                 "product_uom": varient.uom_id.id,
                                 "price_unit": float(inner_list[8]) if inner_list[8] else 0,
-                                "qty": inner_list[7],
+                                "product_uom_qty": inner_list[7],
                                 'order_id': sale_order.id,
                                 'discount': float(inner_list[9]) if inner_list[9] else 0,
                                 'tax_id': tax_id
                             })
-                            # sale_order_line._onchange_qty
-
-                        #
+                        else:
+                            varient = self.env['product.product'].create({
+                                "name": inner_list[3],
+                                "default_code": inner_list[1],
+                                "list_price": inner_list[8],
+                                "invoice_policy": 'order',
+                                "product_not_found": True,
+                            })
+                            sale_order_line = self.env['sale.order.line'].create({
+                                "name": varient.name,
+                                "product_id": varient.id,
+                                "product_uom": varient.uom_id.id,
+                                "price_unit": float(inner_list[8]) if inner_list[8] else 0,
+                                "product_uom_qty": inner_list[7],
+                                'order_id': sale_order.id,
+                                'discount': float(inner_list[9]) if inner_list[9] else 0,
+                                'tax_id': tax_id
+                            })
                     else:
+                        tax_id = [self.env['account.tax'].search(
+                            [('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[11]))],
+                            limit=1).id] if float(inner_list[11]) > 0 else []
                         shipment = self.env.ref("excel_report.shipping_product_for_excel")
                         sale_order_line = self.env['sale.order.line'].create({
                             "name": "shippment",
                             "product_id": shipment.id,
                             "product_uom": shipment.uom_id.id,
-                            "qty": 1,
-                            'order_id': sale_order.id
+                            "product_uom_qty": inner_list[7],
+                            "price_unit": float(inner_list[8]) if inner_list[8] else 0,
+                            'order_id': sale_order.id,
+                            'discount': float(inner_list[9]) if inner_list[9] else 0,
+                            'tax_id': tax_id,
                         })
                         # sale_order_line._onchange_qty
                         i += 1
@@ -1113,6 +1127,78 @@ class ExcelReport(models.Model):
                             print("Record created_________________" + str(i) + "\n")
                 except(Exception) as error:
                     print('Error occur at %s' %(str(inner_list[0])))
+
+
+        elif self.report_for == "validate_sale_order":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+            i = 0
+            for inner_list in main_list:
+                try:
+                    inner_list[7] = str(inner_list[7]).split('.')[0]
+                    if inner_list[7] == '34835429':
+                        print("hello")
+                    sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[7]))],
+                                                               limit=1)
+                    if sale_order and sale_order.from_excel:
+                        if inner_list[5] == 'shipped':
+                            if not sale_order.picking_ids:
+                                sale_order.action_confirm()
+                                date_order = parser.parse(inner_list[8]).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S") if inner_list[8] else datetime.now()
+                                sale_order.date_order = date_order
+                                for pick in sale_order.picking_ids:
+                                    for line in pick.move_ids_without_package:
+                                        line.quantity_done = line.product_uom_qty
+                                    pick.action_assign()
+                                    pick.button_validate()
+                                Form(self.env['stock.immediate.transfer']).save().process()
+                                sale_order.delivery = True
+                                print("delivery created of sale order"+ str(sale_order.name) + "\n")
+                            if sale_order.picking_ids and sale_order.picking_ids[0].state != 'done':
+                                for pick in sale_order.picking_ids:
+                                    for line in pick.move_ids_without_package:
+                                        line.quantity_done = line.product_uom_qty
+                                    pick.action_assign()
+                                    pick.button_validate()
+                                Form(self.env['stock.immediate.transfer']).save().process()
+                                sale_order.delivery = True
+                                print("delivery created of sale order" + str(sale_order.name) + "\n")
+
+                        if inner_list[4] == 'paid':
+                            if sale_order.state == 'draft' and sale_order.order_line:
+                                sale_order.action_confirm()
+                                date_order = parser.parse(inner_list[8]).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S") if inner_list[8] else datetime.now()
+                                sale_order.date_order = date_order
+                            if sale_order.invoice_ids and sale_order.invoice_ids[0].state == 'posted':
+                                continue
+                            if sale_order.amount_total <= 0:
+                                continue
+                            wiz = self.env['sale.advance.payment.inv'].with_context(active_ids=sale_order.ids,
+                                                                                    open_invoices=True).create({})
+                            res = wiz.create_invoices()
+                            print("invoice created of sale order" + str(sale_order.name) + "\n")
+                            invoices = sale_order.invoice_ids.filtered(lambda inv: inv.state == 'draft')
+                            for invoice in invoices:
+                                invoice.invoice_date = datetime.now()
+                                invoice.action_post()
+                                action_data = invoice.action_register_payment()
+                                wizard = self.env['account.payment.register'].with_context(
+                                    action_data['context']).create({})
+                                wizard.action_create_payments()
+                            sale_order.invoiced = True
+                            print("invoice validated of sale order" + str(sale_order.name) + "\n")
+
+                    i += 1
+                    if (int(i % 500) == 0):
+                        print("Record created_________________" + str(i) + "\n")
+                        sale_order._cr.commit()
+                except(Exception) as error:
+                    print('Error occur at %s' %(str(inner_list[7])))
+
 
         elif self.report_for == "purchase_order":
             for sheet in wb.sheets():
