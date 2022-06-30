@@ -127,6 +127,10 @@ class ExcelReport(models.Model):
                 product_varient.product_tmpl_id.temp_checkbox = True
                 if product_varient:
 
+
+
+
+
                     if inner_list[29] == '-' or not inner_list[29]:
                         continue
                     product_varient.dummy_forcast = inner_list[31] if inner_list[31] != '-' else 0
