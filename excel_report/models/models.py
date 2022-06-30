@@ -128,7 +128,7 @@ class ExcelReport(models.Model):
 
                     if inner_list[29] == '-' or not inner_list[29]:
                         continue
-                    product_varient.dummy_forcast = inner_list[29] if inner_list[29] != '-' else 0
+                    product_varient.dummy_forcast = inner_list[31] if inner_list[31] != '-' else 0
                     stock_quant_ids = product_varient.stock_quant_ids.filtered(lambda inv: inv.location_id.usage == 'internal')
                     first = True
                     if len(stock_quant_ids) > 1:
