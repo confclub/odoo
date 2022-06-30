@@ -16,7 +16,7 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
 
     def import_xls(self):
         main_list = []
@@ -114,6 +114,51 @@ class ExcelReport(models.Model):
                                 "pricelist_id": 2,
                             })
             print("pack add hogai hy")
+
+        elif self.report_for == "product_stock":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+            for inner_list in main_list:
+                product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
+                if product_varient:
+
+                    if inner_list[29] == '-' or not inner_list[29]:
+                        continue
+                    product_varient.dummy_forcast = inner_list[29] if inner_list[29] != '-' else 0
+                    stock_quant_ids = product_varient.stock_quant_ids.filtered(lambda inv: inv.location_id.usage == 'internal')
+                    first = True
+                    if len(stock_quant_ids) > 1:
+                        for stock_quant in stock_quant_ids:
+                            if first:
+                                stock_quant.quantity = inner_list[29]
+                            else:
+                                stock_quant.quantity = 0
+                            first = False
+
+                    elif len(stock_quant_ids) == 1:
+                        stock_quant_ids.quantity = inner_list[29]
+
+                    else:
+                        vals = {
+                            'product_id': product_varient.id,
+                            'product_uom_id': product_varient.uom_id.id,
+                            'location_id': 8,
+                            'quantity': inner_list[29],
+                        }
+                        self.env['stock.quant'].create(vals)
+
+
+                #
+                # if product_varient:
+                #     product_varient.qty_available = inner_list[29] if inner_list[29] != '-' else 0
+                #     product_varient.dummy_forcast = inner_list[31]
+
+            print("stock updated")
+
 
         elif self.report_for == "product":
             for sheet in wb.sheets():

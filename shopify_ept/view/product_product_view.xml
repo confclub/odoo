@@ -4,11 +4,12 @@
         <record id="product_varient_form_view" model="ir.ui.view">
             <field name="name">product.vareint.form</field>
             <field name="model">product.product</field>
-            <field name="inherit_id" ref="product.product_normal_form_view" />
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='uom_id']" position="before">
-                    <field name="price_listed" string="Price Listed" />
-                    <field name="attribut_compute" string="Computed attributes" />
+                    <field name="price_listed" string="Price Listed"/>
+                    <field name="dummy_forcast" string="Dummy Forcast"/>
+                    <field name="attribut_compute" string="Computed attributes"/>
                 </xpath>
 
             </field>
@@ -18,10 +19,13 @@
         <record id="product_varient_tree_view" model="ir.ui.view">
             <field name="name">product.vareint.tree</field>
             <field name="model">product.product</field>
-            <field name="inherit_id" ref="product.product_product_tree_view" />
+            <field name="inherit_id" ref="product.product_product_tree_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='lst_price']" position="replace">
-                    <field name="price_listed" string="Price Listed" />
+                    <field name="price_listed" string="Price Listed"/>
+                </xpath>
+                <xpath expr="//field[@name='price_listed']" position="before">
+                    <field name="dummy_forcast" string="Dummy Forcast"/>
                 </xpath>
                 <xpath expr="//field[@name='standard_price']" position="attributes">
                     <attribute name="invisible">1</attribute>
@@ -29,9 +33,6 @@
 
             </field>
         </record>
-
-
-
 
 
         <record id="shopify_product_product_tree_view_ept"
@@ -123,7 +124,7 @@
                                         <field name="inventory_management"/>
                                         <field name="check_product_stock"
                                                attrs="{'invisible': [('inventory_management', '=','Dont track Inventory')]}"/>
-                                        <field name="computed_price" />
+                                        <field name="computed_price"/>
                                         <field name="need_to_sync" string="Need Sync?"/>
                                     </group>
                                     <group>
@@ -142,36 +143,34 @@
                                 </group>
                             </page>
                             <page string="Packages" name="packages">
-                        <field name="variant_package_ids">
-                            <form>
-                                <group>
-                                    <group>
+                                <field name="variant_package_ids">
+                                    <form>
+                                        <group>
+                                            <group>
+                                                <field name="name"/>
+                                                <field name="qty"/>
+                                                <field name="company_id"/>
+                                            </group>
+                                            <group>
+                                                <field name="code"/>
+                                                <field name="price"/>
+                                            </group>
+                                        </group>
+                                    </form>
+                                    <tree>
                                         <field name="name"/>
                                         <field name="qty"/>
-                                        <field name="company_id"/>
-                                    </group>
-                                    <group>
                                         <field name="code"/>
                                         <field name="price"/>
-                                    </group>
-                                </group>
-                            </form>
-                            <tree>
-                                <field name="name"/>
-                                <field name="qty"/>
-                                <field name="code"/>
-                                <field name="price"/>
-                                <field name="company_id"/>
-                            </tree>
-                        </field>
-                    </page>
+                                        <field name="company_id"/>
+                                    </tree>
+                                </field>
+                            </page>
                         </notebook>
                     </sheet>
                 </form>
             </field>
         </record>
-
-
 
 
         <record id="action_shopify_product_product_ept"

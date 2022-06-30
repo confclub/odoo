@@ -51,6 +51,7 @@ class ProductProduct(models.Model):
 
     price_listed = fields.Float(compute='_compute_varient_price', string='Fixed Price')
     attribut_compute = fields.Char(compute='_compute_attributes', string='Attribute Compute')
+    dummy_forcast = fields.Float()
 
     def _compute_varient_price(self):
         for pro in self:
