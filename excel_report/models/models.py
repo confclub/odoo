@@ -16,7 +16,7 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('check_true', 'Check True'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
 
     def import_xls(self):
         main_list = []
@@ -114,6 +114,30 @@ class ExcelReport(models.Model):
                                 "pricelist_id": 2,
                             })
             print("pack add hogai hy")
+
+        elif self.report_for == "check_true":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+            for inner_list in main_list:
+                product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
+                if product_varient:
+                    product_varient.product_tmpl_id.temp_checkbox = True
+        elif self.report_for == "check_false":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+            for inner_list in main_list:
+                product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
+                if product_varient:
+                    product_varient.product_tmpl_id.temp_checkbox = False
+
 
         elif self.report_for == "product_stock":
             for sheet in wb.sheets():
