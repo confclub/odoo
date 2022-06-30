@@ -151,29 +151,36 @@ class ExcelReport(models.Model):
                 product_varient.product_tmpl_id.temp_checkbox = True
                 if product_varient:
                     if inner_list[29] == '-' or not inner_list[29]:
-                        continue
-                    product_varient.dummy_forcast = inner_list[31] if inner_list[31] != '-' else 0
-                    stock_quant_ids = product_varient.stock_quant_ids.filtered(lambda inv: inv.location_id.usage == 'internal')
-                    first = True
-                    if len(stock_quant_ids) > 1:
-                        for stock_quant in stock_quant_ids:
-                            if first:
-                                stock_quant.quantity = inner_list[29]
-                            else:
-                                stock_quant.quantity = 0
-                            first = False
-
-                    elif len(stock_quant_ids) == 1:
-                        stock_quant_ids.quantity = inner_list[29]
-
-                    else:
                         vals = {
                             'product_id': product_varient.id,
                             'product_uom_id': product_varient.uom_id.id,
                             'location_id': 8,
-                            'quantity': inner_list[29],
+                            'quantity': 0,
                         }
                         self.env['stock.quant'].create(vals)
+                    else:
+                        product_varient.dummy_forcast = inner_list[31] if inner_list[31] != '-' else 0
+                        stock_quant_ids = product_varient.stock_quant_ids.filtered(lambda inv: inv.location_id.usage == 'internal')
+                        first = True
+                        if len(stock_quant_ids) > 1:
+                            for stock_quant in stock_quant_ids:
+                                if first:
+                                    stock_quant.quantity = inner_list[29]
+                                else:
+                                    stock_quant.quantity = 0
+                                first = False
+
+                        elif len(stock_quant_ids) == 1:
+                            stock_quant_ids.quantity = inner_list[29]
+
+                        else:
+                            vals = {
+                                'product_id': product_varient.id,
+                                'product_uom_id': product_varient.uom_id.id,
+                                'location_id': 8,
+                                'quantity': inner_list[29],
+                            }
+                            self.env['stock.quant'].create(vals)
 
 
                 #
