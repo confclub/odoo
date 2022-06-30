@@ -154,6 +154,9 @@ class ExcelReport(models.Model):
                     elif product_varient.qty_available != float(inner_list[29]):
                         product_varient.stock_onhand_not_match = True
 
+                    else:
+                        product_varient.stock_onhand_not_match = False
+
 
         elif self.report_for == "compare_forcast_stock":
             for sheet in wb.sheets():
@@ -172,7 +175,8 @@ class ExcelReport(models.Model):
                     elif product_varient.virtual_available != float(inner_list[31]):
                         product_varient.stock_forcast_not_match = True
 
-
+                    else:
+                        product_varient.stock_forcast_not_match = False
 
 
 
