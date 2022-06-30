@@ -8,6 +8,8 @@ from dateutil import parser
 from odoo.tests import Form, tagged
 import pytz
 utc = pytz.utc
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class ExcelReport(models.Model):
@@ -1128,7 +1130,6 @@ class ExcelReport(models.Model):
                 except(Exception) as error:
                     print('Error occur at %s' %(str(inner_list[0])))
 
-
         elif self.report_for == "validate_sale_order":
             for sheet in wb.sheets():
                 for row in range(1, sheet.nrows):
@@ -1140,8 +1141,6 @@ class ExcelReport(models.Model):
             for inner_list in main_list:
                 try:
                     inner_list[7] = str(inner_list[7]).split('.')[0]
-                    if inner_list[7] == '34835429':
-                        print("hello")
                     sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[7]))],
                                                                limit=1)
                     if sale_order and sale_order.from_excel:
@@ -1193,10 +1192,11 @@ class ExcelReport(models.Model):
                             print("invoice validated of sale order" + str(sale_order.name) + "\n")
 
                     i += 1
-                    if (int(i % 500) == 0):
-                        print("Record created_________________" + str(i) + "\n")
+                    if (int(i % 200) == 0):
+                        _logger.info("Record created_________________" + str(i))
                         sale_order._cr.commit()
                 except(Exception) as error:
+                    _logger.info('Error occur at ' + str(inner_list[7]) + '  Due to   ' + str(error))
                     print('Error occur at %s' %(str(inner_list[7])))
 
         elif self.report_for == "purchase_order":
