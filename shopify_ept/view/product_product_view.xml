@@ -9,6 +9,8 @@
                 <xpath expr="//field[@name='uom_id']" position="before">
                     <field name="price_listed" string="Price Listed"/>
                     <field name="dummy_forcast" string="Dummy Forcast"/>
+                    <field name="stock_onhand_not_match"/>
+                    <field name="stock_forcast_not_match"/>
                     <field name="attribut_compute" string="Computed attributes"/>
                 </xpath>
 

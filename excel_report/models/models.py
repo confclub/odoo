@@ -16,7 +16,7 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('check_true', 'Check True'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
 
     def import_xls(self):
         main_list = []
@@ -137,6 +137,43 @@ class ExcelReport(models.Model):
                 product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
                 if product_varient:
                     product_varient.product_tmpl_id.temp_checkbox = False
+        elif self.report_for == "compare_onhand_stock":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+            for inner_list in main_list:
+                product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
+                if product_varient:
+                    if inner_list[29] == '-':
+                        if product_varient.qty_available != 0:
+                            product_varient.stock_onhand_not_match = True
+
+                    elif product_varient.qty_available != float(inner_list[29]):
+                        product_varient.stock_onhand_not_match = True
+
+
+        elif self.report_for == "compare_forcast_stock":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+            for inner_list in main_list:
+                product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
+                if product_varient:
+                    if inner_list[31] == '-':
+                        if product_varient.virtual_available != 0:
+                            product_varient.stock_forcast_not_match = True
+
+                    elif product_varient.virtual_available != float(inner_list[31]):
+                        product_varient.stock_forcast_not_match = True
+
+
+
 
 
         elif self.report_for == "product_stock":
