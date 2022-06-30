@@ -3,12 +3,11 @@ import datetime
 
 from odoo import api, fields, models, _
 from odoo.tests import Form, tagged
+
+
 class PurchaseOrderInherit(models.Model):
 
     _inherit = "purchase.order"
-
-
-
 
     def create_invoice(self):
         for order in self:
