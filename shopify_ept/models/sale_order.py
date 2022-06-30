@@ -310,6 +310,9 @@ class SaleOrder(models.Model):
                     sale_order = self.search([("shopify_instance_id", "=", instance.id),
                                               ("client_order_ref", "=", order_response.get("name"))])
 
+                if not sale_order:
+                    sale_order = self.search([("name", "=", order_response.get("name"))])
+
                 if sale_order:
                     if order_data_line:
                         order_data_line.write({"state": "done", "processed_at": datetime.now(),
