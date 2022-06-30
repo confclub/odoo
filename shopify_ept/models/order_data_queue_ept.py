@@ -152,15 +152,15 @@ class ShopifyOrderDataQueueEpt(models.Model):
         api_from_date, api_to_date = self.convert_dates_by_timezone(instance, from_date, to_date)
 
         try:
-            order_ship_ids = shopify.Order().find(status="any",
-                                             fulfillment_status="shipped",
-                                             updated_at_min=api_from_date,
-                                             updated_at_max=api_to_date, limit=250)
-
-            order_unship_ids = shopify.Order().find(status="any",
-                                                  fulfillment_status="unshipped",
-                                                  updated_at_min=api_from_date,
-                                                  updated_at_max=api_to_date, limit=250)
+            # order_ship_ids = shopify.Order().find(status="any",
+            #                                  fulfillment_status="shipped",
+            #                                  updated_at_min=api_from_date,
+            #                                  updated_at_max=api_to_date, limit=250)
+            #
+            # order_unship_ids = shopify.Order().find(status="any",
+            #                                       fulfillment_status="unshipped",
+            #                                       updated_at_min=api_from_date,
+            #                                       updated_at_max=api_to_date, limit=250)
 
 
             order_partial_ids = shopify.Order().find(status="any",
@@ -177,21 +177,21 @@ class ShopifyOrderDataQueueEpt(models.Model):
                                                                                   created_by,
                                                                                   is_cap=is_caps)
 
-        if order_ship_ids:
-            order_queues = order_data_queue_line_obj.create_order_data_queue_line(order_ship_ids,
-                                                                                  instance,
-                                                                                  created_by,
-                                                                                  is_cap=is_caps)
+        # if order_ship_ids:
+        #     order_queues = order_data_queue_line_obj.create_order_data_queue_line(order_ship_ids,
+        #                                                                           instance,
+        #                                                                           created_by,
+        #                                                                           is_cap=is_caps)
         #     if len(order_ship_ids) >= 250:
         #         order_ship_ids, order_queue_list = self.list_all_orders(order_ship_ids, instance, created_by,
         #                                                            'shipped')
         #         order_queues += order_queue_list
         #
-        if order_unship_ids:
-            order_data_queue_line_obj.create_order_data_queue_line(order_unship_ids,
-                                                                   instance,
-                                                                   created_by,
-                                                                   is_cap=is_caps)
+        # if order_unship_ids:
+        #     order_data_queue_line_obj.create_order_data_queue_line(order_unship_ids,
+        #                                                            instance,
+        #                                                            created_by,
+        #                                                            is_cap=is_caps)
             # self.process_shopify_orders_directly(order_unship_ids, instance)
             # instance.last_date_order_import = to_date - timedelta(days=2)
 

@@ -187,6 +187,8 @@ class SaleWorkflowProcess(models.Model):
             delivery_list = [delivery.shopify_delivery_id for delivery in dilevries]
             if data_dic.get('fulfillments'):
                 for ful_fill_list in data_dic.get('fulfillments'):
+                    if ful_fill_list.get('status') and ful_fill_list.get('status') == 'cancelled':
+                        continue
                     if str(ful_fill_list.get("id")) not in delivery_list:
                         for item_line in ful_fill_list.get('line_items'):
                             product = self.env['product.product'].search([('default_code', '=', item_line.get('sku') )],limit=1)
@@ -202,31 +204,31 @@ class SaleWorkflowProcess(models.Model):
                                 dict_of_shopify[product_sku] += product_qty
                             else:
                                 dict_of_shopify[product_sku] = product_qty
+                if dict_of_shopify:
+                    for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
+                        for line in pick.move_ids_without_package:
+                            code = line.product_id.default_code
+                            if code in list(dict_of_shopify):
+                                if line.product_uom_qty < dict_of_shopify[code]:
+                                    line.quantity_done = line.product_uom_qty
+                                    dict_of_shopify[code] -= line.product_uom_qty
+                                elif dict_of_shopify[code] > 0:
+                                    line.quantity_done = dict_of_shopify[code]
+                                    dict_of_shopify[code] = 0
+                                elif line.product_uom_qty == dict_of_shopify[code]:
+                                    line.quantity_done = dict_of_shopify[code]
+                                    dict_of_shopify[code] = 0
 
-                for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
-                    for line in pick.move_ids_without_package:
-                        code = line.product_id.default_code
-                        if code in list(dict_of_shopify):
-                            if line.product_uom_qty < dict_of_shopify[code]:
-                                line.quantity_done = line.product_uom_qty
-                                dict_of_shopify[code] -= line.product_uom_qty
-                            elif dict_of_shopify[code] > 0:
-                                line.quantity_done = dict_of_shopify[code]
-                                dict_of_shopify[code] = 0
-                            elif line.product_uom_qty == dict_of_shopify[code]:
-                                line.quantity_done = dict_of_shopify[code]
-                                dict_of_shopify[code] = 0
+                                # line.package_qty_done = dict_of_shopify[code]
+                                # line.quantity_done = dict_of_shopify[code] * line.variant_package_id.qty if line.variant_package_id else dict_of_shopify[code]
+                                # line._onchange_qty_done()
 
-                            # line.package_qty_done = dict_of_shopify[code]
-                            # line.quantity_done = dict_of_shopify[code] * line.variant_package_id.qty if line.variant_package_id else dict_of_shopify[code]
-                            # line._onchange_qty_done()
-
-                    pick.action_assign()
-                    res_dict = pick.button_validate()
-                    pick.shopify_delivery_id = ful_fill_list.get("id")
-                    pick.carrier_tracking_ref = ful_fill_list.get("tracking_number") if ful_fill_list.get("tracking_number") else False
-                    pick.carrier_tracking_url = ful_fill_list.get("tracking_url") if ful_fill_list.get("tracking_url") else False
-                    Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
+                        pick.action_assign()
+                        res_dict = pick.button_validate()
+                        pick.shopify_delivery_id = ful_fill_list.get("id")
+                        pick.carrier_tracking_ref = ful_fill_list.get("tracking_number") if ful_fill_list.get("tracking_number") else False
+                        pick.carrier_tracking_url = ful_fill_list.get("tracking_url") if ful_fill_list.get("tracking_url") else False
+                        Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
 
         # only restock items without payments
         if data_dic.get('refunds'):
