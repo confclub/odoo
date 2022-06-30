@@ -124,6 +124,7 @@ class ExcelReport(models.Model):
                     main_list.append(list)
             for inner_list in main_list:
                 product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
+                product_varient.product_tmpl_id.temp_checkbox = True
                 if product_varient:
 
                     if inner_list[29] == '-' or not inner_list[29]:
