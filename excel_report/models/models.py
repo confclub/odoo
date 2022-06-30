@@ -1199,7 +1199,6 @@ class ExcelReport(models.Model):
                 except(Exception) as error:
                     print('Error occur at %s' %(str(inner_list[7])))
 
-
         elif self.report_for == "purchase_order":
             for sheet in wb.sheets():
                 for row in range(1, sheet.nrows):
@@ -1232,8 +1231,6 @@ class ExcelReport(models.Model):
                         if inner_list[1]:
                             varient = self.env['product.product'].search([('default_code', '=', inner_list[1])],
                                                                          limit=1)
-                            package = self.env['variant.package'].search([('code', '=', inner_list[1])],
-                                                                         limit=1)
                             tax_id = [self.env['account.tax'].search(
                                 [('type_tax_use', '=', 'purchase'), ('amount', '=', float(inner_list[7]))],
                                 limit=1).id] if float(inner_list[7]) > 0 else []
@@ -1243,34 +1240,19 @@ class ExcelReport(models.Model):
                                     "product_id": varient.id,
                                     "product_uom": varient.uom_id.id,
                                     'order_id': purchase_order.id,
-                                    "qty": inner_list[5],
+                                    "product_qty": inner_list[5],
                                     "price_unit": float(inner_list[6]) if inner_list[6] else 0,
                                     'taxes_id': tax_id,
 
                                 })
-                                # purchase_order_line._onchange_qty
-                            elif package:
-                                purchase_order_line = self.env['purchase.order.line'].create({
-                                    "name": package.product_id.name,
-                                    "variant_package_id": package.id,
-                                    "product_id": package.product_id.id,
-                                    "product_uom": package.product_id.uom_id.id,
-                                    'order_id': purchase_order.id,
-                                    "qty": inner_list[5],
-                                    "price_unit": float(inner_list[6]) if inner_list[6] else 0,
-                                    'taxes_id': tax_id,
-                                })
-                                # purchase_order_line._onchange_qty
-                            # else:
-                            #     products_not_found.append([str(inner_list[1]), purchase_order.name])
+                            else:
+                                print('TTTTT')
 
                     else:
 
                         if inner_list[1]:
                             varient = self.env['product.product'].search([('default_code', '=', inner_list[1])],
                                                                          limit=1)
-                            package = self.env['variant.package'].search([('code', '=', inner_list[1])],
-                                                                         limit=1)
                             tax_id = [self.env['account.tax'].search(
                                 [('type_tax_use', '=', 'purchase'), ('amount', '=', float(inner_list[7]))],
                                 limit=1).id] if float(inner_list[7]) > 0 else []
@@ -1281,24 +1263,13 @@ class ExcelReport(models.Model):
                                     "product_id": varient.id,
                                     "product_uom": varient.uom_id.id,
                                     'order_id': purchase_order.id,
-                                    "qty": inner_list[5],
+                                    "product_qty": inner_list[5],
                                     "price_unit": float(inner_list[6]) if inner_list[6] else 0,
                                     'taxes_id': tax_id,
 
                                 })
-                                # purchase_order_line._onchange_qty
-                            elif package:
-                                purchase_order_line = self.env['purchase.order.line'].create({
-                                    "name": package.product_id.name,
-                                    "variant_package_id": package.id,
-                                    "product_id": package.product_id.id,
-                                    "product_uom": package.product_id.uom_id.id,
-                                    'order_id': purchase_order.id,
-                                    "qty": inner_list[5],
-                                    "price_unit": float(inner_list[6]) if inner_list[6] else 0,
-                                    'taxes_id': tax_id,
-
-                                })
+                            else:
+                                print("TEST")
                                 # purchase_order_line._onchange_qty
                             # else:
                             #     products_not_found.append([str(inner_list[1]), purchase_order.name])
