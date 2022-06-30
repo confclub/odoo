@@ -7,20 +7,7 @@ from itertools import groupby
 
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    active = fields.Boolean(default=True, string='Active')
 
 
 class PurchaseOrderLine(models.Model):
@@ -29,6 +16,7 @@ class PurchaseOrderLine(models.Model):
     variant_package_ids = fields.One2many(related='product_id.variant_package_ids')
     variant_package_id = fields.Many2one('variant.package', 'Package', domain="[('id', 'in', variant_package_ids)]")
     qty = fields.Float(string='Qty')
+
 
     # @api.onchange('qty', 'variant_package_id')
     # def _onchange_qty(self):
@@ -45,20 +33,20 @@ class PurchaseOrderLine(models.Model):
     #         self.price_unit = self.product_id.lst_price
 
 
-    def _prepare_compute_all_values(self):
-        # Hook method to returns the different argument values for the
-        # compute_all method, due to the fact that discounts mechanism
-        # is not implemented yet on the purchase orders.
-        # This method should disappear as soon as this feature is
-        # also introduced like in the sales module.
-        self.ensure_one()
-        return {
-            'price_unit': self.price_unit,
-            'currency_id': self.order_id.currency_id,
-            'product_qty': self.qty, # quantity changed
-            'product': self.product_id,
-            'partner': self.order_id.partner_id,
-        }
+    # def _prepare_compute_all_values(self):
+    #     # Hook method to returns the different argument values for the
+    #     # compute_all method, due to the fact that discounts mechanism
+    #     # is not implemented yet on the purchase orders.
+    #     # This method should disappear as soon as this feature is
+    #     # also introduced like in the sales module.
+    #     self.ensure_one()
+    #     return {
+    #         'price_unit': self.price_unit,
+    #         'currency_id': self.order_id.currency_id,
+    #         'product_qty': self.qty, # quantity changed
+    #         'product': self.product_id,
+    #         'partner': self.order_id.partner_id,
+    #     }
 
 
 

@@ -36,4 +36,21 @@ class PurchaseOrderInherit(models.Model):
             if order.state == 'draft':
                 order.button_cancel()
 
-
+    def create_credit_note(self):
+        for order in self:
+            if order.state == 'purchase' and order.order_line:
+                if order.invoice_ids:
+                    invoices = order.invoice_ids.filtered(lambda r: r.move_type == 'in_invoice' and r.state == 'posted')
+                    for invoice in invoices:
+                        invoice.action_reverse()
+                        move_reversal = self.env['account.move.reversal'].with_context(
+                            active_model="account.move",
+                            active_ids=invoice.ids).create({
+                            'reason': 'purchase reason',
+                        })
+                        reversal = move_reversal.reverse_moves()
+                        reverse_move = self.env['account.move'].browse(reversal['res_id'])
+                        reverse_move.action_post()
+                        action_data = reverse_move.action_register_payment()
+                        wizard = self.env['account.payment.register'].with_context(action_data['context']).create({})
+                        wizard.action_create_payments()

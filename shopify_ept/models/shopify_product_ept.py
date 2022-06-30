@@ -326,8 +326,8 @@ class ShopifyProductProductEpt(models.Model):
                 attribute_position = attribute_position + 1
                 # if attribute_position > 3:
                 #     break
-            attrs = json.loads(template.product_tmpl_id.templ_attribut_compute.replace("'", '"'))
-            attribute_list.append(attrs)
+            # attrs = json.loads(template.product_tmpl_id.templ_attribut_compute.replace("'", '"'))
+            # attribute_list.append(attrs)
             new_product.options = attribute_list
         return True
 
@@ -449,26 +449,26 @@ class ShopifyProductProductEpt(models.Model):
             option_index = 0
             option_index_value = ["option1", "option2", "option3"]
             attribute_value_obj = self.env["product.template.attribute.value"]
-            # att_values = attribute_value_obj.search(
-            #     [("id", "in", variant.product_id.product_template_attribute_value_ids.ids)],
-            #     order="attribute_id")
-            att_values = json.loads(variant.product_id.attribut_compute.replace("'", '"'))
-            if att_values:
-                for att_value in att_values:
-                    if option_index > 3:
-                        continue
-                    if variant.default_code == att_value:
-                        attr_list = att_values[att_value].split(',')
-                        for app in attr_list:
-                            variant_vals.update({option_index_value[option_index]: app})
-                            option_index = option_index + 1
+            att_values = attribute_value_obj.search(
+                [("id", "in", variant.product_id.product_template_attribute_value_ids.ids)],
+                order="attribute_id")
+            # att_values = json.loads(variant.product_id.attribut_compute.replace("'", '"'))
+            # if att_values:
+            #     for att_value in att_values:
+            #         if option_index > 3:
+            #             continue
+            #         if variant.default_code == att_value:
+            #             attr_list = att_values[att_value].split(',')
+            #             for app in attr_list:
+            #                 variant_vals.update({option_index_value[option_index]: app})
+            #                 option_index = option_index + 1
 
 
-            # for att_value in att_values:
-            #     if option_index > 3:
-            #         continue
-            #     variant_vals.update({option_index_value[option_index]: att_value.name})
-            #     option_index = option_index + 1
+            for att_value in att_values:
+                if option_index > 3:
+                    continue
+                variant_vals.update({option_index_value[option_index]: att_value.name})
+                option_index = option_index + 1
         print("hello")
         if variant.inventory_management == "shopify":
             variant_vals.update({"inventory_management": "shopify"})

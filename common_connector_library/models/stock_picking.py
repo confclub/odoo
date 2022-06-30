@@ -64,7 +64,7 @@ class StockPicking(models.Model):
             # else:
                 if line.product_id.product_tmpl_id.temp_checkbox:
                     product_id = line.product_id  # changing here
-                    bom_id = line.product_id.bom_ids
+                    bom_id = line.product_id.bom_ids.filtered(lambda l: l.product_id.id == product_id.id)
                     if bom_id and len(bom_id) == 1 and bom_id.type == 'phantom' and len(
                             bom_id.bom_line_ids) == 1 \
                             and bom_id.bom_line_ids.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
@@ -72,6 +72,10 @@ class StockPicking(models.Model):
                     mrp_lines = self.env['mrp.bom.line'].search(
                         [('product_id', '=', product_id.id)])
 
+                    if product_id.inventory_item_id:
+                        shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                   product_id.inventory_item_id,
+                                                   int(product_id.virtual_available))
                     for mr_line in mrp_lines:
                         bom_id = mr_line.bom_id
                         if bom_id.type == 'phantom' and len(
