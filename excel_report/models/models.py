@@ -16,7 +16,7 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
 
     def import_xls(self):
         main_list = []
@@ -137,6 +137,7 @@ class ExcelReport(models.Model):
                 product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
                 if product_varient:
                     product_varient.product_tmpl_id.temp_checkbox = False
+
         elif self.report_for == "compare_onhand_stock":
             for sheet in wb.sheets():
                 for row in range(1, sheet.nrows):
@@ -146,8 +147,11 @@ class ExcelReport(models.Model):
                     main_list.append(list)
             for inner_list in main_list:
                 product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
+                is_bom = product_varient.bom_ids.filtered(lambda l: l.product_id.id == product_varient.id)
+                if is_bom:
+                    continue
                 if product_varient:
-                    if inner_list[29] == '-':
+                    if str(inner_list[29]) == '-':
                         if product_varient.qty_available != 0:
                             product_varient.stock_onhand_not_match = True
 
@@ -165,18 +169,91 @@ class ExcelReport(models.Model):
                     for col in range(sheet.ncols):
                         list.append(sheet.cell(row, col).value)
                     main_list.append(list)
+            list = []
             for inner_list in main_list:
                 product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
+                is_bom = product_varient.bom_ids.filtered(lambda l: l.product_id.id == product_varient.id)
+                if is_bom:
+                    continue
                 if product_varient:
                     if inner_list[31] == '-':
                         if product_varient.virtual_available != 0:
                             product_varient.stock_forcast_not_match = True
-
+                            list.append(product_varient.default_code)
                     elif product_varient.virtual_available != float(inner_list[31]):
                         product_varient.stock_forcast_not_match = True
+                        list.append(product_varient.default_code)
 
                     else:
                         product_varient.stock_forcast_not_match = False
+            print(list)
+
+        elif self.report_for == "product_forcast":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+
+            sale = self.env['sale.order'].create({'partner_id': 2})
+            purchase = self.env['purchase.order'].create({'partner_id': 2})
+            for inner_list in main_list:
+                product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
+                is_bom = product_varient.bom_ids.filtered(lambda l: l.product_id.id == product_varient.id)
+                if is_bom:
+                    continue
+                if product_varient.default_code == 'POSX14x8':
+                    print('assaasdasdadsdsd')
+                if str(inner_list[30]) == '-':
+                    if product_varient.virtual_available < 0:
+                        self.env['purchase.order.line'].create({
+                                'product_id': product_varient.id,
+                                'product_qty': -1 * product_varient.virtual_available,
+                                'product_uom': product_varient.uom_id.id,
+                                'order_id': purchase.id,
+                            })
+                    if product_varient.virtual_available > 0:
+                        self.env['sale.order.line'].create({
+                            'product_id': product_varient.id,
+                            'product_uom_qty': product_varient.virtual_available,
+                            'product_uom': product_varient.uom_id.id,
+                            'order_id': sale.id,
+                        })
+                elif int(inner_list[31]) == 0 and product_varient.virtual_available != 0:
+                    if product_varient.virtual_available < 0:
+                        self.env['purchase.order.line'].create({
+                                'product_id': product_varient.id,
+                                'product_qty': -1 * product_varient.virtual_available,
+                                'product_uom': product_varient.uom_id.id,
+                                'order_id': purchase.id,
+                            })
+                    if product_varient.virtual_available > 0:
+                        self.env['sale.order.line'].create({
+                            'product_id': product_varient.id,
+                            'product_uom_qty': product_varient.virtual_available,
+                            'product_uom': product_varient.uom_id.id,
+                            'order_id': sale.id,
+                        })
+                elif product_varient.virtual_available > inner_list[31]:
+                    self.env['sale.order.line'].create({
+                        'product_id': product_varient.id,
+                        'product_uom_qty': product_varient.virtual_available - inner_list[31],
+                        'product_uom': product_varient.uom_id.id,
+                        'order_id': sale.id,
+                    })
+
+                elif product_varient.virtual_available < inner_list[31]:
+                    self.env['purchase.order.line'].create({
+                        'product_id': product_varient.id,
+                        'product_qty': inner_list[31] - product_varient.virtual_available,
+                        'product_uom': product_varient.uom_id.id,
+                        'order_id': purchase.id,
+                    })
+
+
+
+
 
 
 
@@ -189,16 +266,27 @@ class ExcelReport(models.Model):
                     main_list.append(list)
             for inner_list in main_list:
                 product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
-                product_varient.product_tmpl_id.temp_checkbox = True
+                # product_varient.product_tmpl_id.temp_checkbox = True
+                if product_varient.default_code == 'TBCH30':
+                    print('sadasd')
+                is_bom = product_varient.bom_ids.filtered(lambda l: l.product_id.id == product_varient.id)
+                if is_bom:
+                    continue
                 if product_varient:
                     if inner_list[29] == '-' or not inner_list[29]:
-                        vals = {
-                            'product_id': product_varient.id,
-                            'product_uom_id': product_varient.uom_id.id,
-                            'location_id': 8,
-                            'quantity': 0,
-                        }
-                        self.env['stock.quant'].create(vals)
+                        stock_quant_ids = product_varient.stock_quant_ids.filtered(
+                            lambda inv: inv.location_id.usage == 'internal')
+                        if len(stock_quant_ids):
+                            for stock_quant in stock_quant_ids:
+                                stock_quant.quantity = 0
+                        else:
+                            vals = {
+                                'product_id': product_varient.id,
+                                'product_uom_id': product_varient.uom_id.id,
+                                'location_id': 8,
+                                'quantity': 0,
+                            }
+                            self.env['stock.quant'].create(vals)
                     else:
                         product_varient.dummy_forcast = inner_list[31] if inner_list[31] != '-' else 0
                         stock_quant_ids = product_varient.stock_quant_ids.filtered(lambda inv: inv.location_id.usage == 'internal')
