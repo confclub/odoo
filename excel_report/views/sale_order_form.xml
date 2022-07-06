@@ -11,6 +11,8 @@
                     <field name="from_excel" string="From Excel" readonly="1" />
                     <field name="invoiced"  readonly="1" />
                     <field name="delivery" readonly="1" />
+                    <field name="after_live" readonly="1" />
+                    <field name="error_in_order" readonly="1" />
                 </xpath>
             </field>
         </record>

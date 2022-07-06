@@ -10,3 +10,5 @@ class SaleOrderInherit(models.Model):
     from_excel = fields.Boolean(default=False)
     invoiced = fields.Boolean(default=False)
     delivery = fields.Boolean(default=False)
+    after_live = fields.Boolean(default=False)
+    error_in_order = fields.Boolean(default=False)

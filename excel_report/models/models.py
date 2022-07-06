@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api,_
 import base64
 import xlrd
 from datetime import datetime
@@ -16,7 +16,7 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('product_cost', 'Product Cost'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
 
     def import_xls(self):
         main_list = []
@@ -82,18 +82,18 @@ class ExcelReport(models.Model):
                         list.append(sheet.cell(row, col).value)
                     main_list.append(list)
             for inner_list in main_list:
-                product_varient = self.env['product.product'].search([('qb_varient_id', '=', inner_list[1])], limit=1)
+                product_varient = self.env['product.product'].search([('default_code', '=', inner_list[16])], limit=1)
                 if product_varient:
                     self.env['product.pricelist.item'].create({
+                        "applied_on": "0_product_variant",
                         "product_id": product_varient.id,
                         "product_tmpl_id": product_varient.product_tmpl_id.id,
                         "min_quantity": 1,
-                        "fixed_price": 0 if inner_list[39] == "" else float(inner_list[39]),
-                        "pricelist_id": 2,
+                        "fixed_price": 0 if inner_list[38] == "" else float(inner_list[38]),
+                        "pricelist_id": self.env['product.pricelist'].search([('price_check_box', '=', True)], limit=1).id,
                     })
             print("price add hogai hy")
-
-        elif self.report_for == "pack_price":
+        elif self.report_for == "product_cost":
             for sheet in wb.sheets():
                 for row in range(1, sheet.nrows):
                     list = []
@@ -101,19 +101,10 @@ class ExcelReport(models.Model):
                         list.append(sheet.cell(row, col).value)
                     main_list.append(list)
             for inner_list in main_list:
-                product_varient = self.env['product.product'].search([('qb_varient_id', '=', inner_list[1])], limit=1)
+                product_varient = self.env['product.product'].search([('default_code', '=', inner_list[2])], limit=1)
                 if product_varient:
-                    if product_varient.variant_package_ids:
-                        for pack in product_varient.variant_package_ids:
-
-                            self.env['product.pricelist.pack.item'].create({
-                                "product_id": product_varient.id,
-                                "package_id": pack.id,
-                                "min_quantity": 1,
-                                "fixed_price": pack.price,
-                                "pricelist_id": 2,
-                            })
-            print("pack add hogai hy")
+                    product_varient.standard_price = 0 if inner_list[6] == '' else float(inner_list[6])
+            print("cost add hogai hy")
 
         elif self.report_for == "check_true":
             for sheet in wb.sheets():
@@ -1348,12 +1339,16 @@ class ExcelReport(models.Model):
                     inner_list[7] = str(inner_list[7]).split('.')[0]
                     sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[7]))],
                                                                limit=1)
+                    if inner_list[7] == "34815133":
+                        print("hello")
+
                     if sale_order and sale_order.from_excel:
-                        if inner_list[5] == 'shipped':
+                        old_date = sale_order.date_order
+                        if inner_list[4] == 'paid' and inner_list[5] == 'shipped':
                             if not sale_order.picking_ids:
                                 sale_order.action_confirm()
-                                date_order = parser.parse(inner_list[8]).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S") if inner_list[8] else datetime.now()
-                                sale_order.date_order = date_order
+                                sale_order.date_order = old_date
+                                sale_order.after_live = True
                                 for pick in sale_order.picking_ids:
                                     for line in pick.move_ids_without_package:
                                         line.quantity_done = line.product_uom_qty
@@ -1362,6 +1357,28 @@ class ExcelReport(models.Model):
                                 Form(self.env['stock.immediate.transfer']).save().process()
                                 sale_order.delivery = True
                                 print("delivery created of sale order"+ str(sale_order.name) + "\n")
+
+                                for pick in sale_order.picking_ids:
+                                    for line in pick.move_ids_without_package:
+                                        sale_line_id = self.env['sale.order.line'].search([('order_id', '=', sale_order.id )] ,limit=1)
+                                        vals = {
+                                            'name': _('Auto processed move : %s') % line.product_id.name,
+                                            'company_id': self.env.company.id,
+                                            'origin': sale_order.name,
+                                            'product_id': line.product_id.id,
+                                            'product_uom_qty': line.product_uom_qty,
+                                            'product_uom': line.product_id.uom_id.id,
+                                            'location_id': self.env.ref("shopify_ept.customer_location").id,
+                                            'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
+                                            'state': 'confirmed',
+                                            'sale_line_id': sale_line_id.id
+                                        }
+                                        stock_move = self.env['stock.move'].create(vals)
+                                        stock_move._action_assign()
+                                        stock_move._set_quantity_done(line.product_uom_qty)
+                                        stock_move._action_done()
+
+
                             if sale_order.picking_ids and sale_order.picking_ids[0].state != 'done':
                                 for pick in sale_order.picking_ids:
                                     for line in pick.move_ids_without_package:
@@ -1370,13 +1387,33 @@ class ExcelReport(models.Model):
                                     pick.button_validate()
                                 Form(self.env['stock.immediate.transfer']).save().process()
                                 sale_order.delivery = True
-                                print("delivery created of sale order" + str(sale_order.name) + "\n")
 
-                        if inner_list[4] == 'paid':
+                                for pick in sale_order.picking_ids:
+                                    for line in pick.move_ids_without_package:
+                                        sale_line_id = self.env['sale.order.line'].search([('order_id', '=', sale_order.id )] ,limit=1)
+                                        vals = {
+                                            'name': _('Auto processed move : %s') % line.product_id.name,
+                                            'company_id': self.env.company.id,
+                                            'origin': sale_order.name,
+                                            'product_id': line.product_id.id,
+                                            'product_uom_qty': line.product_uom_qty,
+                                            'product_uom': line.product_id.uom_id.id,
+                                            'location_id': self.env.ref("shopify_ept.customer_location").id,
+                                            'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
+                                            'state': 'confirmed',
+                                            'sale_line_id': sale_line_id.id
+                                        }
+                                        stock_move = self.env['stock.move'].create(vals)
+                                        stock_move._action_assign()
+                                        stock_move._set_quantity_done(line.product_uom_qty)
+                                        stock_move._action_done()
+
+                                print("delivery created of sale order" + str(sale_order.name) + "\n")
+                            # creating invoice here
                             if sale_order.state == 'draft' and sale_order.order_line:
                                 sale_order.action_confirm()
-                                date_order = parser.parse(inner_list[8]).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S") if inner_list[8] else datetime.now()
-                                sale_order.date_order = date_order
+                                sale_order.date_order = old_date
+                                sale_order.after_live = True
                             if sale_order.invoice_ids and sale_order.invoice_ids[0].state == 'posted':
                                 continue
                             if sale_order.amount_total <= 0:
@@ -1387,7 +1424,7 @@ class ExcelReport(models.Model):
                             print("invoice created of sale order" + str(sale_order.name) + "\n")
                             invoices = sale_order.invoice_ids.filtered(lambda inv: inv.state == 'draft')
                             for invoice in invoices:
-                                invoice.invoice_date = datetime.now()
+                                invoice.invoice_date = old_date
                                 invoice.action_post()
                                 action_data = invoice.action_register_payment()
                                 wizard = self.env['account.payment.register'].with_context(
@@ -1403,6 +1440,7 @@ class ExcelReport(models.Model):
                 except(Exception) as error:
                     _logger.info('Error occur at ' + str(inner_list[7]) + '  Due to   ' + str(error))
                     print('Error occur at %s' %(str(inner_list[7])))
+                    sale_order.error_in_order = True
 
         elif self.report_for == "purchase_order":
             for sheet in wb.sheets():
