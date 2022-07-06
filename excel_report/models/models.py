@@ -1339,8 +1339,6 @@ class ExcelReport(models.Model):
                     inner_list[7] = str(inner_list[7]).split('.')[0]
                     sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[7]))],
                                                                limit=1)
-                    if inner_list[7] == "34815133":
-                        print("hello")
 
                     if sale_order and sale_order.from_excel:
                         old_date = sale_order.date_order
