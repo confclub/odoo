@@ -185,23 +185,23 @@ class StockMove(models.Model):
                                                        bom_id.product_id.inventory_item_id,
                                                        int(bom_id.product_id.virtual_available))
 
-            if move.product_id.product_tmpl_id.temp_checkbox:
-                instance = self.env['shopify.instance.ept'].search([('is_cap_no_gap', '=', False)], limit=1)
-                location_id = self.env["shopify.location.ept"].search([("instance_id", "=", instance.id)], limit=1)
-                instance.connect_in_shopify()
-                packs = move.product_id.variant_package_ids
-                forcast_qty = move.product_id.virtual_available
-                # for product
-                if move.product_id.inventory_item_id:
-                    shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                               move.product_id.inventory_item_id,
-                                               int(forcast_qty))
-                # for packs
-                for pac in packs:
-                    if pac.inventory_item_id:
-                        shopify.InventoryLevel.set(location_id.shopify_location_id,
-                                                   pac.inventory_item_id,
-                                                   int(forcast_qty / pac.qty))
+            # if move.product_id.product_tmpl_id.temp_checkbox:
+            #     instance = self.env['shopify.instance.ept'].search([('is_cap_no_gap', '=', False)], limit=1)
+            #     location_id = self.env["shopify.location.ept"].search([("instance_id", "=", instance.id)], limit=1)
+            #     instance.connect_in_shopify()
+            #     packs = move.product_id.variant_package_ids
+            #     forcast_qty = move.product_id.virtual_available
+            #     # for product
+            #     if move.product_id.inventory_item_id:
+            #         shopify.InventoryLevel.set(location_id.shopify_location_id,
+            #                                    move.product_id.inventory_item_id,
+            #                                    int(forcast_qty))
+            #     # for packs
+            #     for pac in packs:
+            #         if pac.inventory_item_id:
+            #             shopify.InventoryLevel.set(location_id.shopify_location_id,
+            #                                        pac.inventory_item_id,
+            #                                        int(forcast_qty / pac.qty))
 
         return moves_todo
 
