@@ -639,28 +639,52 @@ class SaleOrder(models.Model):
                     tax_ids = self.shopify_get_tax_id_ept(instance,
                                                           line.get("tax_lines"),
                                                           taxes_included)
+                else:
+                    tax = self.env["account.tax"].search([("type_tax_use", "=", "sale"), ("amount", "=", 0.0), (
+                    "company_id", "=", instance.shopify_warehouse_id.company_id.id)], limit=1)
+                    tax_ids = [(6, 0, [tax.id])]
+
                 if is_shipping:
                     # In the Shopify store there is configuration regarding tax is applicable on shipping or not, if applicable then this use.
-                    tax_ids = self.shopify_get_tax_id_ept(instance,
-                                                          line.get("tax_lines"),
-                                                          taxes_included)
+                    # tax_ids = self.shopify_get_tax_id_ept(instance,
+                    #                                       line.get("tax_lines"),
+                    #                                       taxes_included)
+                    tax = self.env["account.tax"].search([("type_tax_use", "=", "sale"), ("amount", "=", 0.0), (
+                    "company_id", "=", instance.shopify_warehouse_id.company_id.id)], limit=1)
+                    tax_ids = [(6, 0, [tax.id])]
             elif not line:
                 tax_ids = self.shopify_get_tax_id_ept(instance,
                                                       order_response.get("tax_lines"),
                                                       taxes_included)
+            else:
+                tax = self.env["account.tax"].search([("type_tax_use", "=", "sale"),("amount", "=", 0.0),("company_id", "=", instance.shopify_warehouse_id.company_id.id)], limit=1)
+                tax_ids = [(6, 0, [tax.id])]
+
             order_line_vals["tax_id"] = tax_ids
             # When the one order with two products one product with tax and another product
             # without tax and apply the discount on order that time not apply tax on discount
             # which is
             if is_discount and not previous_line.tax_id:
-                order_line_vals["tax_id"] = []
+                tax = self.env["account.tax"].search([("type_tax_use", "=", "sale"), ("amount", "=", 0.0),
+                                                      ("company_id", "=", instance.shopify_warehouse_id.company_id.id)],
+                                                     limit=1)
+                tax_ids = [(6, 0, [tax.id])]
+                order_line_vals["tax_id"] = tax_ids
         else:
             if is_shipping and not line.get("tax_lines", []):
-                order_line_vals["tax_id"] = []
+                tax = self.env["account.tax"].search([("type_tax_use", "=", "sale"), ("amount", "=", 0.0),
+                                                      ("company_id", "=", instance.shopify_warehouse_id.company_id.id)],
+                                                     limit=1)
+                tax_ids = [(6, 0, [tax.id])]
+                order_line_vals["tax_id"] = tax_ids
 
         if is_discount:
             order_line_vals["name"] = "Discount for " + str(product_name)
             if instance.apply_tax_in_order == "odoo_tax" and is_discount:
+                # tax = self.env["account.tax"].search([("type_tax_use", "=", "sale"), ("amount", "=", 0.0),
+                #                                       ("company_id", "=", instance.shopify_warehouse_id.company_id.id)],
+                #                                      limit=1)
+                # tax_ids = [(6, 0, [tax.id])]
                 order_line_vals["tax_id"] = previous_line.tax_id
          # description to sku while creating sale order line
 
