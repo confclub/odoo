@@ -649,7 +649,7 @@ class SaleOrder(models.Model):
                     # tax_ids = self.shopify_get_tax_id_ept(instance,
                     #                                       line.get("tax_lines"),
                     #                                       taxes_included)
-                    tax = self.env["account.tax"].search([("type_tax_use", "=", "sale"), ("amount", "=", 0.0), (
+                    tax = self.env["account.tax"].search([("type_tax_use", "=", "sale"), ("amount", "=", 10.00), (
                     "company_id", "=", instance.shopify_warehouse_id.company_id.id)], limit=1)
                     tax_ids = [(6, 0, [tax.id])]
             elif not line:
