@@ -13,7 +13,7 @@
     'maintainer': 'Emipro Technologies Pvt. Ltd.',
 
     # Dependencies
-    'depends': ['common_connector_library', 'caps_nogaps'],
+    'depends': ['common_connector_library', 'caps_nogaps', 'sale_mrp'],
 
     # Views
     'init_xml': [],
