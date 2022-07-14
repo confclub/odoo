@@ -247,42 +247,35 @@ class SaleOrder(models.Model):
                 cap_contract = self.env['cap.contract'].search([('shopify_order_id', '=', order_response.get("id"))])
                 if not cap_contract:
                     cap_contract = self.env['cap.contract'].create({
-                        "name": order_response.get("order_number"),
+                        "name": order_response.get("name"),
                         "customer_id": customer.id,
                         "start_date": order_date,
                         "order_months": int(order_response.get('note_attributes')[0].get('value')),
                         "shopify_order_id": order_response.get("id"),
+                        "company_id": instance.shopify_company_id.id,
                     })
                     #contract lines of caps no gaps
                     lines = order_response.get("line_items")
                     for line in lines:
-                        # product = self.env['cap.no.gap'].search([('product_id.default_code', '=', line.get("sku")[2:])])
                         product = self.env['cap.no.gap'].search([('daily_pack_sku', '=', line.get("sku"))])
-                        # package = self.env['variant.package'].search([('code', '=', line.get("sku")[2:])])
-                        # pieces_per_carton = pieces_per_bag = 0
-                        # if product:
-                        #     try:
-                        #         pieces_per_bag = int(line.get("sku")[-2:])
-                        #         pieces_per_carton = pieces_per_bag * product.variant_package_ids[0].qty if product.variant_package_ids[0] else 0
-                        #     except Exception:
-                        #         pieces_per_carton = 20
-                        #         pieces_per_bag = 6
-                        # elif package:
-                        #     pieces_per_carton = 20
-                        #     pieces_per_bag = 6
-
-                        self.env['contract.product'].create({
-                            "product_pack_id": product.id,
-                            # "product_carton_id": product.variant_package_ids[0].id if product.variant_package_ids else None,
-                            # "description": line.get('name'),
-                            # "pieces_per_carton": pieces_per_carton,
-                            # "pieces_per_bag": pieces_per_bag,
-                            "total_funding": float(line.get('price')),
-                            # "pieces_per_daily_pack": 2,
-                            # "num_daily_packs": 1,
-                            "contract_id": cap_contract.id,
-                        })
-                    order_data_line.state = "done"
+                        if product:
+                            self.env['contract.product'].create({
+                                "product_pack_id": product.id,
+                                "total_funding": float(line.get('price')),
+                                "contract_id": cap_contract.id,
+                            })
+                            order_data_line.state = "done"
+                        # if product not found in odoo
+                        else:
+                            message = "Product not found for order [" \
+                                      "%s]" % order_response.get("name")
+                            common_log_line_obj = self.env["common.log.lines.ept"]
+                            model_id = common_log_line_obj.get_model_id(self._name)
+                            common_log_line_obj.shopify_create_order_log_line(message, model_id,
+                                                                              order_data_line, log_book)
+                            order_data_line.write({'state': 'failed', 'processed_at': datetime.now()})
+                            cap_contract.unlink()
+                    cap_contract.action_start_contract()
                 #when order is from confidence club
             else:
 

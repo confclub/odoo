@@ -19,7 +19,6 @@ class CapsContract(models.Model):
     state = fields.Selection([
         ('draft', 'Draft'),
         ('start', 'Start'),
-        ('modified', 'Modified'),
         ('end', 'End'),
         ('cancel', 'Cancel')
     ], default='draft')
@@ -32,6 +31,7 @@ class CapsContract(models.Model):
     order_months = fields.Integer(help='how many months this order is for' )
     shipment_price = fields.Float()
     shopify_order_id = fields.Char()
+    company_id = fields.Many2one('res.company')
 
     @api.model
     def create(self, vals):
@@ -668,6 +668,7 @@ class CapsContract(models.Model):
                     'partner_id': self.customer_id.id,
                     'date_order': key,
                     'contract_id': self.id,
+                    'company_id': self.company_id.id,
                 })
                 if key == self.start_date:
                     sol = self.env['sale.order.line'].create({
@@ -676,11 +677,11 @@ class CapsContract(models.Model):
                         'price_unit': self.shipment_price,
                         'product_uom': shipment_pro.uom_id.id,
                         'order_id': so.id,
+                        'company_id': self.company_id.id,
                     })
                     # sol._onchange_qty()
                 for line in product_dic[key]:
                     if line[1]:
-
                         sol = self.env['sale.order.line'].create({
                                 'product_id': line[0],
                                 'product_uom_qty': line[1],
@@ -701,6 +702,6 @@ class CapsContract(models.Model):
     #
     #          line.order_months = months
 
-    def action_modify_contract(self):
-
-        self.state = "modified"
+    # def action_modify_contract(self):
+    #
+    #     self.state = "modified"

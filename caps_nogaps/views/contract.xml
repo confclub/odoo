@@ -11,12 +11,12 @@
                     <header>
                         <button name="action_start_contract" string="Start Contract" type="object"
                                 class="oe_highlight"
-                                attrs="{'invisible': [('state', 'in', ('start','modified','end','cancel'))]}"/>
-                        <button name="action_modify_contract" string="Modify Contract" class="oe_highlight"
-                                type="object"/>
+                                attrs="{'invisible': [('state', 'in', ('start','end','cancel'))]}"/>
+<!--                        <button name="action_modify_contract" string="Modify Contract" class="oe_highlight"-->
+<!--                                type="object"/>-->
 
-                        <button name="%(caps_nogaps.contract_cancel_form)d" string="Cancel Contract" type="action"/>
-                        <field name="state" widget="statusbar" readonly="1"/>
+                        <button name="%(caps_nogaps.contract_cancel_form)d" string="Cancel Contract" type="action" attrs="{'invisible': [('state', 'in', ('draft','cancel'))]}"/>
+                        <field name="state" widget="statusbar" readonly="1" />
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
@@ -33,6 +33,7 @@
                         <group>
                             <group>
                                 <field name="customer_id" string="Customer" required="1"/>
+                                <field name="company_id" string="Company" required="1"/>
                                 <!--                                <field name="pieces_per_carton" string="piecesPerCarton"/>-->
                                 <!--                                <field name="pieces_per_bag" string="piecesPerBag"/>-->
                                 <!--                                <field name="pieces_per_daily_pack" string="piecesPerDailyPack"/>-->
