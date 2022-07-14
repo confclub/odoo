@@ -245,6 +245,7 @@ class SaleOrder(models.Model):
                 order_response = json.loads(order_data_line.order_data)
                 order_date = parser.parse(order_response.get('created_at')).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S")
                 cap_contract = self.env['cap.contract'].search([('shopify_order_id', '=', order_response.get("id"))])
+                shipment_price = order_response.get('total_shipping_price_set')['shop_money']['amount']
                 if not cap_contract:
                     cap_contract = self.env['cap.contract'].create({
                         "name": order_response.get("name"),
@@ -253,6 +254,7 @@ class SaleOrder(models.Model):
                         "order_months": int(order_response.get('note_attributes')[0].get('value')),
                         "shopify_order_id": order_response.get("id"),
                         "company_id": instance.shopify_company_id.id,
+                        "shipment_price": float(shipment_price) if shipment_price else 0,
                     })
                     #contract lines of caps no gaps
                     lines = order_response.get("line_items")
