@@ -1432,7 +1432,7 @@ class ExcelReport(models.Model):
                             print("invoice validated of sale order" + str(sale_order.name) + "\n")
 
                     i += 1
-                    if (int(i % 200) == 0):
+                    if (int(i % 20) == 0):
                         _logger.info("Record created_________________" + str(i))
                         sale_order._cr.commit()
                 except(Exception) as error:
