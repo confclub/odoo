@@ -424,7 +424,7 @@ class CapsContract(models.Model):
                 # print("Bags   :",requiredBags)
 
                 # Calculate the sell price per bag and sell price per carton
-                sellPricePerBag = fundingTotal / (requiredBags + wholeCartons * (line.pieces_per_carton / line.pieces_per_bag))
+                sellPricePerBag = CAPSFundingTotal / (requiredBags + wholeCartons * (line.pieces_per_carton / line.pieces_per_bag))
                 sellPricePerCarton = sellPricePerBag * (line.pieces_per_carton / line.pieces_per_bag)
                 price_per_pack = sellPricePerBag
                 price_per_carton = sellPricePerCarton
@@ -463,10 +463,10 @@ class CapsContract(models.Model):
                 print("Cartons:", deliveryCartons1_1)
                 print("Packs  :", deliveryPacks1_1)
                 if self.start_date in list(product_dic.keys()):
-                    product_dic[self.start_date].append([line.product_pack_id.product_id.id, deliveryPacks1_1, price_per_pack,line.product_pack_id.product_id.uom_id.id])
-                    product_dic[self.start_date].append([line.product_carton_id.id, deliveryCartons1_1, price_per_carton, line.product_carton_id.uom_id.id])
+                    product_dic[self.start_date].append([line.product_pack_id.product_id.id, deliveryPacks1_1, sellPricePerBag,line.product_pack_id.product_id.uom_id.id])
+                    product_dic[self.start_date].append([line.product_carton_id.id, deliveryCartons1_1, sellPricePerCarton, line.product_carton_id.uom_id.id])
                 else:
-                    product_dic[self.start_date] = [[line.product_pack_id.product_id.id, deliveryPacks1_1, price_per_pack,line.product_pack_id.product_id.uom_id.id], [line.product_carton_id.id,deliveryCartons1_1, price_per_carton, line.product_carton_id.uom_id.id]]
+                    product_dic[self.start_date] = [[line.product_pack_id.product_id.id, deliveryPacks1_1, sellPricePerBag,line.product_pack_id.product_id.uom_id.id], [line.product_carton_id.id,deliveryCartons1_1, sellPricePerCarton, line.product_carton_id.uom_id.id]]
 
                 # so = self.env['sale.order'].create({
                 #     'partner_id': self.customer_id.id,
@@ -512,10 +512,10 @@ class CapsContract(models.Model):
                 print("Cartons:", deliveryCartons1_2)
                 print("Packs  :", deliveryPacks1_2)
                 if self.start_date + timedelta(10) in list(product_dic.keys()):
-                    product_dic[self.start_date + timedelta(10)].append([line.product_pack_id.product_id.id, deliveryPacks1_2, price_per_pack,line.product_pack_id.product_id.uom_id.id])
-                    product_dic[self.start_date + timedelta(10)].append([line.product_carton_id.id, deliveryCartons1_2, price_per_carton,line.product_carton_id.uom_id.id])
+                    product_dic[self.start_date + timedelta(10)].append([line.product_pack_id.product_id.id, deliveryPacks1_2, sellPricePerBag,line.product_pack_id.product_id.uom_id.id])
+                    product_dic[self.start_date + timedelta(10)].append([line.product_carton_id.id, deliveryCartons1_2, sellPricePerCarton,line.product_carton_id.uom_id.id])
                 else:
-                    product_dic[self.start_date + timedelta(10)] = [[line.product_pack_id.product_id.id, deliveryPacks1_2, price_per_pack,line.product_pack_id.product_id.uom_id.id], [line.product_carton_id.id, deliveryCartons1_2, price_per_carton,line.product_carton_id.uom_id.id]]
+                    product_dic[self.start_date + timedelta(10)] = [[line.product_pack_id.product_id.id, deliveryPacks1_2, sellPricePerBag,line.product_pack_id.product_id.uom_id.id], [line.product_carton_id.id, deliveryCartons1_2, sellPricePerCarton,line.product_carton_id.uom_id.id]]
 
                 # so = self.env['sale.order'].create({
                 #     'partner_id': self.customer_id.id,
@@ -575,10 +575,10 @@ class CapsContract(models.Model):
                     #     'order_id': so.id,
                     # })
                     if self.start_date + timedelta(daysInFirstPeriod) in list(product_dic.keys()):
-                        product_dic[self.start_date + timedelta(daysInFirstPeriod)].append([line.product_carton_id.id, deliveryCartons2, price_per_carton,line.product_carton_id.uom_id.id])
+                        product_dic[self.start_date + timedelta(daysInFirstPeriod)].append([line.product_carton_id.id, deliveryCartons2, sellPricePerCarton,line.product_carton_id.uom_id.id])
                     else:
 
-                        product_dic[self.start_date + timedelta(daysInFirstPeriod)] = [[line.product_carton_id.id, deliveryCartons2, price_per_carton,line.product_carton_id.uom_id.id]]
+                        product_dic[self.start_date + timedelta(daysInFirstPeriod)] = [[line.product_carton_id.id, deliveryCartons2, sellPricePerCarton,line.product_carton_id.uom_id.id]]
 
                     numPeriodsRemaining = numPeriodsRemaining - 1
 
@@ -615,9 +615,9 @@ class CapsContract(models.Model):
                     #     'order_id': so.id,
                     # })
                     if self.start_date + timedelta(endPeriodDays) in list(product_dic.keys()):
-                        product_dic[self.start_date + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons3, price_per_carton,line.product_carton_id.uom_id.id])
+                        product_dic[self.start_date + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons3, sellPricePerCarton,line.product_carton_id.uom_id.id])
                     else:
-                        product_dic[self.start_date + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons3, price_per_carton,line.product_carton_id.uom_id.id]]
+                        product_dic[self.start_date + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons3, sellPricePerCarton,line.product_carton_id.uom_id.id]]
 
                     numPeriodsRemaining = numPeriodsRemaining - 1
 
@@ -654,9 +654,9 @@ class CapsContract(models.Model):
                     #     'order_id': so.id,
                     # })
                     if self.start_date + timedelta(endPeriodDays) in list(product_dic.keys()):
-                        product_dic[self.start_date + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons4, price_per_carton,line.product_carton_id.uom_id.id])
+                        product_dic[self.start_date + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons4, sellPricePerCarton,line.product_carton_id.uom_id.id])
                     else:
-                        product_dic[self.start_date + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons4, price_per_carton,line.product_carton_id.uom_id.id]]
+                        product_dic[self.start_date + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons4, sellPricePerCarton,line.product_carton_id.uom_id.id]]
 
                     numPeriodsRemaining = numPeriodsRemaining - 1
 

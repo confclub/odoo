@@ -261,11 +261,18 @@ class SaleOrder(models.Model):
                     for line in lines:
                         product = self.env['cap.no.gap'].search([('daily_pack_sku', '=', line.get("sku"))])
                         if product:
-                            self.env['contract.product'].create({
-                                "product_pack_id": product.id,
-                                "total_funding": float(line.get('price')),
-                                "contract_id": cap_contract.id,
-                            })
+                            previous_product = False
+                            for cap_line in cap_contract.product_ids:
+                                if cap_line.product_pack_id and line.get("sku") == cap_line.product_pack_id.daily_pack_sku:
+                                    previous_product = True
+                                    cap_line.num_daily_packs += 1
+                                    cap_line.total_funding += float(line.get('price')) * float(line.get('quantity'))
+                            if not previous_product:
+                                self.env['contract.product'].create({
+                                    "product_pack_id": product.id,
+                                    "total_funding": float(line.get('price')) * float(line.get('quantity')),
+                                    "contract_id": cap_contract.id,
+                                })
                             order_data_line.state = "done"
                         # if product not found in odoo
                         else:

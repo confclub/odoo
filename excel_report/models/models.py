@@ -1433,8 +1433,9 @@ class ExcelReport(models.Model):
 
                     i += 1
                     if (int(i % 20) == 0):
-                        _logger.info("Record created_________________" + str(i))
+                        _logger.info("Record created___" + str(i) + '  Order___ ' + str(inner_list[7]))
                         sale_order._cr.commit()
+
                 except(Exception) as error:
                     _logger.info('Error occur at ' + str(inner_list[7]) + '  Due to   ' + str(error))
                     print('Error occur at %s' %(str(inner_list[7])))
