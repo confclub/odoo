@@ -16,7 +16,7 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('invoice', 'Invoice'), ('product', 'Product'), ('product_cost', 'Product Cost'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('invoice', 'Invoice'), ('validate_sale_order_unpaid_shipped', 'Validate Sale Order Unpaid Shipped'), ('product', 'Product'), ('product_cost', 'Product Cost'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
 
     def import_xls(self):
         main_list = []
@@ -1430,6 +1430,120 @@ class ExcelReport(models.Model):
                                 wizard.action_create_payments()
                             sale_order.invoiced = True
                             print("invoice validated of sale order" + str(sale_order.name) + "\n")
+
+                    i += 1
+                    if (int(i % 20) == 0):
+                        _logger.info("Record created___" + str(i) + '  Order___ ' + str(inner_list[7]))
+                        sale_order._cr.commit()
+
+                except(Exception) as error:
+                    _logger.info('Error occur at ' + str(inner_list[7]) + '  Due to   ' + str(error))
+                    print('Error occur at %s' %(str(inner_list[7])))
+                    sale_order.error_in_order = True
+        elif self.report_for == "validate_sale_order_unpaid_shipped":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+            i = 0
+            for inner_list in main_list:
+                try:
+                    inner_list[7] = str(inner_list[7]).split('.')[0]
+                    sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[7]))],
+                                                               limit=1)
+
+                    if sale_order and sale_order.from_excel:
+                        old_date = sale_order.date_order
+                        if inner_list[4] == 'unpaid' and inner_list[5] == 'shipped':
+                            if not sale_order.picking_ids:
+                                sale_order.action_confirm()
+                                sale_order.date_order = old_date
+                                sale_order.after_live = True
+                                for pick in sale_order.picking_ids:
+                                    for line in pick.move_ids_without_package:
+                                        line.quantity_done = line.product_uom_qty
+                                    pick.action_assign()
+                                    pick.button_validate()
+                                Form(self.env['stock.immediate.transfer']).save().process()
+                                sale_order.delivery = True
+                                print("delivery created of sale order"+ str(sale_order.name) + "\n")
+
+                                for pick in sale_order.picking_ids:
+                                    for line in pick.move_ids_without_package:
+                                        sale_line_id = self.env['sale.order.line'].search([('order_id', '=', sale_order.id )] ,limit=1)
+                                        vals = {
+                                            'name': _('Auto processed move : %s') % line.product_id.name,
+                                            'company_id': self.env.company.id,
+                                            'origin': sale_order.name,
+                                            'product_id': line.product_id.id,
+                                            'product_uom_qty': line.product_uom_qty,
+                                            'product_uom': line.product_id.uom_id.id,
+                                            'location_id': self.env.ref("shopify_ept.customer_location").id,
+                                            'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
+                                            'state': 'confirmed',
+                                            'sale_line_id': sale_line_id.id
+                                        }
+                                        stock_move = self.env['stock.move'].create(vals)
+                                        stock_move._action_assign()
+                                        stock_move._set_quantity_done(line.product_uom_qty)
+                                        stock_move._action_done()
+
+
+                            if sale_order.picking_ids and sale_order.picking_ids[0].state != 'done':
+                                for pick in sale_order.picking_ids:
+                                    for line in pick.move_ids_without_package:
+                                        line.quantity_done = line.product_uom_qty
+                                    pick.action_assign()
+                                    pick.button_validate()
+                                Form(self.env['stock.immediate.transfer']).save().process()
+                                sale_order.delivery = True
+
+                                for pick in sale_order.picking_ids:
+                                    for line in pick.move_ids_without_package:
+                                        sale_line_id = self.env['sale.order.line'].search([('order_id', '=', sale_order.id )] ,limit=1)
+                                        vals = {
+                                            'name': _('Auto processed move : %s') % line.product_id.name,
+                                            'company_id': self.env.company.id,
+                                            'origin': sale_order.name,
+                                            'product_id': line.product_id.id,
+                                            'product_uom_qty': line.product_uom_qty,
+                                            'product_uom': line.product_id.uom_id.id,
+                                            'location_id': self.env.ref("shopify_ept.customer_location").id,
+                                            'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
+                                            'state': 'confirmed',
+                                            'sale_line_id': sale_line_id.id
+                                        }
+                                        stock_move = self.env['stock.move'].create(vals)
+                                        stock_move._action_assign()
+                                        stock_move._set_quantity_done(line.product_uom_qty)
+                                        stock_move._action_done()
+
+                                print("delivery created of sale order" + str(sale_order.name) + "\n")
+                            # creating invoice here
+                            # if sale_order.state == 'draft' and sale_order.order_line:
+                            #     sale_order.action_confirm()
+                            #     sale_order.date_order = old_date
+                            #     sale_order.after_live = True
+                            # if sale_order.invoice_ids and sale_order.invoice_ids[0].state == 'posted':
+                            #     continue
+                            # if sale_order.amount_total <= 0:
+                            #     continue
+                            # wiz = self.env['sale.advance.payment.inv'].with_context(active_ids=sale_order.ids,
+                            #                                                         open_invoices=True).create({})
+                            # res = wiz.create_invoices()
+                            # print("invoice created of sale order" + str(sale_order.name) + "\n")
+                            # invoices = sale_order.invoice_ids.filtered(lambda inv: inv.state == 'draft')
+                            # for invoice in invoices:
+                            #     invoice.invoice_date = old_date
+                            #     invoice.action_post()
+                            #     action_data = invoice.action_register_payment()
+                            #     wizard = self.env['account.payment.register'].with_context(
+                            #         action_data['context']).create({})
+                            #     wizard.action_create_payments()
+                            # sale_order.invoiced = True
+                            # print("invoice validated of sale order" + str(sale_order.name) + "\n")
 
                     i += 1
                     if (int(i % 20) == 0):
