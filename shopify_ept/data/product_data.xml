@@ -35,6 +35,12 @@
             <field name="name">Customers Location</field>
             <field name="usage">customer</field>
         </record>
+<!-- customer for medcare -->
+
+        <record id="res_partner_medcare" model="res.partner">
+        <field name="name">Med Care</field>
+    </record>
+
 
 
     </data>

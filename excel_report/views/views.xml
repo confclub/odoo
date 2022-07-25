@@ -23,6 +23,7 @@
           <group>
             <field name="xls_file" string="Excel File"/>
             <field name="report_for" string="Report For"/>
+            <field name="order_name" string="Order Name"/>
           </group>
           </sheet>
         </form>

@@ -102,7 +102,6 @@ class SaleOrder(models.Model):
         """
         res_partner_obj = self.env["res.partner"]
         shopify_res_partner_obj = self.env["shopify.res.partner.ept"]
-
         if pos_order:
             if order_response.get("customer"):
                 partner = res_partner_obj.create_shopify_pos_customer(order_response, log_book, instance)
@@ -114,6 +113,9 @@ class SaleOrder(models.Model):
 
         if partner and partner.parent_id:
             partner = partner.parent_id
+        if order_response.get('note') and "medcart.com.au" in order_response.get('note'):
+            medcare = self.env.ref("shopify_ept.res_partner_medcare")
+            partner = medcare
         if not partner:
             message = "Customer details are not available in %s Order." % (
                 order_response.get(
