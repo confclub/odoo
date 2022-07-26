@@ -528,13 +528,14 @@ class ShopifyProductProductEpt(models.Model):
                     "exported_in_shopify": True
                 })
                 product_var = self.env['product.product'].search([('default_code', '=', variant_dict.get("sku"))])
-                pro_pack = self.env['variant.package'].search([('code', '=', variant_dict.get("sku"))])
-                if product_var:
+                # pro_pack = self.env['variant.package'].search([('code', '=', variant_dict.get("sku"))])
+                if product_var and not "10.00%" in product_var.name:
                     product_var.inventory_item_id = inventory_item_id
                     product_var.shopify_variant_id = variant_id
-                elif pro_pack:
-                    pro_pack.inventory_item_id = inventory_item_id
-                    pro_pack.shopify_variant_id = variant_id
+
+                # elif pro_pack:
+                #     pro_pack.inventory_item_id = inventory_item_id
+                #     pro_pack.shopify_variant_id = variant_id
         return True
 
     def export_product_images(self, instance, shopify_template):
