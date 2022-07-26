@@ -1464,14 +1464,15 @@ class ExcelReport(models.Model):
                         continue
                     if sale_order.name in ['#34858530', '#34890473', '#34883929', '#34877745', '#34881437', '#34869648', '']:
                         continue
-                    if sale_order.picking_ids and sale_order.picking_ids[0].state != 'done':
+                    if sale_order.picking_ids:
                         for pick in sale_order.picking_ids:
-                            for line in pick.move_ids_without_package:
-                                line.quantity_done = line.product_uom_qty
-                                if dict_of_product.get(line.product_id.default_code):
-                                    dict_of_product[line.product_id.default_code] += line.quantity_done
-                                else:
-                                    dict_of_product[line.product_id.default_code] = line.quantity_done
+                            if pick.state != "done":
+                                for line in pick.move_ids_without_package:
+                                    line.quantity_done = line.product_uom_qty
+                                    if dict_of_product.get(line.product_id.default_code):
+                                        dict_of_product[line.product_id.default_code] += line.quantity_done
+                                    else:
+                                        dict_of_product[line.product_id.default_code] = line.quantity_done
 
                             pick.action_assign()
                             pick.button_validate()
