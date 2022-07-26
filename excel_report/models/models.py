@@ -1474,9 +1474,9 @@ class ExcelReport(models.Model):
                                     else:
                                         dict_of_product[line.product_id.default_code] = line.quantity_done
 
-                            pick.action_assign()
-                            pick.button_validate()
-                        Form(self.env['stock.immediate.transfer']).save().process()
+                                pick.action_assign()
+                                pick.button_validate()
+                            Form(self.env['stock.immediate.transfer']).save().process()
 
                         for pick in sale_order.picking_ids:
                             for line in pick.move_ids_without_package:
