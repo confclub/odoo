@@ -1453,8 +1453,6 @@ class ExcelReport(models.Model):
             dict_of_product = {}
             for inner_list in main_list:
                 try:
-
-
                     inner_list[7] = str(inner_list[7]).split('.')[0]
                     sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[7]))],
                                                                limit=1)
@@ -1502,6 +1500,15 @@ class ExcelReport(models.Model):
                 except(Exception) as error:
                     _logger.info('Error occur at ' + str(inner_list[7]) + '  Due to   ' + str(error))
                     print('Error occur at %s' %(str(inner_list[7])))
+
+            for inner_list in main_list:
+                inner_list[7] = str(inner_list[7]).split('.')[0]
+                sale_order = self.env['sale.order'].search([('name', '=', '#' + str(inner_list[7]))],
+                                                           limit=1)
+                if sale_order:
+                    for pick in sale_order.picking_ids:
+                        if pick.state != 'done':
+                            _logger.info("Delivery not validated of order number ___" + str(inner_list[7]))
             adjstment_sale_order = self.env['sale.order'].create({
                 "name": self.order_name,
                 "partner_id": self.env['res.partner'].search([("name", '=', "Administrator")], limit=1).id
