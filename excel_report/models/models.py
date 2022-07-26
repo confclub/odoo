@@ -1519,6 +1519,7 @@ class ExcelReport(models.Model):
                     order_lines = self.env['sale.order.line'].create({
                         "product_id": self.env['product.product'].search([('default_code', '=', key)]).id,
                         "product_uom_qty": dict_of_product[key],
+                        "price_unit": 0,
                         "order_id": adjstment_sale_order.id,
                     })
             adjstment_sale_order.action_confirm()
