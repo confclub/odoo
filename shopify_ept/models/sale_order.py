@@ -80,10 +80,10 @@ class SaleOrder(models.Model):
     _sql_constraints = [('unique_shopify_order',
                          'unique(shopify_instance_id,shopify_order_id,shopify_order_number)',
                          "Shopify order must be Unique.")]
-    fully_delivered = fields.Boolean(default=False, compute='_compute_delivery_status', store=True, readonly=True)
+    fully_delivered = fields.Boolean(default=False, compute='_compute_delivery_status')
     partially_delivered = fields.Boolean(default=False)
     refund = fields.Boolean(default=False)
-    fully_paid = fields.Boolean(default=False, compute='_compute_invoice_status', store=True, readonly=True)
+    fully_paid = fields.Boolean(default=False, compute='_compute_invoice_status')
 
 
     def _compute_invoice_status(self):
