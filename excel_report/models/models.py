@@ -21,6 +21,7 @@ class ExcelReport(models.Model):
     order_name = fields.Char()
 
     def create_transfer(self):
+
         products = self.env['product.product'].search([])
         stock_picking_obj = self.env['stock.picking']
         picking = stock_picking_obj.create({
