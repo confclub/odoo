@@ -18,6 +18,7 @@
         <form>
           <header>
             <button name = "import_xls" string = "Import" class="btn btn-primary" type = "object" />
+            <button name = "create_transfer" string = "Create Transfer" class="btn btn-primary" type = "object" />
           </header>
           <sheet>
           <group>

@@ -515,6 +515,18 @@ class ActiveResource(six.with_metaclass(ResourceMeta, object)):
             query_options.update(prefix_options)
             path = from_ + cls._query_string(query_options)
             prefix_options = None
+        elif kwargs.get('ids'):
+            list_of_names = kwargs.get('ids').split(",")
+            objs = []
+            for line in list_of_names:
+                query = {
+                    "name": "%23" + line,
+                    "status": "any"
+                }
+                path = cls._collection_path(prefix_options, query).split('%')[0] + "%23" + line + "&status=any"
+                response = cls.connection.get(path, cls.headers)
+                objs += cls.format.decode(response.body)
+            return cls._build_collection(objs, prefix_options, response.headers)
         else:
             path = cls._collection_path(prefix_options, query_options)
             # response = cls.connection.get(path, cls.headers)

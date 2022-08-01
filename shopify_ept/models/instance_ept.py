@@ -46,40 +46,40 @@ class ShopifyInstanceEpt(models.Model):
         shipping_product = self.env.ref('shopify_ept.shopify_shipping_product') or False
         return shipping_product
 
-    def _count_all(self):
-        for instance in self:
-            instance.product_count = len(instance.product_ids)
-            instance.sale_order_count = len(instance.sale_order_ids)
-            instance.picking_count = len(instance.picking_ids)
-            instance.invoice_count = len(instance.invoice_ids.filtered(lambda x: x.move_type == 'out_invoice'))
-            instance.exported_product_count = len(instance.product_ids.filtered(lambda x: x.exported_in_shopify))
-            instance.ready_to_export_product_count = len(
-                instance.product_ids.filtered(lambda x: not x.exported_in_shopify))
-            instance.published_product_count = len(
-                instance.product_ids.filtered(lambda x: x.website_published != "unpublished"))
-            instance.unpublished_product_count = len(
-                instance.product_ids.filtered(lambda x: x.website_published == "unpublished"))
-            instance.quotation_count = len(instance.sale_order_ids.filtered(lambda x: x.state in ['draft', 'sent']))
-            instance.order_count = len(
-                instance.sale_order_ids.filtered(lambda x: x.state not in ['draft', 'sent', 'cancel']))
-            instance.risk_order_count = len(
-                instance.sale_order_ids.filtered(lambda x: x.state == 'draft' and x.is_risky_order))
-
-            instance.confirmed_picking_count = len(
-                instance.picking_ids.filtered(lambda x: x.state == 'confirmed'))
-            instance.assigned_picking_count = len(
-                instance.picking_ids.filtered(lambda x: x.state == 'assigned'))
-            instance.partially_available_picking_count = len(
-                instance.picking_ids.filtered(lambda x: x.state == 'partially_available'))
-            instance.done_picking_count = len(
-                instance.picking_ids.filtered(lambda x: x.state == 'done'))
-            instance.open_invoice_count = len(instance.invoice_ids.filtered(
-                lambda x: x.state == 'posted' and x.move_type == 'out_invoice' and not x.payment_state == 'paid'))
-            instance.paid_invoice_count = len(instance.invoice_ids.filtered(
-                lambda x: x.state == 'posted' and x.payment_state in ['paid',
-                                                                      'in_payment'] and x.move_type == 'out_invoice'))
-            instance.refund_invoice_count = len(
-                instance.invoice_ids.filtered(lambda x: x.move_type == 'out_refund'))
+    # def _count_all(self):
+    #     for instance in self:
+    #         instance.product_count = len(instance.product_ids)
+    #         instance.sale_order_count = len(instance.sale_order_ids)
+    #         instance.picking_count = len(instance.picking_ids)
+    #         instance.invoice_count = len(instance.invoice_ids.filtered(lambda x: x.move_type == 'out_invoice'))
+    #         instance.exported_product_count = len(instance.product_ids.filtered(lambda x: x.exported_in_shopify))
+    #         instance.ready_to_export_product_count = len(
+    #             instance.product_ids.filtered(lambda x: not x.exported_in_shopify))
+    #         instance.published_product_count = len(
+    #             instance.product_ids.filtered(lambda x: x.website_published != "unpublished"))
+    #         instance.unpublished_product_count = len(
+    #             instance.product_ids.filtered(lambda x: x.website_published == "unpublished"))
+    #         instance.quotation_count = len(instance.sale_order_ids.filtered(lambda x: x.state in ['draft', 'sent']))
+    #         instance.order_count = len(
+    #             instance.sale_order_ids.filtered(lambda x: x.state not in ['draft', 'sent', 'cancel']))
+    #         instance.risk_order_count = len(
+    #             instance.sale_order_ids.filtered(lambda x: x.state == 'draft' and x.is_risky_order))
+    #
+    #         instance.confirmed_picking_count = len(
+    #             instance.picking_ids.filtered(lambda x: x.state == 'confirmed'))
+    #         instance.assigned_picking_count = len(
+    #             instance.picking_ids.filtered(lambda x: x.state == 'assigned'))
+    #         instance.partially_available_picking_count = len(
+    #             instance.picking_ids.filtered(lambda x: x.state == 'partially_available'))
+    #         instance.done_picking_count = len(
+    #             instance.picking_ids.filtered(lambda x: x.state == 'done'))
+    #         instance.open_invoice_count = len(instance.invoice_ids.filtered(
+    #             lambda x: x.state == 'posted' and x.move_type == 'out_invoice' and not x.payment_state == 'paid'))
+    #         instance.paid_invoice_count = len(instance.invoice_ids.filtered(
+    #             lambda x: x.state == 'posted' and x.payment_state in ['paid',
+    #                                                                   'in_payment'] and x.move_type == 'out_invoice'))
+    #         instance.refund_invoice_count = len(
+    #             instance.invoice_ids.filtered(lambda x: x.move_type == 'out_refund'))
 
     name = fields.Char(size=120, string='Name', required=True)
     shopify_company_id = fields.Many2one('res.company', string='Company', required=True,
@@ -144,28 +144,27 @@ class ShopifyInstanceEpt(models.Model):
     # fields for kanban view
     product_ids = fields.One2many('shopify.product.template.ept', 'shopify_instance_id',
                                   string="Products")
-    product_count = fields.Integer(compute='_count_all', string="Product")
+    product_count = fields.Integer(string="Product")
     sale_order_ids = fields.One2many('sale.order', 'shopify_instance_id', string="Orders")
-    sale_order_count = fields.Integer(compute='_count_all', string="Sale Order Count")
+    sale_order_count = fields.Integer(string="Sale Order Count")
     picking_ids = fields.One2many('stock.picking', 'shopify_instance_id', string="Pickings")
-    picking_count = fields.Integer(compute='_count_all', string="Picking")
+    picking_count = fields.Integer(string="Picking")
     invoice_ids = fields.One2many('account.move', 'shopify_instance_id', string="Invoices")
-    invoice_count = fields.Integer(compute='_count_all', string="Invoice")
-    exported_product_count = fields.Integer(compute='_count_all', string="Exported Products")
-    ready_to_export_product_count = fields.Integer(compute='_count_all', string="Ready For Export")
-    published_product_count = fields.Integer(compute='_count_all', string="Published Product")
-    unpublished_product_count = fields.Integer(compute='_count_all', string="#UnPublished Product")
-    quotation_count = fields.Integer(compute='_count_all', string="Quotation")
-    order_count = fields.Integer(compute='_count_all', string="Sales Orders")
-    risk_order_count = fields.Integer(compute='_count_all', string="Risky Orders")
-    confirmed_picking_count = fields.Integer(compute='_count_all', string="Confirm Picking")
-    assigned_picking_count = fields.Integer(compute='_count_all', string="Assigned Pickings")
-    partially_available_picking_count = fields.Integer(compute='_count_all',
-                                                       string="Partially Available Picking")
-    done_picking_count = fields.Integer(compute='_count_all', string="Done Picking")
-    open_invoice_count = fields.Integer(compute='_count_all', string="Open Invoice")
-    paid_invoice_count = fields.Integer(compute='_count_all', string="Paid Invoice")
-    refund_invoice_count = fields.Integer(compute='_count_all', string="Refund Invoices")
+    invoice_count = fields.Integer(string="Invoice")
+    exported_product_count = fields.Integer(string="Exported Products")
+    ready_to_export_product_count = fields.Integer(string="Ready For Export")
+    published_product_count = fields.Integer(string="Published Product")
+    unpublished_product_count = fields.Integer(string="#UnPublished Product")
+    quotation_count = fields.Integer(string="Quotation")
+    order_count = fields.Integer(string="Sales Orders")
+    risk_order_count = fields.Integer(string="Risky Orders")
+    confirmed_picking_count = fields.Integer(string="Confirm Picking")
+    assigned_picking_count = fields.Integer(string="Assigned Pickings")
+    partially_available_picking_count = fields.Integer(string="Partially Available Picking")
+    done_picking_count = fields.Integer(string="Done Picking")
+    open_invoice_count = fields.Integer(string="Open Invoice")
+    paid_invoice_count = fields.Integer(string="Paid Invoice")
+    refund_invoice_count = fields.Integer(string="Refund Invoices")
 
     shopify_user_ids = fields.Many2many('res.users', 'shopify_instance_ept_res_users_rel',
                                         'res_config_settings_id', 'res_users_id',

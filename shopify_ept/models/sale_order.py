@@ -80,6 +80,47 @@ class SaleOrder(models.Model):
     _sql_constraints = [('unique_shopify_order',
                          'unique(shopify_instance_id,shopify_order_id,shopify_order_number)',
                          "Shopify order must be Unique.")]
+    fully_delivered = fields.Boolean(default=False, compute='_compute_delivery_status', store=True, readonly=True)
+    partially_delivered = fields.Boolean(default=False)
+    refund = fields.Boolean(default=False)
+    fully_paid = fields.Boolean(default=False, compute='_compute_invoice_status', store=True, readonly=True)
+
+
+    def _compute_invoice_status(self):
+        for order in self:
+            if order.invoice_ids:
+                invoice = order.invoice_ids.filtered(lambda r: r.move_type == 'out_invoice' and r.state == 'posted')
+                refund = order.invoice_ids.filtered(lambda r: r.move_type == 'in_invoice' and r.state == 'posted')
+                if invoice:
+                    order.fully_paid = True
+                else:
+                    order.fully_paid = False
+                if refund:
+                    order.refund = True
+                else:
+                    order.refund = False
+            else:
+                order.refund = False
+                order.fully_paid = False
+
+
+
+    def _compute_delivery_status(self):
+        for order in self:
+            if order.picking_ids:
+                delivry_partial = order.picking_ids.filtered(lambda p: p.state != 'done')
+                if delivry_partial:
+                    order.partially_delivered = True
+                    order.fully_delivered = False
+                else:
+                    order.fully_delivered = True
+                    order.partially_delivered = False
+            else:
+                order.fully_delivered = False
+                order.partially_delivered = False
+
+
+
 
     def create_shopify_log_line(self, message, queue_line, log_book, order_name):
         """

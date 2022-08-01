@@ -18,6 +18,26 @@
                 </button>
             </field>
         </record>
+
+
+        <record id="view_sale_order_tree_inherit" model="ir.ui.view">
+            <field name="name">sale.order.tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='state']" position="after">
+                <field name="partially_delivered"/>
+                <field name="fully_delivered"/>
+                <field name="fully_paid"/>
+                <field name="refund"/>
+            </xpath>
+            </field>
+        </record>
+
+
+
+
+
         <!--Tree view of shopify sale order -->
         <record id="view_order_tree_shopify_ept" model="ir.ui.view">
             <field name="name">sale.order.tree</field>

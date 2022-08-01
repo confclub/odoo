@@ -298,7 +298,7 @@ class SaleWorkflowProcess(models.Model):
                                             'product_uom_qty': product_qty,
                                             'product_uom': product_uom.id if product_uom else False,
                                             'location_id': self.env.ref("shopify_ept.customer_location").id,
-                                            'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
+                                            'location_dest_id': self.env.ref("stock.stock_location_stock").id,
                                             'state': 'confirmed',
                                             'shopify_refund_id': refund['id'],
                                             'sale_line_id': line.id
@@ -465,7 +465,7 @@ class SaleWorkflowProcess(models.Model):
                                                 'product_uom_qty': product_qty,
                                                 'product_uom': product_uom.id if product_uom else False,
                                                 'location_id': self.env.ref("shopify_ept.customer_location").id,
-                                                'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
+                                                'location_dest_id': self.env.ref("stock.stock_location_stock").id,
                                                 'state': 'confirmed',
                                                 'shopify_refund_id': refund['id'],
                                                 'sale_line_id': line.id

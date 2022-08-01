@@ -20,6 +20,32 @@ class ExcelReport(models.Model):
     report_for = fields.Selection([('create_xls_file', 'create_xls_file'),('invoice', 'Invoice'), ('validate_sale_order_unpaid_shipped', 'Validate Sale Order Unpaid Shipped'), ('product', 'Product'), ('product_cost', 'Product Cost'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
     order_name = fields.Char()
 
+    def create_transfer(self):
+        products = self.env['product.product'].search([])
+        stock_picking_obj = self.env['stock.picking']
+        picking = stock_picking_obj.create({
+            'name': 'Cake Delivery Order',
+            'partner_id': 1,
+            'picking_type_id': self.env.ref('stock.picking_type_out').id,
+            'location_id': 27,
+            'location_dest_id': self.env.ref("stock.stock_location_stock").id,
+        })
+        for product in products:
+            customer_location = product.stock_quant_ids.filtered(lambda inv: inv.location_id.id == 27)
+            if customer_location:
+                self.env['stock.move'].create({
+                    "name": product.name,
+                    'product_id': product.id,
+                    'product_uom_qty': customer_location.quantity,
+                    'product_uom': product.uom_id.id,
+                    'quantity_done': customer_location.quantity,
+                    'location_id': 27,
+                    'location_dest_id': self.env.ref("stock.stock_location_stock").id,
+                    'picking_id': picking.id,
+
+                })
+
+
     def import_xls(self):
         main_list = []
         wb = xlrd.open_workbook(file_contents=base64.decodestring(self.xls_file))
@@ -1369,7 +1395,7 @@ class ExcelReport(models.Model):
                                             'product_uom_qty': line.product_uom_qty,
                                             'product_uom': line.product_id.uom_id.id,
                                             'location_id': self.env.ref("shopify_ept.customer_location").id,
-                                            'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
+                                            'location_dest_id': self.env.ref("stock.stock_location_stock").id,
                                             'state': 'confirmed',
                                             'sale_line_id': sale_line_id.id
                                         }
@@ -1399,7 +1425,7 @@ class ExcelReport(models.Model):
                                             'product_uom_qty': line.product_uom_qty,
                                             'product_uom': line.product_id.uom_id.id,
                                             'location_id': self.env.ref("shopify_ept.customer_location").id,
-                                            'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
+                                            'location_dest_id': self.env.ref("stock.stock_location_stock").id,
                                             'state': 'confirmed',
                                             'sale_line_id': sale_line_id.id
                                         }
@@ -1490,7 +1516,7 @@ class ExcelReport(models.Model):
                                     'product_uom_qty': line.product_uom_qty,
                                     'product_uom': line.product_id.uom_id.id,
                                     'location_id': self.env.ref("shopify_ept.customer_location").id,
-                                    'location_dest_id': self.env.ref("shopify_ept.customer_stock_location").id,
+                                    'location_dest_id': self.env.ref("stock.stock_location_stock").id,
                                     'state': 'confirmed',
                                     'sale_line_id': sale_line_id.id
                                 }
@@ -1552,43 +1578,44 @@ class ExcelReport(models.Model):
             sheetwt.write(0, 7, 'Order Number')
             sheetwt.write(0, 8, 'Ship At')
             sheetwt.write(0, 9, 'Quantity')
-            sheetwt.write(0, 10, 'Odoo Invoice Status')
-            sheetwt.write(0, 11, 'Odoo Delivery Status')
+            # sheetwt.write(0, 10, 'Odoo Invoice Status')
+            # sheetwt.write(0, 11, 'Odoo Delivery Status')
             roww = 1
+            a_list = ['#SO1461', '#349127172', '#349126840', '#349127069', '#349126537', '#349126398', '#349126294', '#349125743', '#349125831', '#349125575', '#349125414', '#349125422', '#SO1424', '#349125229', '#349125026', '#349125096', '#349124381', '#349124468', '#349124033', '#349124066', '#SO1415', '#349124271', '#349123958', '#349123964', '#349123562', '#SO1405', '#SO1406', '#349123404', '#SO1402', '#349123292', '#349123095', '#SO1394', '#SO1395', '#SO1387', '#SO1390', '#349121173', '#349120813', '#349120667', '#349120683', '#349119441', '#349118767', '#349117372', '#349117427', '#349117242', '#349116401', '#349115842', '#SO1344', '#349115437', '#349114485', '#SO1343', '#349114131', '#349113663', '#349112808', '#349112809', '#349112687', '#349112144', '#SO1314', '#SO1317', '#349111147', '#349111202', '#349110909', '#SO1206', '#349110329', '#349109991', '#SO1297', '#349109895', '#349109641', '#SO1286', '#349108744', '#SO1284', '#349108252', '#349107863', '#SO1275', '#349107026', '#349106533', '#SO1268', '#SO1260', '#SO1259', '#SO1253', '#349104090', '#SO1239', '#349100795', '#34899325', '#34899148', '#34899013', '#SO1194', '#34897317', '#SO1180', '#34897308', '#34897040', '#34896802', '#34896318', '#34895850', '#34895590', '#34894450', '#SO1133', '#34892180', '#SO1115', '#SO1109', '#34888941', '#SO1101', '#SO1096', '#SO1081', '#SO1077', '#34884689', '#SO1060', '#SO1056', '#SO1048', '#34881445', '#SO0996', '#SO0972', '#SO0973', '#SO0955', '#SO0939', '#SO0938', '#SO0935', '#SO0901', '#34851663', '#34851140', '#34851154', '#34851055', '#SO0888', '#SO0886', '#34850003', '#34850044', '#34849599', '#34849614', '#34849668', '#34849214', '#34848888', '#34848813', '#SO0876', '#34848080', '#34846513', '#34845194', '#34844763', '#SO0850', '#SO0847', '#34843419', '#34843050', '#34842928', '#34842635', '#34841408', '#SO0821', '#34836720', '#34836109', '#34835217', '#SO0804', '#34834130', '#34833462', '#SO0792', '#34832773', '#34832851', '#34832565', '#34832314', '#34832068', '#34831195', '#34830820', '#34830547', '#SO0759', '#SO0756', '#SO0752', '#34828662', '#34828307', '#34827572', '#34827573', '#34827492', '#SO0728', '#34826838', '#34825767', '#34825768', '#34825798', '#34825740', '#SO0583', '#SO0577', '#SO0559', '#34815539', '#SO0501', '#SO0493', '#SO0469', '#SO0462', '#SO0460', '#SO0456', '#SO0455', '#SO0443', '#SO0441', '#SO0438', '#SO0439', '#SO0435', '#SO0434', '']
             for inner_list in main_list:
                 sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[7]).split('.')[0])])
-                if sale_order and sale_order.amount_total > 0:
-                    if sale_order.picking_ids and sale_order.picking_ids[0].state == 'done':
+                if sale_order and sale_order.name in a_list:
+                    # if sale_order.picking_ids and sale_order.picking_ids[0].state == 'done':
+                    #
+                    #     odoo_delivery_status = 'shipped'
+                    # else:
+                    #
+                    #     odoo_delivery_status = 'unshipped'
+                    # if sale_order.invoice_ids and sale_order.invoice_ids[0].state == 'posted':
+                    #
+                    #     odoo_invoice_status = 'paid'
+                    # else:
+                    #
+                    #     odoo_invoice_status = 'unpaid'
 
-                        odoo_delivery_status = 'shipped'
-                    else:
-
-                        odoo_delivery_status = 'unshipped'
-                    if sale_order.invoice_ids and sale_order.invoice_ids[0].state == 'posted':
-
-                        odoo_invoice_status = 'paid'
-                    else:
-
-                        odoo_invoice_status = 'unpaid'
-
-                    if inner_list[4] != odoo_invoice_status or inner_list[5] != odoo_delivery_status:
-                        sheetwt.write(roww, 0, inner_list[0])
-                        sheetwt.write(roww, 1, inner_list[1])
-                        sheetwt.write(roww, 2, inner_list[2])
-                        sheetwt.write(roww, 3, inner_list[3])
-                        sheetwt.write(roww, 4, inner_list[4])
-                        sheetwt.write(roww, 5, inner_list[5])
-                        sheetwt.write(roww, 6, inner_list[6])
-                        sheetwt.write(roww, 7, inner_list[7])
-                        sheetwt.write(roww, 8, inner_list[8])
-                        sheetwt.write(roww, 9, inner_list[9])
-                        sheetwt.write(roww, 10, odoo_invoice_status)
-                        sheetwt.write(roww, 11, odoo_delivery_status)
-                        roww +=1
-                        i += 1
-                        if (int(i % 500) == 0):
-                            print("lines created" + str(i))
-            workbook.save('/home/hafiz/sale_orders_qb/ship_and_p/new_orders_file3.xls')
+                    # if inner_list[4] != odoo_invoice_status or inner_list[5] != odoo_delivery_status:
+                    sheetwt.write(roww, 0, inner_list[0])
+                    sheetwt.write(roww, 1, inner_list[1])
+                    sheetwt.write(roww, 2, inner_list[2])
+                    sheetwt.write(roww, 3, inner_list[3])
+                    sheetwt.write(roww, 4, inner_list[4])
+                    sheetwt.write(roww, 5, inner_list[5])
+                    sheetwt.write(roww, 6, inner_list[6])
+                    sheetwt.write(roww, 7, inner_list[7])
+                    sheetwt.write(roww, 8, inner_list[8])
+                    sheetwt.write(roww, 9, inner_list[9])
+                    # sheetwt.write(roww, 10, odoo_invoice_status)
+                    # sheetwt.write(roww, 11, odoo_delivery_status)
+                    roww +=1
+                    i += 1
+                    if (int(i % 500) == 0):
+                        print("lines created" + str(i))
+            workbook.save('/home/hafiz/sale_orders_qb/draft_order/draft_order_file2.xls')
 
         elif self.report_for == "purchase_order":
             for sheet in wb.sheets():

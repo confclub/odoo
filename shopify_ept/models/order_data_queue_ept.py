@@ -284,20 +284,26 @@ class ShopifyOrderDataQueueEpt(models.Model):
                 order_ids_list = list(set(re.findall(re.compile(r"(\d+)"), order_ids)))
                 results = shopify.Order().find(ids=','.join(order_ids_list), status='any')
                 if results:
-                    _logger.info('%s Shopify order(s) imported from instance : %s' % (
-                        len(results), instance.name))
-                    order_ids_list = [order_id.strip() for order_id in order_ids_list]
-                    # Below process to identify which id response did not give by Shopify.
-                    [order_ids_list.remove(str(result.id)) for result in results if str(result.id) in order_ids_list]
-            else:
-                raise UserError(_('Please enter the Order ids 50 or less'))
-            if results:
-                if order_ids_list:
-                    _logger.warning("Orders are not found for ids :%s" % (str(order_ids_list)))
-                model_id = common_log_book_obj.log_lines.get_model_id("sale.order")
-                log_book_id = common_log_book_obj.create({"type":"import",
-                                                          "module":"shopify_ept",
-                                                          "shopify_instance_id":instance.id,
-                                                          "model_id":model_id})
-                sale_order_obj.import_shopify_orders(results, log_book_id, is_queue_line=False)
-        return True
+                    order_data_queue_line_obj = self.env["shopify.order.data.queue.line.ept"]
+                    order_queues = order_data_queue_line_obj.create_order_data_queue_line(results,
+                                                                                          instance,
+                                                                                          created_by="import",
+                                                                                          is_cap=False)
+                    return order_queues
+                    # _logger.info('%s Shopify order(s) imported from instance : %s' % (
+                    #     len(results), instance.name))
+                    # order_ids_list = [order_id.strip() for order_id in order_ids_list]
+                    # # Below process to identify which id response did not give by Shopify.
+                    # [order_ids_list.remove(str(result.id)) for result in results if str(result.id) in order_ids_list]
+        #     else:
+        #         raise UserError(_('Please enter the Order ids 50 or less'))
+        #     if results:
+        #         if order_ids_list:
+        #             _logger.warning("Orders are not found for ids :%s" % (str(order_ids_list)))
+        #         model_id = common_log_book_obj.log_lines.get_model_id("sale.order")
+        #         log_book_id = common_log_book_obj.create({"type":"import",
+        #                                                   "module":"shopify_ept",
+        #                                                   "shopify_instance_id":instance.id,
+        #                                                   "model_id":model_id})
+        #         sale_order_obj.import_shopify_orders(results, log_book_id, is_queue_line=False)
+        # return True

@@ -25,10 +25,10 @@
         </record>
 <!--stock location craeted here-->
 
-        <record id="customer_stock_location" model="stock.location">
-            <field name="name">Stock Customer</field>
-            <field name="usage">internal</field>
-        </record>
+<!--        <record id="customer_stock_location" model="stock.location">-->
+<!--            <field name="name">Stock Customer</field>-->
+<!--            <field name="usage">internal</field>-->
+<!--        </record>-->
 
 
         <record id="customer_location" model="stock.location">
@@ -38,7 +38,7 @@
 <!-- customer for medcare -->
 
         <record id="res_partner_medcare" model="res.partner">
-        <field name="name">Med Care</field>
+        <field name="name">MedCart</field>
     </record>
 
 

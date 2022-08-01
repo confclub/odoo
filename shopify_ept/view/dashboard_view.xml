@@ -90,34 +90,34 @@
                                     </div>
                                     <div
                                             class="col-4 o_kanban_primary_bottom o_kanban_primary_bottom_shopify">
-                                        <div>
-                                            <a
-                                                    name="%(shopify_ept.action_shopify_product_instance_ept)d"
-                                                    type="action">
-                                                <t t-esc="record.product_count.value"/>
-                                                Products
-                                            </a>
-                                            <br/>
-                                            <a name="%(shopify_ept.action_shopify_sale_instance_ept)d"
-                                               type="action">
-                                                <t t-esc="record.sale_order_count.value"/>
-                                                Orders
-                                            </a>
-                                            <br/>
-                                            <a
-                                                    name="%(shopify_ept.action_shopify_picking_instance_ept)d"
-                                                    type="action">
-                                                <t t-esc="record.picking_count.value"/>
-                                                Delivery
-                                            </a>
-                                            <br/>
-                                            <a
-                                                    name="%(shopify_ept.action_shopify_invoice_instance_ept)d"
-                                                    type="action">
-                                                <t t-esc="record.invoice_count.value"/>
-                                                Invoices
-                                            </a>
-                                        </div>
+<!--                                        <div>-->
+<!--                                            <a-->
+<!--                                                    name="%(shopify_ept.action_shopify_product_instance_ept)d"-->
+<!--                                                    type="action">-->
+<!--                                                <t t-esc="record.product_count.value"/>-->
+<!--                                                Products-->
+<!--                                            </a>-->
+<!--                                            <br/>-->
+<!--                                            <a name="%(shopify_ept.action_shopify_sale_instance_ept)d"-->
+<!--                                               type="action">-->
+<!--                                                <t t-esc="record.sale_order_count.value"/>-->
+<!--                                                Orders-->
+<!--                                            </a>-->
+<!--                                            <br/>-->
+<!--                                            <a-->
+<!--                                                    name="%(shopify_ept.action_shopify_picking_instance_ept)d"-->
+<!--                                                    type="action">-->
+<!--                                                <t t-esc="record.picking_count.value"/>-->
+<!--                                                Delivery-->
+<!--                                            </a>-->
+<!--                                            <br/>-->
+<!--                                            <a-->
+<!--                                                    name="%(shopify_ept.action_shopify_invoice_instance_ept)d"-->
+<!--                                                    type="action">-->
+<!--                                                <t t-esc="record.invoice_count.value"/>-->
+<!--                                                Invoices-->
+<!--                                            </a>-->
+<!--                                        </div>-->
                                     </div>
                                     <!-- </div> -->
                                 </div>
