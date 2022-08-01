@@ -25,7 +25,7 @@ class ExcelReport(models.Model):
         products = self.env['product.product'].search([])
         stock_picking_obj = self.env['stock.picking']
         picking = stock_picking_obj.create({
-            'name': 'Cake Delivery Order',
+            'name': 'Cake Delivery Order 2.1',
             'partner_id': 1,
             'picking_type_id': self.env.ref('stock.picking_type_out').id,
             'location_id': 27,
@@ -33,7 +33,8 @@ class ExcelReport(models.Model):
         })
         for product in products:
             customer_location = product.stock_quant_ids.filtered(lambda inv: inv.location_id.id == 27)
-            if customer_location:
+            bom_ids = product.bom_ids.filtered(lambda l: l.product_id.id == product.id)
+            if customer_location and not bom_ids:
                 self.env['stock.move'].create({
                     "name": product.name,
                     'product_id': product.id,
