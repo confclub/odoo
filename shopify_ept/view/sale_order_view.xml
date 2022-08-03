@@ -32,7 +32,7 @@
                 <field name="refund"/>
             </xpath>
                 <xpath expr="//tree/field[@name='amount_total']" position="before">
-                <field name="refunded_amount"/>
+                <field name="refunded_amount" sum="Total Tax Included" widget="monetary" decoration-bf="1" optional="show"/>
             </xpath>
 
             </field>
