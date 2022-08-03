@@ -84,6 +84,19 @@ class SaleOrder(models.Model):
     partially_delivered = fields.Boolean(default=False)
     refund = fields.Boolean(default=False)
     fully_paid = fields.Boolean(default=False, compute='_compute_invoice_status')
+    refunded_amount = fields.Float(compute='_compute_refunded_amount')
+
+
+    def _compute_refunded_amount(self):
+        for record in self:
+            if record.refund:
+                amount = 0
+                refund = record.invoice_ids.filtered(lambda r: r.move_type == 'out_refund' and r.state == 'posted' and r.amount_residual == 0)
+                for ref in refund:
+                    amount += ref.amount_total
+                record.refunded_amount = amount
+            else:
+                record.refunded_amount = 0
 
 
     def _compute_invoice_status(self):
