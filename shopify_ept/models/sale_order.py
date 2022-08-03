@@ -89,15 +89,16 @@ class SaleOrder(models.Model):
     def _compute_invoice_status(self):
         for order in self:
             if order.invoice_ids:
-                invoice = order.invoice_ids.filtered(lambda r: r.move_type == 'out_invoice' and r.state == 'posted')
-                refund = order.invoice_ids.filtered(lambda r: r.move_type == 'in_invoice' and r.state == 'posted')
-                if invoice:
+                invoice = order.invoice_ids.filtered(lambda r: r.move_type == 'out_invoice' and r.state == 'posted' and r.amount_residual == 0)
+                refund = order.invoice_ids.filtered(lambda r: r.move_type == 'out_refund' and r.state == 'posted' and r.amount_residual == 0)
+                if invoice and not refund:
                     order.fully_paid = True
-                else:
-                    order.fully_paid = False
-                if refund:
+                    order.refund = False
+                elif invoice and refund:
+                    order.fully_paid = True
                     order.refund = True
                 else:
+                    order.fully_paid = False
                     order.refund = False
             else:
                 order.refund = False
@@ -109,11 +110,15 @@ class SaleOrder(models.Model):
         for order in self:
             if order.picking_ids:
                 delivry_partial = order.picking_ids.filtered(lambda p: p.state != 'done')
-                if delivry_partial:
+                delivry_full = order.picking_ids.filtered(lambda p: p.state == 'done')
+                if delivry_partial and len(order.picking_ids) >= 2:
                     order.partially_delivered = True
                     order.fully_delivered = False
-                else:
+                elif delivry_full and not delivry_partial:
                     order.fully_delivered = True
+                    order.partially_delivered = False
+                else:
+                    order.fully_delivered = False
                     order.partially_delivered = False
             else:
                 order.fully_delivered = False

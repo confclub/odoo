@@ -331,40 +331,6 @@ class SaleWorkflowProcess(models.Model):
                                                                            bom_id.product_id.inventory_item_id,
                                                                            int(bom_id.product_id.virtual_available))
 
-        # elif data_dic.get('fulfillment_status') == 'partial':
-        #     dict_of_shopify = {}
-        #     dict_of_odoo = {}
-        #     if data_dic.get('fulfillments'):
-        #         for ful_fill_list in data_dic.get('fulfillments'):
-        #             for item_line in ful_fill_list.get('line_items'):
-        #                  dict_of_shopify[item_line.get('sku')] = item_line.get('quantity')
-        #
-        #     for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
-        #         for line in pick.move_ids_without_package:
-        #             dict_of_odoo[line.product_id.default_code] = line.quantity_done if line.quantity_done else line.product_uom_qty
-        #
-        #     need_to_sync = {}
-        #     for shopify in dict_of_shopify:
-        #         for odoo in dict_of_odoo:
-        #             if odoo == shopify:
-        #                 need_to_sync[shopify] = dict_of_shopify[shopify]
-        #
-        #     list(dict_of_odoo)
-        #     for pick in orders.picking_ids.filtered(lambda line: line.state not in ['done']):
-        #         lines_sync = False
-        #         for line in pick.move_ids_without_package:
-        #             if line.product_id.default_code in list(need_to_sync):
-        #                 lines_sync = True
-        #                 line.quantity_done = need_to_sync[line.product_id.default_code]
-        #             else:
-        #                 line.quantity_done = 0
-        #         if lines_sync:
-        #             # pass
-        #             pick.action_assign()
-        #             res_dict = pick.button_validate()
-        #             Form(self.env['stock.backorder.confirmation'].with_context(res_dict['context'])).save().process()
-
-
         if data_dic.get('financial_status') == 'paid':
             if orders.order_line.filtered(lambda l: l.product_id.invoice_policy == 'order'):
                 if orders.invoice_ids and orders.invoice_ids[0] and orders.invoice_ids[0].state != 'posted':
@@ -696,6 +662,12 @@ class SaleWorkflowProcess(models.Model):
         else:
             if not orders.invoice_ids:
                 orders._create_invoices()
+
+        if data_dic.get('cancel_reason') and data_dic.get('cancelled_at'):
+            orders.action_cancel()
+            wizard = self.env['sale.order.cancel'].with_context({'order_id': orders.id}).create({'order_id': orders.id})
+            wizard.action_cancel()
+
 
         # if data_dic.get('financial_status') == "refunded":
         #     dict_of_shopify = {}
