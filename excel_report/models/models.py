@@ -199,6 +199,7 @@ class ExcelReport(models.Model):
                         acc._cr.commit()
                 except(Exception) as error:
                     print('Error occur at %s' % (str(nam[0])))
+                    _logger.info('Error occur at %s' % (str(nam[0])))
 
 
         elif self.report_for == "price_list":
