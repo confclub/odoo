@@ -198,9 +198,8 @@ class ExcelReport(models.Model):
                         print("Record created___" + str(i) + '  Order___ ' + str(nam[0]))
                         acc._cr.commit()
                 except(Exception) as error:
+                    _logger.info('Error occur at ' + str(nam[0] + '  Due to   ' + str(error)))
                     print('Error occur at %s' % (str(nam[0])))
-                    _logger.info('Error occur at %s' % (str(nam[0])))
-
 
         elif self.report_for == "price_list":
             for sheet in wb.sheets():
