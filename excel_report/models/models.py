@@ -9,6 +9,7 @@ from dateutil import parser
 from odoo.tests import Form, tagged
 import pytz
 utc = pytz.utc
+import json
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -17,35 +18,98 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('create_xls_file', 'create_xls_file'),('invoice', 'Invoice'), ('validate_sale_order_unpaid_shipped', 'Validate Sale Order Unpaid Shipped'), ('product', 'Product'), ('product_cost', 'Product Cost'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('create_xls_file', 'create_xls_file'),('invoice', 'Invoice'), ('old_invoice_date_update', 'Profit and Lose Updation'), ('validate_sale_order_unpaid_shipped', 'Validate Sale Order Unpaid Shipped'), ('product', 'Product'), ('product_cost', 'Product Cost'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
     order_name = fields.Char()
 
     def create_transfer(self):
+        pass
 
-        products = self.env['product.product'].search([])
-        stock_picking_obj = self.env['stock.picking']
-        picking = stock_picking_obj.create({
-            'name': 'Cake Delivery Order 2.1',
-            'partner_id': 1,
-            'picking_type_id': self.env.ref('stock.picking_type_out').id,
-            'location_id': 27,
-            'location_dest_id': self.env.ref("stock.stock_location_stock").id,
-        })
-        for product in products:
-            customer_location = product.stock_quant_ids.filtered(lambda inv: inv.location_id.id == 27)
-            bom_ids = product.bom_ids.filtered(lambda l: l.product_id.id == product.id)
-            if customer_location and not bom_ids:
-                self.env['stock.move'].create({
-                    "name": product.name,
-                    'product_id': product.id,
-                    'product_uom_qty': customer_location.quantity,
-                    'product_uom': product.uom_id.id,
-                    'quantity_done': customer_location.quantity,
-                    'location_id': 27,
-                    'location_dest_id': self.env.ref("stock.stock_location_stock").id,
-                    'picking_id': picking.id,
+        # # # # # # # # # # # # #
 
-                })
+        # name_list = []
+        # sale_orders = self.env['sale.order'].search([('date_order', '>=', '01/07/2022'), ('date_order', '<=', '31/07/2022')])
+        # i = 0
+        # for sale in sale_orders:
+        #     if sale.sale_api_data and sale.state != 'cancel':
+        #         payload = json.loads(sale.sale_api_data)
+        #         payload_payment = payload.get("financial_status")
+        #         payload_delivery = payload.get("fulfillment_status")
+        #         payload_restock = payload.get("restock")
+        #         payload_refund = payload.get('refunds')
+        #         invoice = sale.invoice_ids.filtered(
+        #             lambda r: r.move_type == 'out_invoice' and r.state == 'posted' and r.amount_residual == 0)
+        #         refund = sale.invoice_ids.filtered(
+        #             lambda r: r.move_type == 'out_refund' and r.state == 'posted' and r.amount_residual == 0)
+        #         delivry_partial = sale.picking_ids.filtered(lambda p: p.state != 'done')
+        #         delivry_full = sale.picking_ids.filtered(lambda p: p.state == 'done')
+        #         if payload_delivery == 'fulfilled' and len(delivry_partial):
+        #             name_list.append(sale.name)
+        #         elif len(payload_refund) and not refund:
+        #             name_list.append(sale.name)
+        #         elif payload_payment == 'paid' and not invoice:
+        #             name_list.append(sale.name)
+        #         elif payload_restock and not len(sale.moves_count):
+        #             name_list.append(sale.name)
+        # print(name_list)
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+            # if a != b:
+            #     i +=1
+                # print('count ' + str(i) + "  " + str(invoice.invoice_date) + "     " + str(invoice.invoice_date_due))
+            # if i > 80:
+            #     print()
+                # print()
+                # print()
+                # print()
+            # if invoice.invoice_date:
+            #     in_1_31 = invoice.invoice_date <= datetime. strptime("31/07/22", '%d/%m/%y').date() and invoice.invoice_date >= datetime. strptime("01/07/22", '%d/%m/%y').date()
+            #
+            # if not invoice.invoice_date:
+            #     # name_list.append([invoice.name,invoice.invoice_origin])
+            #     continue
+            #
+            # elif not in_1_31:
+            #     name_list.append([invoice.name,invoice.invoice_origin])
+        #
+        # print(name_list)
+        # z = 0
+        # workbook = xlwt.Workbook()
+        # sheetwt = workbook.add_sheet('test')
+        # sheetwt.write(0, 0, 'invoice name')
+        # sheetwt.write(0, 1, 'sale order number')
+        # roww = 1
+        # for x in name_list:
+        #     sheetwt.write(roww, 0, x[0])
+        #     sheetwt.write(roww, 1, x[1])
+        #     roww += 1
+        #     z += 1
+        # workbook.save('/home/hafiz/sale_orders_qb/draft_order/invoices_no_4.xls')
+
+        # products = self.env['product.product'].search([])
+        # stock_picking_obj = self.env['stock.picking']
+        # picking = stock_picking_obj.create({
+        #     'name': 'Cake Delivery Order 2.1',
+        #     'partner_id': 1,
+        #     'picking_type_id': self.env.ref('stock.picking_type_out').id,
+        #     'location_id': 27,
+        #     'location_dest_id': self.env.ref("stock.stock_location_stock").id,
+        # })
+        # for product in products:
+        #     customer_location = product.stock_quant_ids.filtered(lambda inv: inv.location_id.id == 27)
+        #     bom_ids = product.bom_ids.filtered(lambda l: l.product_id.id == product.id)
+        #     if customer_location and not bom_ids:
+        #         self.env['stock.move'].create({
+        #             "name": product.name,
+        #             'product_id': product.id,
+        #             'product_uom_qty': customer_location.quantity,
+        #             'product_uom': product.uom_id.id,
+        #             'quantity_done': customer_location.quantity,
+        #             'location_id': 27,
+        #             'location_dest_id': self.env.ref("stock.stock_location_stock").id,
+        #             'picking_id': picking.id,
+        #
+        #         })
 
 
     def import_xls(self):
@@ -103,6 +167,39 @@ class ExcelReport(models.Model):
                             print("Record created_________________" + str(i) + "\n")
                 except(Exception) as error:
                     print('Error occur at %s' %(str(inner_list[0])))
+
+        elif self.report_for == "old_invoice_date_update":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+
+            i = 0
+            for nam in main_list:
+                try:
+                    print(str(i) + "   " + nam[0])
+                    i += 1
+                    acc = self.env['account.move'].search([('name', '=', nam[0])])
+                    if not acc:
+                        continue
+                    if acc.name == acc.name[:4] + str(acc.invoice_date)[:4] + '/' + str(acc.invoice_date)[
+                                                                                    5:7] + acc.name[
+                                                                                           11:] and acc.date == acc.invoice_date:
+                        continue
+                    acc.write({'name': acc.name[:4] + str(acc.invoice_date)[:4] + '/' + str(acc.invoice_date)[
+                                                                                        5:7] + acc.name[11:],
+                               'date': acc.invoice_date})
+                    # acc.name = acc.name[:4]+str(acc.invoice_date)[:4]+'/'+str(acc.invoice_date)[5:7]+acc.name[11:]
+                    acc._onchange_invoice_date()
+                    if (int(i % 500) == 0):
+                        _logger.info("Record created___" + str(i) + '  Order___ ' + str(nam[0]))
+                        print("Record created___" + str(i) + '  Order___ ' + str(nam[0]))
+                        acc._cr.commit()
+                except(Exception) as error:
+                    print('Error occur at %s' % (str(nam[0])))
+
 
         elif self.report_for == "price_list":
             for sheet in wb.sheets():
