@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates id="template" xml:space="preserve">
+	<t t-extend="reconciliation.line.create" >
+		<t t-jquery=".create_tax_id" t-operation="after">
+			<tr class="create_manual_currency_rate">
+				<td class="o_td_label"><label class="o_form_label">Rate</label></td>
+				<td class="o_td_field"></td>
+			</tr>
+		</t>
+	</t>
+</templates>
+
+
+
+
+
+	
+	
