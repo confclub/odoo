@@ -2,6 +2,7 @@
 # See LICENSE file for full copyright and licensing details.
 import time
 from odoo import models, api
+from ...shopify_ept import shopify
 
 
 class StockInventory(models.Model):
@@ -91,3 +92,31 @@ class StockInventory(models.Model):
             'prefill_counted_quantity': 'zero',
             "company_id": location_id.company_id.id if location_id else self.env.company.id
         }
+
+    def action_validate(self):
+        res = super(StockInventory, self).action_validate()
+        instance = self.env['shopify.instance.ept'].search([('is_cap_no_gap', '=', False)], limit=1)
+        location_id = self.env["shopify.location.ept"].search([("instance_id", "=", instance.id)], limit=1)
+        instance.connect_in_shopify()
+        if self.line_ids:
+            for line in self.line_ids:
+                if line.product_id.product_tmpl_id.temp_checkbox:
+                    product_id = line.product_id
+                    bom_id = line.product_id.bom_ids.filtered(lambda l: l.product_id.id == product_id.id)
+                    if bom_id and len(bom_id) == 1 and bom_id.type == 'phantom' and len(bom_id.bom_line_ids) == 1 \
+                            and bom_id.bom_line_ids.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                        product_id = bom_id.bom_line_ids.product_id
+                    mrp_lines = self.env['mrp.bom.line'].search([('product_id', '=', product_id.id)])
+                    if product_id.inventory_item_id:
+                        shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                   product_id.inventory_item_id,
+                                                   int(product_id.virtual_available))
+
+                    for mr_line in mrp_lines:
+                        bom_id = mr_line.bom_id
+                        if bom_id.type == 'phantom' and len(
+                                bom_id.bom_line_ids) == 1 and mr_line.product_id.product_tmpl_id.id == bom_id.product_tmpl_id.id:
+                            if bom_id.product_id.inventory_item_id:
+                                shopify.InventoryLevel.set(location_id.shopify_location_id,
+                                                           bom_id.product_id.inventory_item_id,
+                                                           int(bom_id.product_id.virtual_available))
