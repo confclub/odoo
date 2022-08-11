@@ -1,0 +1,28 @@
+14.0.0.1 ==>1.fixed issue of demo data warning.
+		 ==>2.fixed issue of traceback when validating receipt.
+
+14.0.0.2 ==>1.added manual Exchange rate option in Inter bank Transfers.
+			2.added manual Exchange rate option in Bank Reconciliation.
+
+Version 14.0.0.3 : (19-03-21) 
+		- Update currency conversion code for account payment,bank statement and reconciliation.
+
+Version 14.0.0.4 : (24-03-21) 
+		- Use current move's exchange rate rather then last created move's.
+		- Solved price_unit change issue.
+
+Version 14.0.0.5 : (25-03-21) 	
+		- Made Manual currency active and rate field readonly if record is not editable for sale/purchase/invoice/payment.
+		- Passed Manual currency active and rate from purchase to bill.
+
+Version 14.0.0.6 : (13/04/21) 	
+		- Solve issue of multiple bill payment.
+		- Pass manual exchange rate while paying multiple payment.
+
+Version 14.0.0.7 : (23/04/21) 	
+		- Change manual currency rate calucalation as per requirement for sale,purchase,invoice, payment and reconciliation.
+
+version 14.0.0.8 (27/07/21)
+		--> When we create the combine invoice of sale order then it throws error ..
+		--> In quotation If we first select the product before selecting the customer details it throws error 
+		--> IF we create the invoice with the Down payment option then 1st invoice is created correctly but when we create the invoice for the remaining and "Check the deduct the down payment amount" then also the invoice include whole amount .
