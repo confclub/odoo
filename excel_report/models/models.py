@@ -208,7 +208,7 @@ class ExcelReport(models.Model):
                         list.append(sheet.cell(row, col).value)
                     main_list.append(list)
 
-            i = 0
+            i = 999999
             for inner_list in main_list:
                 try:
                     inner_list[7] = str(inner_list[7]).split('.')[0]
@@ -223,16 +223,19 @@ class ExcelReport(models.Model):
                         invoices = sale_order.invoice_ids.filtered(lambda inv: inv.state == 'draft')
                         for invoice in invoices:
                             invoice.invoice_date = old_date
-                            invoice.invoice_date_due = old_date
+                            invoice.date = old_date
+                            invoice.name = 'INV/' + str(old_date.year) + '/' + str(old_date.month) + str(i)
+                            i += 1
+                            # invoice.invoice_date_due = old_date
 
-                            invoice._onchange_invoice_date()
+                            # invoice._onchange_invoice_date()
 
                             invoice.action_post()
                             # action_data = invoice.action_register_payment()
                             # wizard = self.env['account.payment.register'].with_context(
                             #     action_data['context']).create({})
                             # wizard.action_create_payments()
-                        i += 1
+
                         if (int(i % 20) == 0):
                             _logger.info("Record created___" + str(i) + '  Order___ ' + str(inner_list[7]))
                             sale_order._cr.commit()
