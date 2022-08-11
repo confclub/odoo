@@ -18,7 +18,7 @@ class ExcelReport(models.Model):
     _name = 'excel.report'
 
     xls_file = fields.Binary('file')
-    report_for = fields.Selection([('create_xls_file', 'create_xls_file'),('invoice', 'Invoice'), ('old_invoice_date_update', 'Profit and Lose Updation'), ('validate_sale_order_unpaid_shipped', 'Validate Sale Order Unpaid Shipped'), ('product', 'Product'), ('product_cost', 'Product Cost'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
+    report_for = fields.Selection([('create_xls_file', 'create_xls_file'),('invoice', 'Invoice'), ('invoice_payment_validate', 'OLD Invoice Payment Validation'), ('old_invoice_date_update', 'Profit and Lose Updation'), ('validate_sale_order_unpaid_shipped', 'Validate Sale Order Unpaid Shipped'), ('product', 'Product'), ('product_cost', 'Product Cost'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
     order_name = fields.Char()
 
     def create_transfer(self):
@@ -200,6 +200,46 @@ class ExcelReport(models.Model):
                 except(Exception) as error:
                     _logger.info('Error occur at ' + str(nam[0] + '  Due to   ' + str(error)))
                     print('Error occur at %s' % (str(nam[0])))
+        elif self.report_for == "invoice_payment_validate":
+            for sheet in wb.sheets():
+                for row in range(1, sheet.nrows):
+                    list = []
+                    for col in range(sheet.ncols):
+                        list.append(sheet.cell(row, col).value)
+                    main_list.append(list)
+
+            i = 0
+            for inner_list in main_list:
+                try:
+                    inner_list[7] = str(inner_list[7]).split('.')[0]
+                    sale_order = self.env['sale.order'].search([('name', '=', '#' + str(inner_list[7]))],
+                                                               limit=1)
+
+                    if sale_order and sale_order.amount_total <= 0 and not sale_order.invoice_ids:
+                        old_date = sale_order.date_order
+                        wiz = self.env['sale.advance.payment.inv'].with_context(active_ids=sale_order.ids,
+                                                                                open_invoices=True).create({})
+                        res = wiz.create_invoices()
+                        invoices = sale_order.invoice_ids.filtered(lambda inv: inv.state == 'draft')
+                        for invoice in invoices:
+                            invoice.invoice_date = old_date
+                            invoice.invoice_date_due = old_date
+
+                            invoice._onchange_invoice_date()
+
+                            invoice.action_post()
+                            # action_data = invoice.action_register_payment()
+                            # wizard = self.env['account.payment.register'].with_context(
+                            #     action_data['context']).create({})
+                            # wizard.action_create_payments()
+                        i += 1
+                        if (int(i % 20) == 0):
+                            _logger.info("Record created___" + str(i) + '  Order___ ' + str(inner_list[7]))
+                            sale_order._cr.commit()
+
+                except(Exception) as error:
+                    _logger.info('Error occur at ' + str(inner_list[7]) + '  Due to   ' + str(error))
+                    print('Error occur at %s' % (str(inner_list[7])))
 
         elif self.report_for == "price_list":
             for sheet in wb.sheets():
