@@ -208,7 +208,7 @@ class ExcelReport(models.Model):
                         list.append(sheet.cell(row, col).value)
                     main_list.append(list)
 
-            i = 999999
+            i = int(self.order_name)
             for inner_list in main_list:
                 try:
                     inner_list[7] = str(inner_list[7]).split('.')[0]
