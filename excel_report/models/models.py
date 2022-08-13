@@ -1419,82 +1419,162 @@ class ExcelReport(models.Model):
                         list.append(sheet.cell(row, col).value)
                     main_list.append(list)
             i = 0
+            a_list = ['SO1459', 'SO1211', 'SO1456', 'SO1449', 'SO1155', 'SO1445', 'SO0674', 'SO0805', 'SO1451', 'SO0746',
+             'SO1383', 'SO1379', 'SO1085', 'SO1191', 'SO1138', '34899564', '34898209', '34896359', 'SO1174', 'SO1182',
+             'SO1168', '349101713', '349119808', 'SO1146', '34899783', '34840383', '34841342', '34844447', 'SO1450',
+             'SO1412', 'SO1373', '34899966', '34894627', '34896264', '349102173', '34844101', '34853624', '34837002',
+             'SO1448', 'SO1377', 'SO1403', 'SO1428', 'SO1441', 'SO1442', '349125943', 'SO1435', '349100482', '34896430',
+             '34842436', '34843770', '34844152', '34848029', '34850779', '34851209', '3485899', '34896590', 'SO1145',
+             'SO1407', 'SO1410', 'SO1423', 'SO1429', 'SO1103', 'SO1447', 'SO1452', 'SO1457', 'SO0852', '349101642',
+             '349102365', '349101814', '349100561', 'SO1434', '349127096', '34838131', '34839136', '34844010',
+             '34844445', '34848831', '3485522', '3485588', '3486308', '3488872', '3489195', '34811055', '34893895',
+             'SO1149', '34896734', '34897772', '349126180', '34813761', 'SO1166', 'SO1458', 'SO1116', 'SO1131',
+             'SO1356', 'SO1364', 'SO1388', 'SO1392', 'SO1419', 'SO1151', 'SO1179', 'SO1380', 'SO1440', 'SO1455',
+             'SO0851', 'SO1147', 'SO1128', 'SO1198', 'SO1212', 'SO1188', 'SO1454', 'SO1438', 'SO1439', 'SO1443',
+             '349130431', 'SO1199', 'SO0846', '349100949', '349101590', '349101863', '349101912', '349102079',
+             '349102358', '349102391', '349102399', '349102414', '349102419', '349102420', '349102428', '349102430',
+             'SO1126', 'SO1098', '34895499', '34896360', '34897201', 'SO1207', '34897856', '34898061', 'SO1193',
+             '3485430', '3487843', '3488862', '3489389', '3489485', '3489844', 'SO1453', '34851375', '34848519',
+             '34846716', '34845371', '34841043', '34839477', '34836639', '34833939', '34833145', '34832328', '34831535',
+             'SO1172', '34829867', '34827769', '34826514', '34825647', '3484392', '3483861', '349122638', 'SO1436',
+             '349118014', 'SO1431', 'SO1432', 'SO1433', 'SO1362', '34840935', '34842484', '34844102', '34838342',
+             '34848868', '34848837', '34848731', '34824081', '34848492', '34848312', '34840433', '34848276', '34830660',
+             '34837948', '34848120', '34838590', '34826871', '34847927', '34837383', '34847889', '34842353', '34830040',
+             '34836028', '34835477', '34832746', '34841901', '34834503', '34848869', '34847778', '34833872', '34832970',
+             '34847701', '34847683', '34847464', '34847400', '34832505', '34829956', '249-8423265-5328621', '34843372',
+             '34847215', '34848648', '34847206', '34847168', '34847109', '34848336', '34847013', '34847007', '34812145',
+             '34841830', '34846747', '34832386', '34816118', '34846611', '34846529', '34846478', '34846159', '34846092',
+             '34846014', '34845956', '34845910', '34845701', '34845281', '34821184', '34847758', '34839286', '34847422',
+             '34845248', '34845748', '34841740', '34841575', '34845090', '34830163', '34850019', '34824108', '34844863',
+             '34844836', '34844363', '34826118', '34846827', '34828855', '34830648', '34853345', '34840388', '34837883',
+             '34831510', '34844986', '34833785', '34837802', '34849028', '34833316', '34851330', '34844222', '34839054',
+             '34843909', '34843644', '34851281', '34843340', '34838962', '34831794', '34844674', '34838914', '34846741',
+             '34851206', '34851145', '34840777', '34827263', '34830153', '34835439', '34850983', '34837465', '34850323',
+             '34835239', '34843330', '34837419', '34826918', '34846640', '34841819', '34849645', '34841696', '34849430',
+             '34831681', '34843069', '34841676', '34849339', '34849321', '34846400', '34846154', '34841523', '34841491',
+             '34849223', '34848949', '34837203', '34841133', '']
+
             for inner_list in main_list:
                 try:
-                    partner = self.env['res.partner'].search([('name', '=', inner_list[21]), ('email', '=', inner_list[22])], limit=1)
-                    if not partner:
-                        partner = self.env['res.partner'].create({
-                            'name': inner_list[21],
-                            'email': inner_list[22],
-                        })
+                    sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[2]).split('.')[0])],limit=1)
 
-                    sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[0]).split('.')[0])],
-                                                               limit=1)
-                    if sale_order and not sale_order.from_excel:
-                        continue
-
-                    if not sale_order:
+                    if not sale_order and str(inner_list[2]).split('.')[0] in a_list:
+                        partner = self.env['res.partner'].search(
+                            [('name', '=', inner_list[3]), ('email', '=', inner_list[13])], limit=1)
+                        if not partner:
+                            partner = self.env['res.partner'].create({
+                                'name': inner_list[3],
+                                'email': inner_list[13],
+                            })
                         sale_order = self.env['sale.order'].create({
-                            "name": '#'+str(inner_list[0]).split('.')[0],
+                            "name": '#'+str(inner_list[2]).split('.')[0],
                             "partner_id": partner.id,
-                            "date_order": datetime.strptime(inner_list[13], "%Y-%m-%d").date(),
+                            "date_order": datetime.strptime(inner_list[6], "%Y-%m-%d").date(),
                             "from_excel": True,
                         })
 
-                    if inner_list[1]:
-                        varient = self.env['product.product'].search([('default_code', '=', inner_list[1])],
-                                                                     limit=1)
-                        tax_id = [self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[11]))], limit=1).id] if float(inner_list[11]) > 0 else []
-                        if varient:
-                            sale_order_line = self.env['sale.order.line'].create({
-                                "name": varient.name,
-                                "product_id": varient.id,
-                                "product_uom": varient.uom_id.id,
-                                "price_unit": float(inner_list[8]) if inner_list[8] else 0,
-                                "product_uom_qty": inner_list[7],
-                                'order_id': sale_order.id,
-                                'discount': float(inner_list[9]) if inner_list[9] else 0,
-                                'tax_id': tax_id
-                            })
+                        if inner_list[44]:
+                            varient = self.env['product.product'].search([('default_code', '=', inner_list[44])],
+                                                                         limit=1)
+                            tax_id = [self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[50]))], limit=1).id] if inner_list[50] != '' else []
+                            if varient:
+                                sale_order_line = self.env['sale.order.line'].create({
+                                    "name": varient.name,
+                                    "product_id": varient.id,
+                                    "product_uom": varient.uom_id.id,
+                                    "price_unit": float(inner_list[46]) if inner_list[46] else 0,
+                                    "product_uom_qty": inner_list[45],
+                                    'order_id': sale_order.id,
+                                    'discount': float(inner_list[48]) if inner_list[48] else 0,
+                                    'tax_id': tax_id
+                                })
+                            else:
+                                varient = self.env['product.product'].create({
+                                    "name": inner_list[43],
+                                    "default_code": inner_list[44],
+                                    "list_price": float(inner_list[46]) if inner_list[46] else 0,
+                                    "invoice_policy": 'order',
+                                    "product_not_found": True,
+                                })
+                                sale_order_line = self.env['sale.order.line'].create({
+                                    "name": varient.name,
+                                    "product_id": varient.id,
+                                    "product_uom": varient.uom_id.id,
+                                    "price_unit": float(inner_list[46]) if inner_list[46] else 0,
+                                    "product_uom_qty": inner_list[45],
+                                    'order_id': sale_order.id,
+                                    'discount': float(inner_list[48]) if inner_list[48] else 0,
+                                    'tax_id': tax_id
+                                })
                         else:
-                            varient = self.env['product.product'].create({
-                                "name": inner_list[3],
-                                "default_code": inner_list[1],
-                                "list_price": inner_list[8],
-                                "invoice_policy": 'order',
-                                "product_not_found": True,
-                            })
+                            tax_id = [self.env['account.tax'].search(
+                                [('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[50]))],
+                                limit=1).id] if inner_list[50] != '' else []
+                            shipment = self.env.ref("excel_report.shipping_product_for_excel")
                             sale_order_line = self.env['sale.order.line'].create({
-                                "name": varient.name,
-                                "product_id": varient.id,
-                                "product_uom": varient.uom_id.id,
-                                "price_unit": float(inner_list[8]) if inner_list[8] else 0,
-                                "product_uom_qty": inner_list[7],
+                                "name": "shippment",
+                                "product_id": shipment.id,
+                                "product_uom": shipment.uom_id.id,
+                                "product_uom_qty": inner_list[45],
+                                "price_unit": float(inner_list[46]) if inner_list[46] else 0,
                                 'order_id': sale_order.id,
-                                'discount': float(inner_list[9]) if inner_list[9] else 0,
-                                'tax_id': tax_id
+                                'discount': float(inner_list[48]) if inner_list[48] else 0,
+                                'tax_id': tax_id,
                             })
-                    else:
-                        tax_id = [self.env['account.tax'].search(
-                            [('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[11]))],
-                            limit=1).id] if float(inner_list[11]) > 0 else []
-                        shipment = self.env.ref("excel_report.shipping_product_for_excel")
-                        sale_order_line = self.env['sale.order.line'].create({
-                            "name": "shippment",
-                            "product_id": shipment.id,
-                            "product_uom": shipment.uom_id.id,
-                            "product_uom_qty": inner_list[7],
-                            "price_unit": float(inner_list[8]) if inner_list[8] else 0,
-                            'order_id': sale_order.id,
-                            'discount': float(inner_list[9]) if inner_list[9] else 0,
-                            'tax_id': tax_id,
-                        })
-                        # sale_order_line._onchange_qty
-                        i += 1
-                        if (int(i % 500) == 0):
-                            print("Record created_________________" + str(i) + "\n")
+                    elif sale_order and str(inner_list[2]).split('.')[0] in a_list:
+                        if inner_list[44]:
+                            varient = self.env['product.product'].search([('default_code', '=', inner_list[44])],
+                                                                         limit=1)
+                            tax_id = [self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[50]))], limit=1).id] if inner_list[50] != '' else []
+                            if varient:
+                                sale_order_line = self.env['sale.order.line'].create({
+                                    "name": varient.name,
+                                    "product_id": varient.id,
+                                    "product_uom": varient.uom_id.id,
+                                    "price_unit": float(inner_list[46]) if inner_list[46] else 0,
+                                    "product_uom_qty": inner_list[45],
+                                    'order_id': sale_order.id,
+                                    'discount': float(inner_list[48]) if inner_list[48] else 0,
+                                    'tax_id': tax_id
+                                })
+                            else:
+                                varient = self.env['product.product'].create({
+                                    "name": inner_list[43],
+                                    "default_code": inner_list[44],
+                                    "list_price": float(inner_list[46]) if inner_list[46] else 0,
+                                    "invoice_policy": 'order',
+                                    "product_not_found": True,
+                                })
+                                sale_order_line = self.env['sale.order.line'].create({
+                                    "name": varient.name,
+                                    "product_id": varient.id,
+                                    "product_uom": varient.uom_id.id,
+                                    "price_unit": float(inner_list[46]) if inner_list[46] else 0,
+                                    "product_uom_qty": inner_list[45],
+                                    'order_id': sale_order.id,
+                                    'discount': float(inner_list[48]) if inner_list[48] else 0,
+                                    'tax_id': tax_id
+                                })
+                        else:
+                            tax_id = [self.env['account.tax'].search(
+                                [('type_tax_use', '=', 'sale'), ('amount', '=', float(inner_list[50]))],
+                                limit=1).id] if inner_list[50] !="" else []
+                            shipment = self.env.ref("excel_report.shipping_product_for_excel")
+                            sale_order_line = self.env['sale.order.line'].create({
+                                "name": "shippment",
+                                "product_id": shipment.id,
+                                "product_uom": shipment.uom_id.id,
+                                "product_uom_qty": inner_list[45],
+                                "price_unit": float(inner_list[46]) if inner_list[46] else 0,
+                                'order_id': sale_order.id,
+                                'discount': float(inner_list[48]) if inner_list[48] else 0,
+                                'tax_id': tax_id,
+                            })
+                            i += 1
+                            if (int(i % 10) == 0):
+                                print("Record created_________________" + str(i) + "\n")
                 except(Exception) as error:
-                    print('Error occur at %s' %(str(inner_list[0])))
+                    print(('Error occur at ' + str(inner_list[2]) + '  Due to   ' + str(error)))
 
         elif self.report_for == "validate_sale_order":
             for sheet in wb.sheets():
@@ -1723,10 +1803,9 @@ class ExcelReport(models.Model):
             # sheetwt.write(0, 10, 'Odoo Invoice Status')
             # sheetwt.write(0, 11, 'Odoo Delivery Status')
             roww = 1
-            a_list = ['#SO1461', '#349127172', '#349126840', '#349127069', '#349126537', '#349126398', '#349126294', '#349125743', '#349125831', '#349125575', '#349125414', '#349125422', '#SO1424', '#349125229', '#349125026', '#349125096', '#349124381', '#349124468', '#349124033', '#349124066', '#SO1415', '#349124271', '#349123958', '#349123964', '#349123562', '#SO1405', '#SO1406', '#349123404', '#SO1402', '#349123292', '#349123095', '#SO1394', '#SO1395', '#SO1387', '#SO1390', '#349121173', '#349120813', '#349120667', '#349120683', '#349119441', '#349118767', '#349117372', '#349117427', '#349117242', '#349116401', '#349115842', '#SO1344', '#349115437', '#349114485', '#SO1343', '#349114131', '#349113663', '#349112808', '#349112809', '#349112687', '#349112144', '#SO1314', '#SO1317', '#349111147', '#349111202', '#349110909', '#SO1206', '#349110329', '#349109991', '#SO1297', '#349109895', '#349109641', '#SO1286', '#349108744', '#SO1284', '#349108252', '#349107863', '#SO1275', '#349107026', '#349106533', '#SO1268', '#SO1260', '#SO1259', '#SO1253', '#349104090', '#SO1239', '#349100795', '#34899325', '#34899148', '#34899013', '#SO1194', '#34897317', '#SO1180', '#34897308', '#34897040', '#34896802', '#34896318', '#34895850', '#34895590', '#34894450', '#SO1133', '#34892180', '#SO1115', '#SO1109', '#34888941', '#SO1101', '#SO1096', '#SO1081', '#SO1077', '#34884689', '#SO1060', '#SO1056', '#SO1048', '#34881445', '#SO0996', '#SO0972', '#SO0973', '#SO0955', '#SO0939', '#SO0938', '#SO0935', '#SO0901', '#34851663', '#34851140', '#34851154', '#34851055', '#SO0888', '#SO0886', '#34850003', '#34850044', '#34849599', '#34849614', '#34849668', '#34849214', '#34848888', '#34848813', '#SO0876', '#34848080', '#34846513', '#34845194', '#34844763', '#SO0850', '#SO0847', '#34843419', '#34843050', '#34842928', '#34842635', '#34841408', '#SO0821', '#34836720', '#34836109', '#34835217', '#SO0804', '#34834130', '#34833462', '#SO0792', '#34832773', '#34832851', '#34832565', '#34832314', '#34832068', '#34831195', '#34830820', '#34830547', '#SO0759', '#SO0756', '#SO0752', '#34828662', '#34828307', '#34827572', '#34827573', '#34827492', '#SO0728', '#34826838', '#34825767', '#34825768', '#34825798', '#34825740', '#SO0583', '#SO0577', '#SO0559', '#34815539', '#SO0501', '#SO0493', '#SO0469', '#SO0462', '#SO0460', '#SO0456', '#SO0455', '#SO0443', '#SO0441', '#SO0438', '#SO0439', '#SO0435', '#SO0434', '']
             for inner_list in main_list:
                 sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[7]).split('.')[0])])
-                if sale_order and sale_order.name in a_list:
+                if  not sale_order:
                     # if sale_order.picking_ids and sale_order.picking_ids[0].state == 'done':
                     #
                     #     odoo_delivery_status = 'shipped'
@@ -1739,7 +1818,7 @@ class ExcelReport(models.Model):
                     # else:
                     #
                     #     odoo_invoice_status = 'unpaid'
-
+                    #
                     # if inner_list[4] != odoo_invoice_status or inner_list[5] != odoo_delivery_status:
                     sheetwt.write(roww, 0, inner_list[0])
                     sheetwt.write(roww, 1, inner_list[1])
@@ -1757,7 +1836,7 @@ class ExcelReport(models.Model):
                     i += 1
                     if (int(i % 500) == 0):
                         print("lines created" + str(i))
-            workbook.save('/home/hafiz/sale_orders_qb/draft_order/draft_order_file2.xls')
+            workbook.save('/home/hafiz/sale_orders_qb/orders_not_exist/order_file2.xls')
 
         elif self.report_for == "purchase_order":
             for sheet in wb.sheets():
