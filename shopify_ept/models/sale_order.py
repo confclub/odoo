@@ -305,6 +305,8 @@ class SaleOrder(models.Model):
                     })
                 order_response = json.loads(order_data_line.order_data)
                 order_date = parser.parse(order_response.get('created_at')).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S")
+                if datetime.strptime(order_date, "%Y-%m-%d %H:%M:%S").day > 1:
+                    order_date = datetime.strptime(order_date, "%Y-%m-%d %H:%M:%S").replace(day=1, hour=0, minute=0, second=0)
                 cap_contract = self.env['cap.contract'].search([('shopify_order_id', '=', order_response.get("id"))])
                 shipment_price = order_response.get('total_shipping_price_set')['shop_money']['amount']
                 if not cap_contract:
@@ -312,7 +314,7 @@ class SaleOrder(models.Model):
                         "name": order_response.get("name"),
                         "customer_id": customer.id,
                         "start_date": order_date,
-                        "order_months": int(order_response.get('note_attributes')[0].get('value')),
+                        "order_months": int(order_response.get('note_attributes')[2].get('value')),
                         "shopify_order_id": order_response.get("id"),
                         "company_id": instance.shopify_company_id.id,
                         "shipment_price": float(shipment_price) if shipment_price else 0,
@@ -345,7 +347,7 @@ class SaleOrder(models.Model):
                                                                               order_data_line, log_book)
                             order_data_line.write({'state': 'failed', 'processed_at': datetime.now()})
                             cap_contract.unlink()
-                    cap_contract.action_start_contract()
+                    # cap_contract.action_start_contract()
                 #when order is from confidence club
             else:
 

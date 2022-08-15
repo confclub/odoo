@@ -4,6 +4,7 @@ from odoo import models, fields, api, _
 import math
 from datetime import datetime, timedelta
 from dateutil import relativedelta
+from dateutil.relativedelta import relativedelta
 
 class CapsContract(models.Model):
     _name = 'cap.contract'
@@ -392,6 +393,7 @@ class CapsContract(models.Model):
                 # Calculate the number of days in the first period
                 daysInFirstPeriod = lengthOfFirstPeriod * daysPerMonth
                 print("daysInFirstPeriod:", daysInFirstPeriod)
+                third_delivry_date = self.start_date + timedelta(math.ceil(daysInFirstPeriod))
 
                 # Calculate Cartons and Bags to ship
                 requiredPieces = (daysPerYear / 12.0) * line.pieces_per_daily_pack * line.num_daily_packs * self.order_months
@@ -574,11 +576,11 @@ class CapsContract(models.Model):
                     #     'product_uom': 1,
                     #     'order_id': so.id,
                     # })
-                    if self.start_date + timedelta(daysInFirstPeriod) in list(product_dic.keys()):
-                        product_dic[self.start_date + timedelta(daysInFirstPeriod)].append([line.product_carton_id.id, deliveryCartons2, sellPricePerCarton,line.product_carton_id.uom_id.id])
+                    if self.start_date + timedelta(math.ceil(daysInFirstPeriod)) in list(product_dic.keys()):
+                        product_dic[self.start_date + timedelta(math.ceil(daysInFirstPeriod))].append([line.product_carton_id.id, deliveryCartons2, sellPricePerCarton,line.product_carton_id.uom_id.id])
                     else:
 
-                        product_dic[self.start_date + timedelta(daysInFirstPeriod)] = [[line.product_carton_id.id, deliveryCartons2, sellPricePerCarton,line.product_carton_id.uom_id.id]]
+                        product_dic[self.start_date + timedelta(math.ceil(daysInFirstPeriod))] = [[line.product_carton_id.id, deliveryCartons2, sellPricePerCarton,line.product_carton_id.uom_id.id]]
 
                     numPeriodsRemaining = numPeriodsRemaining - 1
 
@@ -614,10 +616,14 @@ class CapsContract(models.Model):
                     #     'product_uom': 1,
                     #     'order_id': so.id,
                     # })
-                    if self.start_date + timedelta(endPeriodDays) in list(product_dic.keys()):
-                        product_dic[self.start_date + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons3, sellPricePerCarton,line.product_carton_id.uom_id.id])
+                    # endPeriodDays = 6 * int(daysPerMonth)
+                    next_order_date = third_delivry_date + relativedelta(months=3)
+                    if next_order_date.day > 1:
+                        next_order_date = next_order_date.replace(day=1)
+                    if next_order_date in list(product_dic.keys()):
+                        product_dic[next_order_date].append([line.product_carton_id.id,deliveryCartons3, sellPricePerCarton,line.product_carton_id.uom_id.id])
                     else:
-                        product_dic[self.start_date + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons3, sellPricePerCarton,line.product_carton_id.uom_id.id]]
+                        product_dic[next_order_date] = [[line.product_carton_id.id,deliveryCartons3, sellPricePerCarton,line.product_carton_id.uom_id.id]]
 
                     numPeriodsRemaining = numPeriodsRemaining - 1
 
@@ -653,10 +659,14 @@ class CapsContract(models.Model):
                     #     'product_uom': 1,
                     #     'order_id': so.id,
                     # })
-                    if self.start_date + timedelta(endPeriodDays) in list(product_dic.keys()):
-                        product_dic[self.start_date + timedelta(endPeriodDays)].append([line.product_carton_id.id,deliveryCartons4, sellPricePerCarton,line.product_carton_id.uom_id.id])
+                    # endPeriodDays = 9 * int(daysPerMonth)
+                    next_order_date = third_delivry_date + relativedelta(months=6)
+                    if next_order_date.day > 1:
+                        next_order_date = next_order_date.replace(day=1)
+                    if next_order_date in list(product_dic.keys()):
+                        product_dic[next_order_date].append([line.product_carton_id.id,deliveryCartons4, sellPricePerCarton,line.product_carton_id.uom_id.id])
                     else:
-                        product_dic[self.start_date + timedelta(endPeriodDays)] = [[line.product_carton_id.id,deliveryCartons4, sellPricePerCarton,line.product_carton_id.uom_id.id]]
+                        product_dic[next_order_date] = [[line.product_carton_id.id,deliveryCartons4, sellPricePerCarton,line.product_carton_id.uom_id.id]]
 
                     numPeriodsRemaining = numPeriodsRemaining - 1
 
