@@ -125,48 +125,30 @@ class ExcelReport(models.Model):
             i = 0
             for inner_list in main_list:
                 try:
-                    customer = self.env['res.partner'].search([('employee_id', '=', inner_list[0])])
-                    if not customer:
-                        state_name = self.env['res.country.state'].search([('name', '=', str(inner_list[29]))]).id
-                        country_name = self.env['res.country'].search([('name', '=', str(inner_list[30]))]).id
-
-                        if not country_name:
-                            country_name = inner_list[30]
-                            country_name = self.env['res.country'].create({
-                                'name': country_name
+                    sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[0]).split('.')[0])])
+                    if sale_order:
+                        customer = self.env['res.partner'].search([('name', '=', str(inner_list[3]))], limit=1)
+                        if not customer:
+                            customer = self.env['res.partner'].create({
+                                'name': inner_list[3]
                             })
-                            country_name = country_name.id
-                        # if not state_name:
-                        #     state_name = inner_list[29]
-                        #     state_name = self.env['res.country.state'].create({
-                        #         'name': state_name,
-                        #         'country_id': country_name,
-                        #         'code': inner_list[31],
-                        #     })
-                        #     state_name = state_name.id
-
-                        self.env['res.partner'].create({
-                            'name': inner_list[1],
-                            'employee_id': inner_list[0],
-                            'email': inner_list[2],
-                            'website': str(inner_list[3]),
-                            'company_typeee': inner_list[5],
-                            'phone': str(inner_list[6]),
-                            'description': inner_list[9],
-                            'comment': inner_list[10],
-                            'mobile': str(inner_list[15]),
-                            'b2b': inner_list[21],
-                            'street': str(inner_list[25]),
-                            'street2': str(inner_list[26]),
-                            'city': str(inner_list[28]),
-                            # 'state_id': state_name,
-                            'country_id': country_name,
-                        })
+                        sale_order.partner_id = customer.id
+                        sale_order.onchange_partner_id()
+                        # sale_order.partner_invoice_id = customer.partner_invoice_id.id
+                        # sale_order.partner_shipping_id = customer.partner_shipping_id.id
+                        if sale_order.picking_ids:
+                            for pick in sale_order.picking_ids:
+                                pick.partner_id = customer.id
+                        if sale_order.invoice_ids:
+                            for invoic in sale_order.invoice_ids:
+                                invoic.partner_id = customer.id
+                                invoic._onchange_partner_id()
                         i += 1
-                        if (int(i % 500) == 0):
+                        if (int(i % 10) == 0):
                             print("Record created_________________" + str(i) + "\n")
+                            _logger.info("Record created_________________" + str(i) + "\n")
                 except(Exception) as error:
-                    print('Error occur at %s' %(str(inner_list[0])))
+                    _logger.info('Error occur at %s' %(str(inner_list[0])))
 
         elif self.report_for == "old_invoice_date_update":
             for sheet in wb.sheets():
@@ -1790,53 +1772,55 @@ class ExcelReport(models.Model):
             i = 0
             workbook = xlwt.Workbook()
             sheetwt = workbook.add_sheet('test')
-            sheetwt.write(0, 0, 'Assignee First Name')
-            sheetwt.write(0, 1, 'Assignee Last Name')
-            sheetwt.write(0, 2, 'Order Status')
-            sheetwt.write(0, 3, 'Invoice Status')
-            sheetwt.write(0, 4, 'Payment Status')
-            sheetwt.write(0, 5, 'Fulfillment Status')
-            sheetwt.write(0, 6, 'Return Status')
-            sheetwt.write(0, 7, 'Order Number')
-            sheetwt.write(0, 8, 'Ship At')
-            sheetwt.write(0, 9, 'Quantity')
+            sheetwt.write(0, 0, 'Order Number')
+            # sheetwt.write(0, 0, 'Assignee First Name')
+            # sheetwt.write(0, 1, 'Assignee Last Name')
+            # sheetwt.write(0, 2, 'Order Status')
+            # sheetwt.write(0, 3, 'Invoice Status')
+            # sheetwt.write(0, 4, 'Payment Status')
+            # sheetwt.write(0, 5, 'Fulfillment Status')
+            # sheetwt.write(0, 6, 'Return Status')
+            # sheetwt.write(0, 7, 'Order Number')
+            # sheetwt.write(0, 8, 'Ship At')
+            # sheetwt.write(0, 9, 'Quantity')
             # sheetwt.write(0, 10, 'Odoo Invoice Status')
             # sheetwt.write(0, 11, 'Odoo Delivery Status')
             roww = 1
             for inner_list in main_list:
-                sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[7]).split('.')[0])])
-                if  not sale_order:
+                sale_order = self.env['sale.order'].search([('name', '=', '#'+str(inner_list[4]).split('.')[0])])
+                if sale_order:
                     # if sale_order.picking_ids and sale_order.picking_ids[0].state == 'done':
                     #
                     #     odoo_delivery_status = 'shipped'
                     # else:
                     #
                     #     odoo_delivery_status = 'unshipped'
-                    # if sale_order.invoice_ids and sale_order.invoice_ids[0].state == 'posted':
-                    #
-                    #     odoo_invoice_status = 'paid'
-                    # else:
-                    #
-                    #     odoo_invoice_status = 'unpaid'
-                    #
-                    # if inner_list[4] != odoo_invoice_status or inner_list[5] != odoo_delivery_status:
-                    sheetwt.write(roww, 0, inner_list[0])
-                    sheetwt.write(roww, 1, inner_list[1])
-                    sheetwt.write(roww, 2, inner_list[2])
-                    sheetwt.write(roww, 3, inner_list[3])
-                    sheetwt.write(roww, 4, inner_list[4])
-                    sheetwt.write(roww, 5, inner_list[5])
-                    sheetwt.write(roww, 6, inner_list[6])
-                    sheetwt.write(roww, 7, inner_list[7])
-                    sheetwt.write(roww, 8, inner_list[8])
-                    sheetwt.write(roww, 9, inner_list[9])
+                    if sale_order.invoice_ids and sale_order.invoice_ids[0].state == 'posted':
+
+                        odoo_invoice_status = 'paid'
+                    else:
+
+                        odoo_invoice_status = 'unpaid'
+
+                    if inner_list[2] != odoo_invoice_status:
+                        sheetwt.write(roww, 0, inner_list[4])
+                    # sheetwt.write(roww, 0, inner_list[0])
+                    # sheetwt.write(roww, 1, inner_list[1])
+                    # sheetwt.write(roww, 2, inner_list[2])
+                    # sheetwt.write(roww, 3, inner_list[3])
+                    # sheetwt.write(roww, 4, inner_list[4])
+                    # sheetwt.write(roww, 5, inner_list[5])
+                    # sheetwt.write(roww, 6, inner_list[6])
+                    # sheetwt.write(roww, 7, inner_list[7])
+                    # sheetwt.write(roww, 8, inner_list[8])
+                    # sheetwt.write(roww, 9, inner_list[9])
                     # sheetwt.write(roww, 10, odoo_invoice_status)
                     # sheetwt.write(roww, 11, odoo_delivery_status)
-                    roww +=1
-                    i += 1
-                    if (int(i % 500) == 0):
-                        print("lines created" + str(i))
-            workbook.save('/home/hafiz/sale_orders_qb/orders_not_exist/order_file2.xls')
+                        roww +=1
+                        i += 1
+                        if (int(i % 500) == 0):
+                            print("lines created" + str(i))
+            workbook.save('/home/hafiz/sale_orders_qb/orders_not_exist/SO_Not_Match.xls')
 
         elif self.report_for == "purchase_order":
             for sheet in wb.sheets():
