@@ -8,10 +8,10 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='uom_id']" position="before">
                     <field name="price_listed" string="Price Listed"/>
-                    <field name="dummy_forcast" string="Dummy Forcast"/>
-                    <field name="stock_onhand_not_match"/>
-                    <field name="stock_forcast_not_match"/>
-                    <field name="attribut_compute" string="Computed attributes"/>
+<!--                    <field name="dummy_forcast" string="Dummy Forcast"/>-->
+<!--                    <field name="stock_onhand_not_match"/>-->
+<!--                    <field name="stock_forcast_not_match"/>-->
+<!--                    <field name="attribut_compute" string="Computed attributes"/>-->
                 </xpath>
 
             </field>
@@ -26,9 +26,9 @@
                 <xpath expr="//field[@name='lst_price']" position="replace">
                     <field name="price_listed" string="Price Listed"/>
                 </xpath>
-                <xpath expr="//field[@name='price_listed']" position="before">
-                    <field name="dummy_forcast" string="Dummy Forcast"/>
-                </xpath>
+<!--                <xpath expr="//field[@name='price_listed']" position="before">-->
+<!--                    <field name="dummy_forcast" string="Dummy Forcast"/>-->
+<!--                </xpath>-->
                 <xpath expr="//field[@name='standard_price']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>

@@ -106,5 +106,33 @@
             <field name="model_id" ref="model_shopify_payout_report_ept"/>
             <field name="code">model.auto_process_bank_statement()</field>
         </record>
+
+        <!--        created by zain-->
+        <record id="ir_cron_notification_for_failed_orders" model="ir.cron">
+            <field name="name">Email for Shopify Failed Orders</field>
+            <field eval="True" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="state">code</field>
+            <field name="doall">False</field>
+            <field name="model_id" ref="model_shopify_order_data_queue_ept"/>
+            <field name="code">model.notification_failed_order()</field>
+        </record>
+
+        <record id="ir_cron_update_status_of_failed_orders" model="ir.cron">
+            <field name="name">Update status of Shopify Failed Orders</field>
+            <field eval="True" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">6</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="state">code</field>
+            <field name="doall">False</field>
+            <field name="model_id" ref="model_shopify_order_data_queue_ept"/>
+            <field name="code">model.update_failed_order()</field>
+        </record>
+
     </data>
 </odoo>

@@ -52,6 +52,7 @@ class ShopifyOrderDataQueueEpt(models.Model):
     queue_process_count = fields.Integer(string="Queue Process Times",
                                          help="it is used know queue how many time processed")
     is_action_require = fields.Boolean(default=False, help="it is used  to find the action require queue")
+    user_id = fields.Many2one('res.users', string='Salesperson', default=lambda self: self.env.user)
 
     @api.depends('order_data_queue_line_ids.state')
     def _compute_queue_state(self):
@@ -307,3 +308,26 @@ class ShopifyOrderDataQueueEpt(models.Model):
         #                                                   "model_id":model_id})
         #         sale_order_obj.import_shopify_orders(results, log_book_id, is_queue_line=False)
         # return True
+
+
+
+
+    def notification_failed_order(self):
+        for record in self.search([]):
+            list = []
+            for line in record.order_data_queue_line_ids:
+                if line.state == "failed":
+                    list.append([record.name,line.name,line.shopify_order_common_log_lines_ids[0].message])
+            if list:
+                copy_context = self.env.context.copy()
+                copy_context.update({"mydict": list})
+                template_id = self.env.ref('shopify_ept.email_template_failed_order')
+                temp = self.env['mail.template'].browse(template_id.id)
+                temp.with_context(copy_context).send_mail(self.id, force_send=True, raise_exception=False)
+
+    def update_failed_order(self):
+        for record in self.search([]):
+            for line in record.order_data_queue_line_ids:
+                sale_order = self.env['sale.order'].search([('name', '=', line.name)])
+                if sale_order and line.state == 'failed':
+                    line.state = 'done'

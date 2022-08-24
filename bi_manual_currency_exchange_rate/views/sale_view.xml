@@ -8,7 +8,7 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
             	<field name="payment_term_id" position="after">
-            		<field name="sale_manual_currency_rate_active" attrs="{'readonly': [('state', 'not in', ['draft','sent'])]}"/>
+            		<field name="sale_manual_currency_rate_active" invisible="1" attrs="{'readonly': [('state', 'not in', ['draft','sent'])]}"/>
             		<field name="sale_manual_currency_rate" attrs="{'invisible': [('sale_manual_currency_rate_active', '=', False)],'required':[('sale_manual_currency_rate_active', '=', True)],
                     'readonly': [('state', 'not in', ['draft','sent'])]}"/>
             	</field>

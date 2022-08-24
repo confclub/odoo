@@ -8,11 +8,11 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='payment_term_id']"
                        position="after">
-                    <field name="from_excel" string="From Excel" readonly="1" />
-                    <field name="invoiced"  readonly="1" />
-                    <field name="delivery" readonly="1" />
-                    <field name="after_live" readonly="1" />
-                    <field name="error_in_order" readonly="1" />
+                    <field name="from_excel" string="From Excel" invisible="1" />
+                    <field name="invoiced"  invisible="1" />
+                    <field name="delivery" invisible="1" />
+                    <field name="after_live" invisible="1" />
+                    <field name="error_in_order" invisible="1" />
                 </xpath>
             </field>
         </record>

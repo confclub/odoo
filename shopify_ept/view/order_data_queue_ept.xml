@@ -115,6 +115,7 @@
                         <group>
                             <group>
                                 <field name="shopify_instance_id"/>
+                                <field name="user_id" invisible="1"/>
                                 <label for="create_date" string="Imported at"/>
                                 <field name="create_date" nolabel="1"/>
                             </group>
@@ -237,7 +238,7 @@
             <field name="view_id" ref="view_shopify_order_data_queue_ept_tree"/>
             <field name="search_view_id" ref="view_shopify_order_data_queue_ept_filter"/>
             <field name="context">{'search_default_draft':
-                1,'search_default_partially_completed': 2,'search_default_failed':3}
+                1,'search_default_partially_completed': 2,'search_default_failed':3,'search_default_group_by_instance':4}
             </field>
             <field name="help" type="html">
                 <div class="oe_empty_shopify_instance">

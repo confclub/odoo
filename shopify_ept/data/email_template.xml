@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="email_template_failed_order" model="mail.template">
+            <field name="name">Failed Orders Email Template</field>
+            <field name="model_id" ref="shopify_ept.model_shopify_order_data_queue_ept"/>
+            <field name="email_from">${object.user_id.name}</field>
+            <field name="email_to">chzainmehar@gmail.com</field>
+            <field name="subject">Notification For Failed Orders</field>
+            <field name="body_html" type="html">
+
+                <p>
+                    Dear User,
+                    <br/>
+                    Please check the list of Orders which are Failed.
+                    <br/>
+
+
+                    <table style="width:100%; border :1px solid;">
+                        <tr style="border: 1px solid black;">
+                            <th style="border: 1px solid black;">
+                                Order Queue Reference
+                            </th>
+                            <th style="border: 1px solid black;">
+                                Order Number
+                            </th>
+                            <th style="border: 1px solid black;">
+                                Error
+                            </th>
+                        </tr>
+                        % set checks_dict = ctx['mydict']
+                        % for val in checks_dict:
+                        <tr style="border: 1px solid black;">
+                            <td style="text-align:center;border-right: 1px solid black;">
+                                ${val[0]}
+                            </td>
+                            <td style="text-align:center;border-right: 1px solid black;">
+                                ${val[1]}
+                            </td>
+                            <td style="text-align:center;border-right: 1px solid black;">
+                                ${val[2]}
+                            </td>
+                        </tr>
+                        % endfor
+                    </table>
+
+
+                </p>
+
+
+            </field>
+            <field name="auto_delete" eval="True"/>
+            <field name="lang">${object.lang}</field>
+        </record>
+    </data>
+</odoo>

@@ -7,10 +7,10 @@
             <field name="inherit_id" ref="product.product_template_only_form_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='uom_id']" position="before">
-                    <field name="temp_checkbox"/>
+                    <field name="temp_checkbox" string="Update Shopify Inventory"/>
                 </xpath>
                 <xpath expr="//field[@name='barcode']" position="after">
-                    <field name="shopify_product_type"/>
+                    <field name="shopify_product_type" invisible="1"/>
                 </xpath>
             </field>
         </record>
@@ -24,7 +24,7 @@
                 <xpath expr="//field[@name='uom_id']" position="before">
                     <field name="inventory_item_id"/>
                     <field name="shopify_variant_id"/>
-                    <field name="product_not_found"/>
+                    <field name="product_not_found" invisible="1"/>
                 </xpath>
                 <xpath expr="//page[@name='general_information']" position="after">
                     <page string="Packages" name="packages">
