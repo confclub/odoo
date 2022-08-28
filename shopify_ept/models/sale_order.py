@@ -646,7 +646,7 @@ class SaleOrder(models.Model):
                         return pricelist
                 pricelist = instance.shopify_pricelist_id.id if instance.shopify_pricelist_id else False
                 return pricelist
-            pricelist = pricelist_obj.search([("currency_id", "=", currency.id)], limit=1)
+            pricelist = pricelist_obj.search([("currency_id", "=", currency.id),("company_id", '=', instance.shopify_company_id.id),("price_check_box", '=', True)], limit=1)
             return pricelist
         pricelist = instance.shopify_pricelist_id.id if instance.shopify_pricelist_id else False
         return pricelist

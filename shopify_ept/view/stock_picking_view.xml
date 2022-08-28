@@ -24,6 +24,10 @@
                 <xpath expr="//field[@name='origin']" position="after">
                     <field name="shopify_delivery_id"/>
                 </xpath>
+
+                <xpath expr="//field[@name='partner_id']" position="replace">
+                    <field name="partner_id" nolabel="1" context="{'show_address': 1, 'show_vat': True}" options='{"always_reload": True}'/>
+                </xpath>
                 <field name="move_type" position="after">
                     <field name="is_shopify_delivery_order" invisible="1"/>
                     <field name="updated_in_shopify"
