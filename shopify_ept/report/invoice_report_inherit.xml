@@ -19,7 +19,7 @@
                 <div class="row mt8">
                     <div class="col-7">
                     </div>
-                    <div class="col-4" t-if="o.partner_invoice_id">
+                    <div class="col-4" t-if="o.partner_invoice_id and (o.partner_invoice_id != o.partner_id)">
                         <address t-field="o.partner_invoice_id"
                                  t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
                     </div>
@@ -242,6 +242,7 @@
                             </div>
                         </div>
                     </div>
+                    <br></br>
                     <p t-if="o.move_type in ('out_invoice', 'in_refund') and o.payment_reference"
                        name="payment_communication">
                         Please use the following communication for your payment :
