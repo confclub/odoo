@@ -15,11 +15,16 @@
                     </div>
 
                 </t>
-
-<!--                <div t-if="o.partner_invoice_id">-->
-<!--                    <address t-field="o.partner_invoice_id"-->
-<!--                             t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>-->
-<!--                </div>-->
+                <br></br>
+                <div class="row mt8">
+                    <div class="col-7">
+                    </div>
+                    <div class="col-4" t-if="o.partner_invoice_id">
+                        <address t-field="o.partner_invoice_id"
+                                 t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    </div>
+                </div>
+                <br></br>
                 <div class="page">
                     <h2>
                         <span t-if="o.move_type == 'out_invoice' and o.state == 'posted'">Invoice</span>

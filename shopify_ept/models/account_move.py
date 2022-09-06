@@ -19,6 +19,8 @@ class AccountMove(models.Model):
                 sal_order = self.env['sale.order'].search([('name', '=', record.invoice_origin)])
                 if sal_order:
                     record.partner_invoice_id = sal_order.partner_invoice_id.id
+                else:
+                    record.partner_invoice_id = False
             else:
                 record.partner_invoice_id = False
 
