@@ -13,7 +13,7 @@
     'maintainer': 'Emipro Technologies Pvt. Ltd.',
 
     # Dependencies
-    'depends': ['common_connector_library', 'caps_nogaps', 'sale_mrp','mail','contacts'],
+    'depends': ['common_connector_library', 'caps_nogaps', 'sale_mrp','mail','contacts', 'account'],
 
     # Views
     'init_xml': [],
@@ -47,6 +47,7 @@
         'wizard/financial_status_onboarding_view.xml',
         'view/account_invoice_view.xml',
         'report/sale_report_view.xml',
+        'report/invoice_report_inherit.xml',
         'view/common_log_book_view.xml',
         'view/shopify_instances_onboarding_panel_view.xml',
         'view/dashboard_view.xml',

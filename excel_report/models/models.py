@@ -22,7 +22,56 @@ class ExcelReport(models.Model):
     order_name = fields.Char()
 
     def create_transfer(self):
-        pass
+
+        # cirrent_move = self.env['account.move'].search([('id', '=', 346614)])
+        # cirrent_move.invoice_payments_widget
+        # json.loads(cirrent_move.invoice_payments_widget)
+        # reconsiles = json.loads(cirrent_move.invoice_payments_widget)['content'][0]['account_payment_id']
+        all_invoices = self.env['account.move'].search(
+            [('move_type', '=', 'out_invoice'), ('invoice_date', '<', '01/07/2022'),
+             ('payment_state', '=', 'in_payment'), ('state', '=', 'posted')])
+
+        payment_jaurnal = self.env['account.journal'].search([('name','=', 'Old Everyday Account'),('type', '=', 'bank')],limit=1)
+        i=0
+        list = []
+        for invoice in all_invoices:
+            try:
+                payment_reconsile = json.loads(invoice.invoice_payments_widget)['content']
+                if payment_reconsile:
+                    for payment in payment_reconsile:
+                        reconsile = self.env['account.payment'].search([('id', '=', payment.get('account_payment_id'))])
+                        if reconsile:
+                            reconsile.action_draft()
+                            reconsile.action_cancel()
+                            reconsile.unlink()
+
+                action_data = invoice.action_register_payment()
+                wizard = self.env['account.payment.register'].with_context(
+                    action_data['context']).create({
+                    'payment_date': invoice.invoice_date,
+                    'journal_id': payment_jaurnal.id,
+                })
+                wizard.action_create_payments()
+                i +=1
+                list.append(invoice.name)
+                print(invoice.name)
+                if (int(i % 10) == 0):
+                    print("Record Deleted_________________"+ invoice.name+' count '+ str(i) + "\n")
+                    _logger.info("Record Deleted_________________"+ invoice.name+' count '+ str(i) + "\n")
+                    invoice._cr.commit()
+            except(Exception) as error:
+                print(('Error occur at ' + invoice.name + '  Due to   ' + str(error)))
+                _logger.info(('Error occur at ' + invoice.name + '  Due to   ' + str(error)))
+        print(list)
+
+
+            # pmt_wizard = self.env['account.payment.register'].with_context(active_model='account.move',
+            #                                                                active_ids=caba_inv.ids).create({
+            #     'payment_date': '2017-01-01',
+            #     'journal_id': self.company_data['default_journal_bank'].id,
+            #     'payment_method_id': self.env.ref('account.account_payment_method_manual_in').id,
+            # })
+
 
         # # # # # # # # # # # # #
 
