@@ -12,6 +12,7 @@ class AccountMove(models.Model):
     partner_invoice_id = fields.Many2one(
         'res.partner', string='Invoice Address',
         readonly=True, required=True, compute='_compute_partner_invoice_id')
+    was_invoiced = fields.Boolean(default=False)
 
     def _compute_partner_invoice_id(self):
         for record in self:

@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='payment_reference']" position="after">
                 <field name="shopify_refund_id" string="refund id" />
+                <field name="was_invoiced"/>
             </xpath>
                 <button name="button_draft" position="after">
                     <field name="is_refund_in_shopify" invisible="1"/>

@@ -31,9 +31,8 @@ class ExcelReport(models.Model):
             [('move_type', '=', 'out_invoice'), ('invoice_date', '<', '01/07/2022'),
              ('payment_state', '=', 'in_payment'), ('state', '=', 'posted')])
 
-        payment_jaurnal = self.env['account.journal'].search([('name','=', 'Old Everyday Account'),('type', '=', 'bank')],limit=1)
-        i=0
-        list = []
+        # payment_jaurnal = self.env['account.journal'].search([('name','=', 'Old Everyday Account'),('type', '=', 'bank')],limit=1)
+        i = 0
         for invoice in all_invoices:
             try:
                 payment_reconsile = json.loads(invoice.invoice_payments_widget)['content']
@@ -44,16 +43,17 @@ class ExcelReport(models.Model):
                             reconsile.action_draft()
                             reconsile.action_cancel()
                             reconsile.unlink()
-
-                action_data = invoice.action_register_payment()
-                wizard = self.env['account.payment.register'].with_context(
-                    action_data['context']).create({
-                    'payment_date': invoice.invoice_date,
-                    'journal_id': payment_jaurnal.id,
-                })
-                wizard.action_create_payments()
+                invoice.button_draft()
+                invoice.button_cancel()
+                invoice.was_invoiced = True
+                # action_data = invoice.action_register_payment()
+                # wizard = self.env['account.payment.register'].with_context(
+                #     action_data['context']).create({
+                #     'payment_date': invoice.invoice_date,
+                #     'journal_id': payment_jaurnal.id,
+                # })
+                # wizard.action_create_payments()
                 i +=1
-                list.append(invoice.name)
                 print(invoice.name)
                 if (int(i % 10) == 0):
                     print("Record Deleted_________________"+ invoice.name+' count '+ str(i) + "\n")
@@ -62,7 +62,6 @@ class ExcelReport(models.Model):
             except(Exception) as error:
                 print(('Error occur at ' + invoice.name + '  Due to   ' + str(error)))
                 _logger.info(('Error occur at ' + invoice.name + '  Due to   ' + str(error)))
-        print(list)
 
 
             # pmt_wizard = self.env['account.payment.register'].with_context(active_model='account.move',
