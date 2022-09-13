@@ -5,7 +5,7 @@
             <field name="name">Failed Orders Email Template</field>
             <field name="model_id" ref="shopify_ept.model_shopify_order_data_queue_ept"/>
             <field name="email_from">${object.user_id.name}</field>
-            <field name="email_to">chzainmehar@gmail.com</field>
+            <field name="email_to">odoo@confidenceclub.com</field>
             <field name="subject">Notification For Failed Orders</field>
             <field name="body_html" type="html">
 

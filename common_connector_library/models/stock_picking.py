@@ -41,7 +41,7 @@ class StockPicking(models.Model):
 
     def action_cancel(self):
         res = super(StockPicking, self).action_cancel()
-        instance = self.env['shopify.instance.ept'].search([], limit=1, order='id desc')
+        instance = self.env['shopify.instance.ept'].search([('is_cap_no_gap', '=', False)], limit=1)
         location_id = self.env["shopify.location.ept"].search([("instance_id", "=", instance.id)], limit=1)
         instance.connect_in_shopify()
         for line in self.move_ids_without_package:
