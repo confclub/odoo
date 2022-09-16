@@ -93,8 +93,9 @@ class ExcelReport(models.Model):
         # cirrent_move.invoice_payments_widget
         # json.loads(cirrent_move.invoice_payments_widget)
         # reconsiles = json.loads(cirrent_move.invoice_payments_widget)['content'][0]['account_payment_id']
+        may_date = datetime.strptime("31/05/22", '%d/%m/%y').date()
         all_invoices = self.env['account.move'].search(
-            [('move_type', '=', 'out_invoice'), ('invoice_date', '<', '31/05/2022'),
+            [('move_type', '=', 'out_invoice'), ('invoice_date', '<=', may_date),
              ('payment_state', '=', 'in_payment'), ('state', '=', 'posted')])
 
         # payment_jaurnal = self.env['account.journal'].search([('name','=', 'Old Everyday Account'),('type', '=', 'bank')],limit=1)
