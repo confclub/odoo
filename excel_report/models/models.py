@@ -21,6 +21,72 @@ class ExcelReport(models.Model):
     report_for = fields.Selection([('create_xls_file', 'create_xls_file'),('invoice', 'Invoice'), ('invoice_payment_validate', 'OLD Invoice Payment Validation'), ('old_invoice_date_update', 'Profit and Lose Updation'), ('validate_sale_order_unpaid_shipped', 'Validate Sale Order Unpaid Shipped'), ('product', 'Product'), ('product_cost', 'Product Cost'), ('product_forcast', 'Product Forcast'), ('check_true', 'Check True'), ('compare_onhand_stock', 'Compare onhand Stock'), ('compare_forcast_stock', 'Compare forcast Stock'), ('check_false', 'Check False'), ('product_stock', 'Product Stock'), ('pack_price', 'Pack Price'), ('price_list', 'Price List'), ('validate_sale_order', 'Validate Sale Order'), ('sale_order', 'Sale Order'), ('purchase_order', 'Purchase Order'), ('customer', 'Customer')])
     order_name = fields.Char()
 
+    def create_order_report(self):
+
+        workbook = xlwt.Workbook()
+        sheetwt = workbook.add_sheet('Orders Report')
+        sheetwt.write(0, 0, 'Order Number')
+        sheetwt.write(0, 1, 'Order Date')
+        sheetwt.write(0, 2, 'Date Of Invoice')
+        sheetwt.write(0, 3, 'Total Paid Amount')
+        sheetwt.write(0, 4, 'Customer Name')
+        sheetwt.write(0, 5, 'Invoice Status')
+        roww = 1
+        sale_orders = self.env['sale.order'].search([('date_order', '<=', '30/06/2022:23:59:59'), ('state', '=', 'sale')])
+        i = 0
+        for order in sale_orders:
+            july_1st_date = datetime. strptime("01/07/22", '%d/%m/%y').date()
+            if order.invoice_ids:
+                for invoice in order.invoice_ids:
+                    if invoice.invoice_date and invoice.invoice_date >= july_1st_date:
+                        sheetwt.write(roww, 0, order.name)
+                        sheetwt.write(roww, 1, str(order.date_order))
+                        sheetwt.write(roww, 2, str(invoice.invoice_date))
+                        sheetwt.write(roww, 3, invoice.amount_total)
+                        sheetwt.write(roww, 4, invoice.partner_id.name)
+                        sheetwt.write(roww, 5, invoice.payment_state)
+                        roww += 1
+                        i += 1
+
+                        if (int(i % 100) == 0):
+                            print("Record Created_________________" + str(i) + "\n")
+        workbook.save('/home/hafiz/garron_sale/orders_updated_file.xls')
+
+            # pmt_wizard = self.env['account.payment.register'].with_context(active_model='account.move',
+            #                                                                active_ids=caba_inv.ids).create({
+            #     'payment_date': '2017-01-01',
+            #     'journal_id': self.company_data['default_journal_bank'].id,
+            #     'payment_method_id': self.env.ref('account.account_payment_method_manual_in').id,
+            # })
+
+
+        # # # # # # # # # # # # #
+
+        # name_list = []
+        # sale_orders = self.env['sale.order'].search([('date_order', '>=', '01/07/2022'), ('date_order', '<=', '31/07/2022')])
+        # i = 0
+        # for sale in sale_orders:
+        #     if sale.sale_api_data and sale.state != 'cancel':
+        #         payload = json.loads(sale.sale_api_data)
+        #         payload_payment = payload.get("financial_status")
+        #         payload_delivery = payload.get("fulfillment_status")
+        #         payload_restock = payload.get("restock")
+        #         payload_refund = payload.get('refunds')
+        #         invoice = sale.invoice_ids.filtered(
+        #             lambda r: r.move_type == 'out_invoice' and r.state == 'posted' and r.amount_residual == 0)
+        #         refund = sale.invoice_ids.filtered(
+        #             lambda r: r.move_type == 'out_refund' and r.state == 'posted' and r.amount_residual == 0)
+        #         delivry_partial = sale.picking_ids.filtered(lambda p: p.state != 'done')
+        #         delivry_full = sale.picking_ids.filtered(lambda p: p.state == 'done')
+        #         if payload_delivery == 'fulfilled' and len(delivry_partial):
+        #             name_list.append(sale.name)
+        #         elif len(payload_refund) and not refund:
+        #             name_list.append(sale.name)
+        #         elif payload_payment == 'paid' and not invoice:
+        #             name_list.append(sale.name)
+        #         elif payload_restock and not len(sale.moves_count):
+        #             name_list.append(sale.name)
+        # print(name_list)
     def create_transfer(self):
 
         # cirrent_move = self.env['account.move'].search([('id', '=', 346614)])
@@ -28,7 +94,7 @@ class ExcelReport(models.Model):
         # json.loads(cirrent_move.invoice_payments_widget)
         # reconsiles = json.loads(cirrent_move.invoice_payments_widget)['content'][0]['account_payment_id']
         all_invoices = self.env['account.move'].search(
-            [('move_type', '=', 'out_invoice'), ('invoice_date', '<', '01/07/2022'),
+            [('move_type', '=', 'out_invoice'), ('invoice_date', '<', '31/05/2022'),
              ('payment_state', '=', 'in_payment'), ('state', '=', 'posted')])
 
         # payment_jaurnal = self.env['account.journal'].search([('name','=', 'Old Everyday Account'),('type', '=', 'bank')],limit=1)
