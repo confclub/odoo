@@ -10,8 +10,7 @@ class AccountMove(models.Model):
     shopify_instance_id = fields.Many2one("shopify.instance.ept", "Instances")
     shopify_refund_id = fields.Char()
     partner_invoice_id = fields.Many2one(
-        'res.partner', string='Invoice Address',
-        readonly=True, required=True, compute='_compute_partner_invoice_id')
+        'res.partner', string='Invoice Address', compute='_compute_partner_invoice_id')
     was_invoiced = fields.Boolean(default=False)
 
     def _compute_partner_invoice_id(self):
