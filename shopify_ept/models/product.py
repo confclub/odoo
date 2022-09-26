@@ -50,6 +50,9 @@ class ProductProduct(models.Model):
 
 
     price_listed = fields.Float(compute='_compute_varient_price', string='Fixed Price')
+
+    sale_ok = fields.Boolean('Can be Sold', default=True)
+    purchase_ok = fields.Boolean('Can be Purchased', default=True)
     # attribut_compute = fields.Char(compute='_compute_attributes', string='Attribute Compute')
     # dummy_forcast = fields.Float()
     # stock_onhand_not_match = fields.Boolean(default=False)
