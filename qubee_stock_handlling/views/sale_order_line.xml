@@ -7,8 +7,8 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="after">
-                    <field name="qty"/>
-                    <field name="variant_package_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                    <field name="qty" invisible="1"/>
+                    <field name="variant_package_id" invisible="1"/>
                     <field name="variant_package_ids" invisible="1"/>
                 </xpath>
                 <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="attributes">

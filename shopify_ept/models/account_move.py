@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # See LICENSE file for full copyright and licensing details.
 from odoo import models, fields, _
+import json
 
 
 class AccountMove(models.Model):
@@ -45,3 +46,42 @@ class AccountMove(models.Model):
             'target': 'new',
             'context': context
         }
+
+
+    def action_cancel_invoices(self):
+        for record in self:
+            if record.move_type == 'out_invoice' and record.payment_state == 'in_payment':
+                payment_reconsile = json.loads(record.invoice_payments_widget)['content']
+                for payment in payment_reconsile:
+                    reconsile = self.env['account.payment'].search([('id', '=', payment.get('account_payment_id'))])
+                    if reconsile:
+                        reconsile.action_draft()
+                        reconsile.action_cancel()
+                        # reconsile.unlink()
+                record.button_draft()
+                record.button_cancel()
+                record.was_invoiced = True
+    def action_cancel_invoices_unlink(self):
+        for record in self:
+            if record.move_type == 'out_invoice' and record.payment_state == 'in_payment':
+                payment_reconsile = json.loads(record.invoice_payments_widget)['content']
+                for payment in payment_reconsile:
+                    reconsile = self.env['account.payment'].search([('id', '=', payment.get('account_payment_id'))])
+                    if reconsile:
+                        reconsile.action_draft()
+                        reconsile.action_cancel()
+                        reconsile.unlink()
+                record.button_draft()
+                record.button_cancel()
+                record.was_invoiced = True
+
+class AccountPayments(models.Model):
+    _inherit = "account.payment"
+
+
+    def action_delete_payments(self):
+        for record in self:
+            if record.state == 'posted':
+                record.action_draft()
+                record.action_cancel()
+                record.unlink()

@@ -13,7 +13,7 @@
     'maintainer': 'Emipro Technologies Pvt. Ltd.',
 
     # Dependencies
-    'depends': ['common_connector_library', 'caps_nogaps', 'sale_mrp','mail','contacts', 'account'],
+    'depends': ['common_connector_library', 'caps_nogaps', 'sale_mrp','mail','contacts', 'account','qubee_stock_handlling'],
 
     # Views
     'init_xml': [],
@@ -46,6 +46,7 @@
         'wizard/basic_configuration_onboarding.xml',
         'wizard/financial_status_onboarding_view.xml',
         'view/account_invoice_view.xml',
+        'view/account_payment_view.xml',
         'report/sale_report_view.xml',
         'report/invoice_report_inherit.xml',
         'view/common_log_book_view.xml',
