@@ -28,7 +28,7 @@
         'views/product_product.xml',
         'views/sale_order_line.xml',
         'views/purchase_order.xml',
-        'views/account_move.xml',
+        # 'views/account_move.xml',
         'views/stock_picking.xml',
         'views/packs_form.xml',
         'views/templates.xml',
