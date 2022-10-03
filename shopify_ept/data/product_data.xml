@@ -3,15 +3,15 @@
     <data noupdate="1">
         <!--Create a shopify discount product-->
         <record id="shopify_discount_product" model="product.product">
-            <field name="name">Shopify Discount Product</field>
+            <field name="name">Shopify Discount</field>
             <field name="type">service</field>
-            <field name="default_code">shopifydiscountproduct</field>
+            <field name="default_code">discount</field>
             <field name="invoice_policy">order</field>
         </record>
         <record id="shopify_shipping_product" model="product.product">
-            <field name="name">Shopify Shipping Product</field>
+            <field name="name">Shopify Shipping</field>
             <field name="type">service</field>
-            <field name="default_code">shopifyshippingproduct</field>
+            <field name="default_code">shipping</field>
             <field name="invoice_policy">order</field>
         </record>
         <record id="product_product_manual_refund" model="product.product">
