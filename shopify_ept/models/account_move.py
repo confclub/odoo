@@ -50,7 +50,7 @@ class AccountMove(models.Model):
 
     def action_cancel_invoices(self):
         for record in self:
-            if record.move_type == 'out_invoice' and record.payment_state == 'in_payment':
+            if record.move_type == 'out_invoice' and record.payment_state == 'paid':
                 payment_reconsile = json.loads(record.invoice_payments_widget)['content']
                 for payment in payment_reconsile:
                     reconsile = self.env['account.payment'].search([('id', '=', payment.get('account_payment_id'))])
@@ -63,7 +63,7 @@ class AccountMove(models.Model):
                 record.was_invoiced = True
     def action_cancel_invoices_unlink(self):
         for record in self:
-            if record.move_type == 'out_invoice' and record.payment_state == 'in_payment':
+            if record.move_type == 'out_invoice' and record.payment_state == 'paid':
                 payment_reconsile = json.loads(record.invoice_payments_widget)['content']
                 for payment in payment_reconsile:
                     reconsile = self.env['account.payment'].search([('id', '=', payment.get('account_payment_id'))])

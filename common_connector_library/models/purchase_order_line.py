@@ -9,6 +9,14 @@ from ...shopify_ept import shopify
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
+    total_qty = fields.Float(compute='_compute_qty')
+
+
+    def _compute_qty(self):
+        quantity = 0
+        for line in self.order_line:
+            quantity += line.product_qty
+        self.total_qty = quantity
 
     def button_confirm(self):
         res = super(PurchaseOrder, self).button_confirm()

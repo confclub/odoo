@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="qty_report_purchaseorder_inherit" inherit_id="purchase.report_purchaseorder_document">
+        <xpath expr="//tr[@class='border-black o_total']" position="after">
+            <t t-if="o.total_qty > 0">
+                <tr>
+                    <td name="td_total_unit">
+                        <strong>Total Units</strong>
+                    </td>
+                    <td class="text-right">
+                        <span t-field="o.total_qty"/>
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+    </template>
+</odoo>

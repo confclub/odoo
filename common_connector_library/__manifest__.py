@@ -24,6 +24,8 @@
              'view/product_template.xml',
              'view/sale_order_view.xml',
              'view/sale_workflow_process_view.xml',
+             'view/purchase_form_inherit.xml',
+             'view/purchase_order_report.xml',
              'data/automatic_workflow_data.xml',
              'view/common_log_lines_ept.xml'],
     'installable': True,
