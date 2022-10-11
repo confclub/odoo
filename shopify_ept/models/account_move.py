@@ -63,14 +63,14 @@ class AccountMove(models.Model):
                 record.was_invoiced = True
     def action_cancel_invoices_unlink(self):
         for record in self:
-            if record.move_type == 'out_invoice' and record.payment_state == 'paid':
-                payment_reconsile = json.loads(record.invoice_payments_widget)['content']
-                for payment in payment_reconsile:
-                    reconsile = self.env['account.payment'].search([('id', '=', payment.get('account_payment_id'))])
-                    if reconsile:
-                        reconsile.action_draft()
-                        reconsile.action_cancel()
-                        reconsile.unlink()
+            if record.move_type == 'out_invoice' and record.payment_state == 'paid' and record.amount_total <= 0:
+                # payment_reconsile = json.loads(record.invoice_payments_widget)['content']
+                # for payment in payment_reconsile:
+                #     reconsile = self.env['account.payment'].search([('id', '=', payment.get('account_payment_id'))])
+                #     if reconsile:
+                #         reconsile.action_draft()
+                #         reconsile.action_cancel()
+                #         reconsile.unlink()
                 record.button_draft()
                 record.button_cancel()
                 record.was_invoiced = True
